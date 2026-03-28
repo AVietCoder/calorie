@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký - Calorie AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="toast.css">
+
+    <style>
+        .auth-container { max-width: 450px; margin: 80px auto; padding: 40px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .auth-header { text-align: center; margin-bottom: 30px; }
+        .auth-form { display: flex; flex-direction: column; gap: 15px; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-group label { font-weight: 600; font-size: 0.9rem; color: #444; }
+        .input-group input { padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-family: inherit; transition: 0.3s; }
+        .input-group input:focus { border-color: #2ecc71; outline: none; box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.1); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .btn-auth { background: #2ecc71; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-auth:hover { background: #27ae60; transform: translateY(-2px); }
+        .auth-footer { text-align: center; margin-top: 20px; font-size: 0.9rem; color: #666; }
+        .auth-footer a { color: #2ecc71; text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body style="background: #f8fafc;">
+<div id="toast-container"></div>
+
+<div class="auth-container">
+    <div class="auth-header">
+        <div class="logo" style="margin-bottom: 10px; font-size: 1.5rem;">
+            <i class="fa-solid fa-leaf" style="color: #2ecc71;"></i> <span style="font-weight: 700; color: #333;">Calorie AI</span>
+        </div>
+        <h2>Tạo tài khoản mới</h2>
+        <p style="color: #666;">Bắt đầu hành trình dinh dưỡng của bạn</p>
+    </div>
+
+    <form class="auth-form" id="signupForm">
+        <div class="input-group">
+            <label>Tên đăng nhập</label>
+            <input type="text" id="username" placeholder="Ví dụ: nva123" required>
+        </div>
+        <div class="input-group">
+            <label>Mật khẩu</label>
+            <input type="password" id="password" placeholder="••••••••" required>
+        </div>
+        
+        <div class="input-group">
+            <label>Năm sinh</label>
+            <input type="number" id="birthYear" placeholder="1995" required>
+        </div>
+
+        <div class="input-group">
+            <label>Cân nặng (kg)</label>
+            <input type="number" id="weight" placeholder="65" required>
+        </div>
+        <div class="input-group">
+            <label>Chiều cao (cm)</label>
+            <input type="number" id="height" placeholder="170" required>
+        </div>
+
+        <button type="submit" class="btn-auth">Đăng ký ngay</button>
+    </form>
+
+    <div class="auth-footer">
+        Đã có tài khoản? <a href="signin.html">Đăng nhập</a>
+    </div>
+</div>
+<script src="toast.js"></script>
+
+<script>
+document.getElementById('signupForm').onsubmit = async (e) => {
+    e.preventDefault();
+    
+
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.innerHTML;
+
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Đang đăng ký...`;
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const birthYear = document.getElementById('birthYear').value;
+    const weight = document.getElementById('weight').value;
+    const height = document.getElementById('height').value;
+
+    try {
+        const response = await fetch('/api/auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'register',
+                email: `${username}@gmail.com`,
+                password,
+                username,
+                birthYear,
+                weight,
+                height
+            })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            showToast("Đăng ký thành công! Bạn có thể đăng nhập ngay.", "success");
+            window.location.href = "signin.html";
+        } else {
+            showToast("Lỗi đăng ký: " + result.error, "error");
+
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        }
+    } catch (err) {
+        console.error("Lỗi kết nối:", err);
+        showToast("Không thể kết nối tới máy chủ.", "error");
+
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+    }
+};
+</script>
+
+</body>
+</html>

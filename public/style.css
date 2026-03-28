@@ -1,0 +1,327 @@
+:root {
+    --primary-green: #58A677;
+    --dark-green: #3D7353;
+    --bg-light: #F4F7F4;
+    --text-dark: #2D3436;
+    --text-gray: #636E72;
+    --white: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    line-height: 1.6;
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 8%;
+    background: transparent;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-green);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--text-gray);
+    margin-right: 30px;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background: var(--white);
+    color: var(--primary-green);
+    padding: 10px 20px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    border: 1px solid var(--primary-green);
+    transition: 0.3s;
+}
+
+.btn-primary:hover {
+    background: var(--primary-green);
+    color: var(--white);
+}
+
+/* Hero Section */
+.hero-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 80px 8%;
+    min-height: 80vh;
+}
+
+.hero-content {
+    flex: 1;
+    max-width: 600px;
+}
+
+.badge {
+    background: #E8F5E9;
+    color: var(--primary-green);
+    padding: 6px 15px;
+    border-radius: 50px;
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 2.5rem;
+    line-height: 1.2;
+    margin-bottom: 25px;
+    font-weight: 800;
+}
+
+.highlight {
+    color: var(--primary-green);
+}
+
+p {
+    font-size: 1.1rem;
+    color: var(--text-gray);
+    margin-bottom: 40px;
+}
+
+.btn-main {
+    background: var(--primary-green);
+    color: white;
+    padding: 18px 35px;
+    border-radius: 15px;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: inline-block;
+    box-shadow: 0 10px 20px rgba(88, 166, 119, 0.2);
+    transition: 0.3s;
+}
+
+.btn-main:hover {
+    background: var(--dark-green);
+    transform: translateY(-3px);
+}
+
+/* User Trust Section */
+.user-trust {
+    margin-top: 30px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.avatars img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 2px solid white;
+    margin-left: -10px;
+}
+
+.user-trust span {
+    font-size: 0.9rem;
+    color: var(--text-gray);
+    font-weight: 500;
+}
+
+/* Visual Side */
+.hero-visual {
+    flex: 1;
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.hero-visual img {
+    width: 85%;
+    border-radius: 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.floating-card {
+    position: absolute;
+    top: 20%;
+    left: 0;
+    background: white;
+    padding: 15px 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    color: var(--primary-green);
+    animation: floating 3s ease-in-out infinite;
+}
+
+@keyframes floating {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+footer {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-gray);
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .hero-container {
+        flex-direction: column;
+        text-align: center;
+    }
+    .hero-visual {
+        display: none;
+    }
+    h1 { font-size: 2.5rem; }
+}/* --- PHẦN RESPONSIVE BỔ SUNG --- */
+
+@media (max-width: 1024px) {
+    .navbar {
+        padding: 20px 5%;
+    }
+    .hero-container {
+        padding: 60px 5%;
+        gap: 30px;
+    }
+    h1 {
+        font-size: 3rem; /* Thu nhỏ tiêu đề một chút trên máy tính bảng */
+    }
+}
+
+@media (max-width: 992px) {
+    /* Thay vì ẩn hoàn toàn, chúng ta xếp chồng lên nhau */
+    .hero-container {
+        flex-direction: column;
+        text-align: center;
+        padding-top: 40px;
+    }
+
+    .hero-content {
+        max-width: 100%;
+        margin-bottom: 50px;
+    }
+
+    .hero-visual {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .hero-visual img {
+        width: 70%; /* Ảnh nhỏ lại để cân đối */
+    }
+
+    .floating-card {
+        left: 15%; /* Căn lại vị trí thẻ bay lơ lửng */
+    }
+
+    .user-trust {
+        justify-content: center; /* Căn giữa section tin cậy */
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column; /* Logo trên, nút dưới */
+        gap: 15px;
+    }
+
+    .nav-link {
+        display: none; /* Ẩn các link phụ trên mobile để gọn */
+    }
+
+    h1 {
+        font-size: 2.2rem;
+    }
+
+    p {
+        font-size: 1rem;
+    }
+
+    .btn-main {
+        width: 100%; /* Nút bấm chiếm hết chiều ngang trên mobile */
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-container {
+        padding: 40px 20px;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    .hero-visual img {
+        width: 100%; /* Mobile nhỏ thì ảnh tràn viền cho đẹp */
+    }
+
+    .floating-card {
+        padding: 10px 15px;
+        font-size: 0.8rem;
+        top: 10%;
+        left: 5%;
+    }
+
+    .avatars img {
+        width: 30px;
+        height: 30px;
+    }
+}
+.user-profile-nav {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(88, 166, 119, 0.1);
+    padding: 5px 15px;
+    border-radius: 50px;
+    border: 1px solid rgba(88, 166, 119, 0.2);
+}
+
+.user-name {
+    font-size: 0.95rem;
+    color: #2d3436;
+}
+
+.user-name i {
+    color: #58A677;
+    margin-right: 5px;
+}
+
+.btn-logout {
+    background: none;
+    border: none;
+    color: #ff7675;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.btn-logout:hover {
+    transform: scale(1.1);
+    color: #d63031;
+}

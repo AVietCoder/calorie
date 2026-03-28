@@ -1,0 +1,162 @@
+<!-- <!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lộ trình của tôi - Calorie AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #2ecc71; --bg: #f4f7f6; --white: #ffffff; --text: #2d3436; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .btn-edit { background: white; border: 1.5px solid var(--primary); color: var(--primary); padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+
+        /* Main Card: Calorie Target */
+        .main-card { 
+            background: linear-gradient(135deg, #2ecc71, #27ae60); 
+            border-radius: 24px; padding: 35px; color: white; margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(46, 204, 113, 0.2);
+            position: relative; overflow: hidden;
+        }
+        .main-card::after {
+            content: '\f44b'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+            position: absolute; right: -20px; bottom: -20px; font-size: 150px; opacity: 0.1;
+        }
+        .target-label { font-size: 0.9rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
+        .target-value { font-size: 3.5rem; font-weight: 800; margin: 10px 0; }
+        .target-unit { font-size: 1.2rem; opacity: 0.8; }
+
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .stat-box { background: var(--white); padding: 20px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        .stat-box i { color: var(--primary); margin-bottom: 10px; font-size: 1.2rem; }
+        .stat-label { font-size: 0.85rem; color: #636e72; }
+        .stat-value { font-size: 1.2rem; font-weight: 700; margin-top: 5px; }
+
+        /* Macros & Progress */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: var(--white); padding: 25px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        h3 { margin-top: 0; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+
+        .macro-bar { height: 8px; border-radius: 10px; background: #eee; margin: 15px 0 5px 0; overflow: hidden; }
+        .macro-fill { height: 100%; border-radius: 10px; }
+        .macro-info { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600; }
+
+        .progress-circle { text-align: center; padding: 20px; }
+        .weight-track { display: flex; justify-content: space-between; margin-top: 20px; font-size: 0.9rem; color: #636e72; }
+        
+        /* Mobile Responsive */
+        @media (max-width: 600px) { .info-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2 style="margin:0">Lộ trình của bạn</h2>
+        <button class="btn-edit" onclick="location.href='setup.html'"><i class="fa-solid fa-gear"></i> Điều chỉnh</button>
+    </div>
+
+    <div class="main-card">
+        <div class="target-label">Mục tiêu nạp mỗi ngày</div>
+        <div class="target-value" id="display-calories">1,950 <span class="target-unit">kcal</span></div>
+        <div style="display: flex; gap: 20px; font-size: 0.9rem;">
+            <span><i class="fa-solid fa-bolt"></i> BMR: 1,540</span>
+            <span><i class="fa-solid fa-fire"></i> TDEE: 2,300</span>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-box">
+            <i class="fa-solid fa-weight-scale"></i>
+            <div class="stat-label">Cân nặng hiện tại</div>
+            <div class="stat-value" id="display-weight">72.5 kg</div>
+        </div>
+        <div class="stat-box">
+            <i class="fa-solid fa-bullseye"></i>
+            <div class="stat-label">Mục tiêu hướng đến</div>
+            <div class="stat-value" id="display-target" style="color: var(--primary);">65.0 kg</div>
+        </div>
+        <div class="stat-box">
+            <i class="fa-solid fa-calendar-day"></i>
+            <div class="stat-label">Thời hạn (Deadline)</div>
+            <div class="stat-value" id="display-deadline">15/06/2026</div>
+        </div>
+    </div>
+
+    <div class="info-grid">
+        <div class="card">
+            <h3>Tỷ lệ dinh dưỡng (Macros)</h3>
+            
+            <div class="macro-item">
+                <div class="macro-info"><span>Protein (Đạm)</span><span id="p-val">146g</span></div>
+                <div class="macro-bar"><div class="macro-fill" style="width: 30%; background: #e74c3c;"></div></div>
+            </div>
+            
+            <div class="macro-item">
+                <div class="macro-info"><span>Carbs (Tinh bột)</span><span id="c-val">210g</span></div>
+                <div class="macro-bar"><div class="macro-fill" style="width: 45%; background: #f1c40f;"></div></div>
+            </div>
+
+            <div class="macro-item" style="margin-bottom: 0;">
+                <div class="macro-info"><span>Fats (Chất béo)</span><span id="f-val">65g</span></div>
+                <div class="macro-bar"><div class="macro-fill" style="width: 25%; background: #3498db;"></div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Tiến độ giảm cân</h3>
+            <div class="progress-circle">
+                <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary);">25%</div>
+                <div style="color: #636e72; font-size: 0.9rem;">Bạn đã giảm được 2.5kg</div>
+            </div>
+            <div class="weight-track">
+                <span>Bắt đầu: 75kg</span>
+                <span>Còn lại: 7.5kg</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+<script>
+    async function loadDietData() {
+    const token = localStorage.getItem('calorie_ai_token');
+    
+    try {
+        const res = await fetch('/api/diet-info', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await res.json();
+
+        if (result.success) {
+            const d = result.data;
+            
+            document.getElementById('display-calories').innerHTML = `${d.calories.toLocaleString()} <span class="target-unit">kcal</span>`;
+            document.getElementById('display-weight').innerText = `${d.profile.weight} kg`;
+            document.getElementById('display-target').innerText = `${d.profile.target_weight} kg`;
+            document.getElementById('display-deadline').innerText = d.profile.deadline;
+            
+            
+            document.getElementById('p-val').innerText = `${d.macros.protein}g`;
+            document.getElementById('c-val').innerText = `${d.macros.carbs}g`;
+            document.getElementById('f-val').innerText = `${d.macros.fat}g`;
+
+            
+            document.querySelector('.main-card div:last-child').innerHTML = 
+                `<span><i class="fa-solid fa-bolt"></i> BMR: ${d.bmr}</span> 
+                 <span><i class="fa-solid fa-fire"></i> TDEE: ${d.tdee}</span>`;
+        }
+    } catch (err) {
+        console.error("Lỗi tải dữ liệu diet");
+    }
+}
+
+window.onload = loadDietData;
+</script>
+</html> -->

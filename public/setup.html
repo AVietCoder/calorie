@@ -1,0 +1,340 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thiết lập lộ trình - Calorie AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="toast.css">
+    <link rel="stylesheet" href="setup.css">
+</head>
+<body>
+    <div id="toast-container"></div>
+
+    <aside class="side-nav">
+        <div class="nav-item"><i class="fa-solid fa-house"></i><span>HOME</span></div>
+        <div class="nav-item active"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
+        <div class="nav-item"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
+        <div class="nav-item"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="header">
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <i class="fa-solid fa-leaf"></i> Calorie AI
+            </a>
+            <div class="header-tools">
+                <div class="user-profile-nav" onclick="handleLogout()">
+                    <span class="user-name"><i class="fa-solid fa-circle-user"></i> <strong>Đăng xuất</strong></span>
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </div>
+            </div>
+        </header>
+<div class="diet-tabs" style="display: flex; gap: 10px; margin: 36px;    margin-bottom: 0;">
+            <button class="tab-btn" id="btn-overview" onclick="location.href='diet-details.html'">
+                <i class="fa-solid fa-chart-pie"></i> Tổng quan
+            </button>
+            <button class="tab-btn active" onclick="location.href='setup.html'">
+                <i class="fa-solid fa-gears"></i> Thiết lập
+            </button>
+        </div>
+        <main class="content">
+           
+            <div class="setup-card">
+                <div class="progress-container">
+                    <div class="progress-step active"></div>
+                    <div class="progress-step"></div>
+                    <div class="progress-step"></div>
+                    <div class="progress-step"></div>
+                </div>
+
+                <form id="planForm">
+                    <div class="step active" id="step1">
+                        <h2>Chỉ số cơ thể</h2>
+                        <p>Để tính toán BMR và TDEE chính xác cho bạn.</p>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label>Giới tính</label>
+                                <select name="gender">
+                                    <option value="male">Nam</option>
+                                    <option value="female">Nữ</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Năm sinh</label>
+                                <input type="number" name="birth_year" placeholder="2000">
+                            </div>
+                            <div class="input-group">
+                                <label>Chiều cao (cm)</label>
+                                <input type="number" name="height" placeholder="170">
+                            </div>
+                            <div class="input-group">
+                                <label>Cân nặng (kg)</label>
+                                <input type="number" name="weight" placeholder="65">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step" id="step2">
+                        <h2>Mục tiêu của bạn</h2>
+                        <p>Bạn muốn đạt được điều gì?</p>
+                        <div class="goal-options">
+                            <div class="goal-item" onclick="selectGoal(this, 'lose')"><i class="fa-solid fa-arrow-trend-down"></i>Giảm cân</div>
+                            <div class="goal-item" onclick="selectGoal(this, 'maintain')"><i class="fa-solid fa-scale-balanced"></i>Giữ cân</div>
+                            <div class="goal-item" onclick="selectGoal(this, 'gain')"><i class="fa-solid fa-arrow-trend-up"></i>Tăng cân</div>
+                            <div class="goal-item" onclick="selectGoal(this, 'muscle')"><i class="fa-solid fa-dumbbell"></i>Tăng cơ</div>
+                        </div>
+                        <input type="hidden" name="main_goal" id="main_goal">
+                        <div class="form-grid" style="margin-top: 20px;">
+                            <div class="input-group"><label>Cân nặng mục tiêu</label><input type="number" name="target_weight" placeholder="60"></div>
+                            <div class="input-group"><label>Deadline</label><input type="date" name="deadline"></div>
+                            <div class="input-group full">
+                                <label>Tốc độ mong muốn</label>
+                                <select name="speed">
+                                    <option value="safe">An toàn (0.5kg/tuần)</option>
+                                    <option value="normal">Vừa phải (0.7kg/tuần)</option>
+                                    <option value="fast">Nhanh (1kg/tuần)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step" id="step3">
+                        <h2>Thói quen & Linh hoạt</h2>
+                        <p>Tối ưu hóa calo theo lịch trình của bạn.</p>
+                        <div class="input-group">
+                            <label>Tần suất vận động</label>
+                            <select name="activity">
+                                <option value="1.2">Ít vận động (Văn phòng)</option>
+                                <option value="1.375">Nhẹ (1-2 buổi tập/tuần)</option>
+                                <option value="1.55">Vừa (3-5 buổi tập/tuần)</option>
+                                <option value="1.725">Nặng (6-7 buổi tập/tuần)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Ngày ăn nhiều (Cheat day)?</label>
+                            <input type="text" name="cheat_days" placeholder="Ví dụ: Thứ 7 và Chủ Nhật">
+                        </div>
+                        <div class="input-group">
+                            <label>Bạn có hay ăn vặt không?</label>
+                            <select name="snacking">
+                                <option value="no">Không bao giờ</option>
+                                <option value="sometimes">Thỉnh thoảng</option>
+                                <option value="often">Thường xuyên</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="step" id="step4">
+                        <h2>Cá nhân hóa sâu</h2>
+                        <p>Bước cuối cùng để hoàn tất lộ trình.</p>
+                        <div class="input-group">
+                            <label>Dị ứng / Thực phẩm không ăn được</label>
+                            <textarea name="allergies" rows="2" placeholder="Ví dụ: Không ăn hành, dị ứng hải sản..."></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label>Bạn muốn tập trung vào chất nào?</label>
+                            <select name="focus_macro">
+                                <option value="balanced">Cân bằng</option>
+                                <option value="high_protein">Nhiều Đạm (Protein)</option>
+                                <option value="low_carb">Ít Tinh bột (Low carb)</option>
+                            </select>
+                        </div>
+                        <div class="form-grid">
+                            <div class="input-group"><label>Lý do bắt đầu?</label><input type="text" name="reason" placeholder="Cải thiện sức khỏe..."></div>
+                            <div class="input-group"><label>Mục tiêu Streak</label><input type="number" name="streak_goal" placeholder="30"></div>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-prev" id="prevBtn" onclick="nextPrev(-1)" style="display:none;">Quay lại</button>
+                        <button type="button" class="btn btn-next" id="nextBtn" onclick="nextPrev(1)">Tiếp tục</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script src="toast.js"></script>
+    <script>
+        document.querySelector('.nav-item:nth-child(1)').onclick = function() {
+            window.location.href = 'chat.html'; 
+        };
+
+        function handleLogout() {
+            localStorage.removeItem('calorie_ai_token');
+            window.location.href = "signin.html";
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof loadCurrentData === "function") loadCurrentData();
+        });
+let currentStep = 0;
+const steps = document.getElementsByClassName("step");
+const progressSteps = document.getElementsByClassName("progress-step");
+
+function nextPrev(n) {
+    if (n == 1 && !validateForm()) return false;
+    steps[currentStep].classList.remove("active");
+    currentStep = currentStep + n;
+
+    if (currentStep >= steps.length) {
+        submitForm();
+        return false;
+    }
+    showStep(currentStep);
+}
+
+function showStep(n) {
+    steps[n].classList.add("active");
+    document.getElementById("prevBtn").style.display = n == 0 ? "none" : "inline";
+    document.getElementById("nextBtn").innerHTML = n == (steps.length - 1) ? "Hoàn tất lộ trình" : "Tiếp tục";
+    
+    updateProgress(n);
+}
+
+function updateProgress(n) {
+    for (let i = 0; i < progressSteps.length; i++) {
+        progressSteps[i].classList.toggle("active", i <= n);
+    }
+}
+
+function selectGoal(el, val) {
+    document.querySelectorAll('.goal-item').forEach(item => item.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('main_goal').value = val;
+}
+
+function validateForm() {
+    return true; 
+}
+
+async function submitForm() {
+const btn = document.getElementById("nextBtn");
+const originalText = btn.innerHTML;
+
+btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tính toán...';
+btn.disabled = true;
+
+const formData = new FormData(document.getElementById("planForm"));
+const data = Object.fromEntries(formData.entries());
+
+data.goal = document.getElementById('main_goal').value;
+
+const token = localStorage.getItem('calorie_ai_token');
+
+try {
+    const res = await fetch('/api/setup', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    });
+
+    const result = await res.json();
+
+    if (res.ok && result.success) {
+        btn.innerHTML = '<i class="fas fa-check"></i> Hoàn tất!';
+        
+        showToast("Hoàn tất!", "success");
+        window.location.href = "diet-details.html"; 
+    } else {
+        throw new Error(result.message || "Lỗi khi lưu dữ liệu");
+    }
+
+} catch (error) {
+    console.error("Lỗi:", error);
+    alert("Có lỗi xảy ra: " + error.message);
+    
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+}
+}
+function showLoader() {
+const card = document.querySelector('.setup-card');
+if (document.getElementById('setup-loader')) return;
+
+const loader = document.createElement('div');
+loader.className = 'loading-overlay';
+loader.id = 'setup-loader';
+loader.innerHTML = '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+card.appendChild(loader);
+}
+
+function hideLoader() {
+const loader = document.getElementById('setup-loader');
+if (loader) loader.remove();
+}
+async function loadCurrentData() {
+const token = localStorage.getItem('calorie_ai_token');
+if (!token) return;
+showLoader();
+try {
+    const res = await fetch('/api/diet-info', {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const result = await res.json();
+
+    if (result.success && result.data && result.data.profile) {
+const p = result.data.profile; 
+
+const fieldMap = {
+'gender': p.gender,
+'birth_year': p.birth_year,
+'height': p.height,
+'weight': p.weight,
+'target_weight': p.target_weight,
+'deadline': p.deadline,
+'speed': p.speed,
+'activity': p.activity_level,  
+'cheat_days': p.high_cal_days,  
+'snacking': p.snacking,
+'allergies': p.allergies,
+'focus_macro': p.focus_macro,
+'reason': p.reason,
+'streak_goal': p.streak_goal
+};
+        const form = document.getElementById("planForm");
+
+        console.log(result)
+        Object.keys(fieldMap).forEach(fieldName => {
+            const value = fieldMap[fieldName];
+            if (form[fieldName] && value !== undefined && value !== null) {
+                form[fieldName].value = value;
+            }
+        });
+
+        if (p.goal) {
+            document.getElementById('main_goal').value = p.goal;
+            const goalItems = document.querySelectorAll('.goal-item');
+            goalItems.forEach(item => {
+                if (item.getAttribute('onclick').includes(`'${p.goal}'`)) {
+                    item.classList.add('selected');
+                }
+            });
+        }
+
+        console.log("Đã khôi phục dữ liệu từ lộ trình cũ.");
+    }
+} catch (err) {
+    console.warn("Chưa có dữ liệu cũ để khôi phục:", err);
+}finally {
+    hideLoader(); 
+}
+}document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('calorie_ai_token');
+    if (!token) {
+        showToast("Vui lòng đăng nhập!", "info");
+        setTimeout(() => {
+            window.location.href = "signin.html";
+        }, 1369);     } else {
+        loadChatHistory();
+    }
+});
+    </script>
+</body>
+</html>

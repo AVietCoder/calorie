@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutrition AI Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+       <link rel="stylesheet" href="toast.css">
+
+   <style>
+        :root {
+            --bg-color: #F4F7F4;
+            --primary-green: #58A677;
+            --dark-green: #3D7353;
+            --text-main: #2D3436;
+            --text-sub: #636E72;
+            --card-bg: #FFFFFF;
+            --accent-gray: #E9ECEF;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            color: var(--text-main);
+        }
+
+        /* Sidebar bên trái gọn gàng */
+        .side-nav {
+            width: 90px;
+            background-color: white;
+            border-right: 1px solid var(--accent-gray);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 0;
+            gap: 40px;
+        }
+
+        .nav-item {
+            font-size: 1.4rem;
+            color: #B2BEC3;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .nav-item span { font-size: 0.65rem; display: block; margin-top: 5px; font-weight: 600; }
+        .nav-item:hover, .nav-item.active { color: var(--primary-green); }
+
+        /* Main Wrapper */
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header Website */
+        .header {
+            height: 70px;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            border-bottom: 1px solid var(--accent-gray);
+        }
+
+        .logo { font-weight: 700; font-size: 1.5rem; color: var(--primary-green); }
+        .header-tools { display: flex; gap: 25px; color: var(--text-sub); cursor: pointer; }
+
+        /* Layout Content */
+        .content {
+            display: flex;
+            flex: 1;
+            padding: 25px 40px;
+            gap: 30px;
+            overflow: hidden;
+        }
+
+        /* Phần Chat chính */
+        .chat-section {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .chat-window {
+            flex: 1;
+            overflow: auto; /* Enables scrolling */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */            padding-right: 15px;
+        }
+
+        /* Thanh Chat dài và hiện đại */
+        .input-wrapper {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid var(--accent-gray);
+        }
+
+        .chat-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 15px 0;
+            font-size: 1rem;
+            color: var(--text-main);
+        }
+
+        .input-tools { display: flex; gap: 15px; color: var(--text-sub); font-size: 1.1rem; }
+        .input-tools i { cursor: pointer; transition: 0.2s; }
+        .input-tools i:hover { color: var(--primary-green); }
+
+        .send-btn {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .send-btn:hover { background: var(--dark-green); transform: translateY(-2px); }
+
+        /* Sidebar Thông tin Dinh dưỡng */
+        .info-sidebar {
+            flex: 1;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+        }
+        
+        .card-food
+        {
+            overflow: auto; /* Enables scrolling */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+/* Hiệu ứng mờ màn hình khi đang load lịch sử */
+.loading-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    border-radius: 16px;
+}
+        .food-img-container {
+            background-color: var(--primary-green);
+            padding: 8px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
+
+        .food-img-container img {
+            width: 100%;
+            border-radius: 14px;
+            display: block;
+        }
+
+        .calories-box { margin-bottom: 20px; }
+        .calories-box .title { color: var(--text-sub); font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+        .calories-box .value { font-size: 2.2rem; font-weight: 700; color: #1e272e; margin-top: 5px; }
+
+        .desc-text {
+            color: var(--primary-green);
+            background: #F0F9F4;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            border-top: 1px solid var(--accent-gray);
+            padding-top: 20px;
+        }
+
+        .stat-item { font-size: 0.85rem; color: var(--text-sub); }
+        .stat-item b { color: var(--text-main); font-size: 0.95rem; }
+/* --- Tối ưu hóa Chat Bubble --- */
+.chat-window {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.msg-container {
+    max-width: 85%;
+    padding: 12px 18px;
+    border-radius: 18px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    position: relative;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.msg-user {
+    align-self: flex-end;
+    background-color: var(--primary-green);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.msg-bot {
+    align-self: flex-start;
+    background-color: white;
+    color: var(--text-main);
+    border-bottom-left-radius: 4px;
+    border: 1px solid var(--accent-gray);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+/* Hiệu ứng bọt nhảy typing */
+    .typing-indicator { display: flex; gap: 5px; padding: 15px; }
+    .typing-dot { width: 8px; height: 8px; background: var(--primary-green); border-radius: 50%; animation: jump 1.4s infinite ease-in-out; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes jump { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-10px); } }
+
+    /* Custom scrollbar cho sidebar đẹp hơn */
+    .info-sidebar::-webkit-scrollbar { width: 5px; }
+    .info-sidebar::-webkit-scrollbar-track { background: transparent; }
+    .info-sidebar::-webkit-scrollbar-thumb { background: #dcdde1; border-radius: 10px; }
+/* --- RESPONSIVE DASHBOARD --- */
+
+/* Tablet & Laptop nhỏ (Dưới 1100px) */
+@media (max-width: 1100px) {
+    .content {
+        flex-direction: column;
+            overflow: auto; /* Enables scrolling */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */    }
+    .info-sidebar {
+        max-width: 100%;
+        order: -1; /* Đưa thông tin dinh dưỡng lên đầu trên mobile */
+    }
+    .chat-section {
+        min-height: 500px;
+    }
+}
+.user-profile-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    padding: 6px 16px;
+    border-radius: 50px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #eee;
+    user-select: none;
+}
+
+.user-profile-nav:hover {
+    background: #fff5f5;
+    border-color: #ff4757;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.15);
+}
+
+.user-name {
+    font-size: 0.85rem;
+    color: #444;
+    font-weight: 500;
+}
+
+.user-profile-nav:hover .user-name, 
+.user-profile-nav:hover .btn-logout-icon {
+    color: #ff4757;
+}
+
+.btn-logout-icon {
+    color: #666;
+    font-size: 0.9rem;
+}
+/* Mobile (Dưới 768px) */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column; /* Đưa Side-nav lên đầu hoặc xuống dưới */
+    }
+    .side-nav {
+        width: 100%;
+        height: 60px;
+        flex-direction: row;
+        justify-content: space-around;
+        padding: 0;
+        order: 2; /* Đặt dưới cùng như thanh điều hướng điện thoại */
+    }
+    .side-nav .nav-item span { display: none; }
+    
+    .header { padding: 0 20px; }
+    .header-tools { display: none; } /* Ẩn công cụ phụ trên mobile */
+    
+    .content { padding: 15px; }
+}
+    </style>
+</head>
+<body>
+<div id="toast-container"></div>
+    <aside class="side-nav">
+        <div class="nav-item active"><i class="fa-solid fa-house"></i><span>HOME</span></div>
+        <div class="nav-item"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
+        <div class="nav-item"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
+        <div class="nav-item"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
+    </aside>
+
+    <div class="main-wrapper">
+<header class="header">
+    <a href="index.html" style="text-decoration: none;" class="logo">
+        <i class="fa-solid fa-leaf"></i> Calorie AI
+    </a>
+    
+    <div id="auth-zone" class="header-tools">
+        <div class="user-profile-nav" onclick="handleLogout()" title="Nhấn để đăng xuất">
+            <span class="user-name">
+                <i class="fa-solid fa-circle-user"></i> 
+                <strong>Đăng xuất</strong>
+            </span>
+            <div class="btn-logout-icon">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </div>
+        </div>
+    </div>
+</header>
+
+     <main class="content">
+    <section class="chat-section">
+        <div class="chat-window" id="chat-window">
+            <div class="card" style="margin-bottom: 20px;">
+                Chào bạn! Hãy gửi tin nhắn hoặc ảnh món ăn, tôi sẽ phân tích giúp bạn.
+            </div>
+        </div>
+
+        <div class="input-wrapper">
+            <div class="input-tools" onclick="document.getElementById('file-upload').click()">
+                <i class="fa-solid fa-circle-plus"></i>
+                <input type="file" id="file-upload" style="display: none;" accept="image/*" onchange="handleFileSelect()">
+            </div>
+            
+            <input id="user-input" type="text" placeholder="Hỏi tôi liên quan về dinh dưỡng..." class="chat-input">
+            
+            <button class="send-btn" onclick="sendMessage()">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </section>
+
+    <aside class="info-sidebar">
+        <div class="card card-food">
+            <div class="food-img-container">
+                <img id="display-food-img" src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600" alt="Food">
+            </div>
+
+            <div class="calories-box">
+                <div class="title"><i class="fa-solid fa-utensils"></i> Tổng năng lượng:</div>
+                <div class="value"><span id="val-calories">0</span> <span style="font-size: 1rem; font-weight: 400;">kcal</span></div>
+            </div>
+
+            <div id="val-desc" class="desc-text">Thông tin sẽ cập nhật sau khi phân tích.</div>
+
+            <div class="stats-grid">
+                <div class="stat-item">Protein: <b id="val-protein">--</b></div>
+                <div class="stat-item">Chất béo: <b id="val-fat">--</b></div>
+                <div class="stat-item">Carbs: <b id="val-carbs">--</b></div>
+                <div class="stat-item">Chất xơ: <b id="val-fiber">--</b></div>
+                <div class="stat-item">Đường: <b id="val-sugar">--</b></div>
+                <div class="stat-item">Natri: <b id="val-sodium">--</b></div>
+            </div>
+        </div>
+    </aside>
+</main>
+<script src="toast.js"></script>
+
+<script>
+window.currentConvId = null;
+let isAnalyzing = false;
+let isLoadingHistory = false;
+const sessionPhotos = [];
+function handleLogout() {
+    localStorage.removeItem('calorie_ai_token');
+    localStorage.removeItem('user_id');
+
+    if (typeof showToast === "function") {
+        showToast("Đang đăng xuất...", "info");
+    }
+
+    setTimeout(() => {
+        window.location.href = "signin.html";
+    }, 1000);
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('calorie_ai_token');
+    if (!token) {
+        showToast("Vui lòng đăng nhập!", "info");
+        setTimeout(() => {
+            window.location.href = "signin.html";
+        }, 1369);     } else {
+        loadChatHistory();
+    }
+});
+
+
+async function loadChatHistory() {
+    const token = localStorage.getItem('calorie_ai_token');
+    if (!token || isLoadingHistory) return;
+
+    isLoadingHistory = true;
+    toggleInputState(true, "Đang tải lịch sử...");
+    
+    
+    const chatSection = document.querySelector('.chat-section');
+    const loader = document.createElement('div');
+    loader.className = 'loading-overlay';
+    loader.id = 'history-loader';
+    loader.innerHTML = '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+    chatSection.appendChild(loader);
+
+    try {
+        const res = await fetch("/api/chat-history", {
+            method: "GET",
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (res.ok == false)
+        {
+            showToast("Vui lòng đăng nhập!", "info");
+            setTimeout(() => {
+                window.location.href = "signin.html";
+            }, 1369); 
+            return;
+        }
+        if (data.history && Array.isArray(data.history)) {
+            const chatWindow = document.getElementById('chat-window');
+            
+            
+            data.history.forEach(msg => {
+                renderMessage(msg.role, msg.content);
+                
+                if (msg.role === 'assistant') {
+                    const match = msg.content.match(/<data>([\s\S]*?)<\/data>/);
+                    //if (match && match[1]) updateSidebar(match[1]);
+                }
+            });
+        }
+    } catch (e) {
+        console.error(e)
+        showToast("Vui lòng đăng nhập!", "info");
+        setTimeout(() => {
+            window.location.href = "signin.html";
+        }, 1369);   
+    } finally {
+        isLoadingHistory = false;
+        document.getElementById('history-loader')?.remove();
+        toggleInputState(false);
+    }
+}
+
+
+function toggleInputState(disabled, placeholder = "Hỏi tôi liên quan về dinh dưỡng...") {
+    const input = document.getElementById('user-input');
+    const btn = document.querySelector('.send-btn');
+    const uploadBtn = document.querySelector('.input-tools');
+    
+    input.disabled = disabled;
+    btn.disabled = disabled;
+    if(uploadBtn) uploadBtn.style.pointerEvents = disabled ? 'none' : 'auto';
+    input.placeholder = placeholder;
+}
+
+
+async function handleFileSelect() {
+    const file = document.getElementById('file-upload').files[0];
+    const input = document.getElementById('user-input');
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64Data = e.target.result;
+            document.getElementById('display-food-img').src = base64Data;
+            
+            if (sessionPhotos.includes(base64Data)) {
+                input.value = "Bạn hãy phân tích món ăn gần nhất tui vừa mới hỏi bạn ấy";
+                console.log("Ảnh cũ - Chế độ phân tích tiếp.");
+            } else {
+                input.value = "Phân tích hình ảnh này";
+                console.log("Ảnh mới hoàn toàn.");
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+}
+async function sendMessage() {
+    if (isAnalyzing || isLoadingHistory) return;
+
+    const token = localStorage.getItem('calorie_ai_token');
+    const input = document.getElementById('user-input');
+    const fileInput = document.getElementById('file-upload');
+    const text = input.value.trim();
+    const file = fileInput.files[0];
+    flag = false
+    if (!text && !file) return;
+
+    let currentFileBase64 = null;
+    if (file) {
+        currentFileBase64 = await new Promise(resolve => {
+            const r = new FileReader();
+            r.onload = (e) => resolve(e.target.result);
+            r.readAsDataURL(file);
+        });
+    }
+
+    isAnalyzing = true;
+    toggleInputState(true, "AI đang phân tích...");
+    renderMessage("user", text); 
+    showTypingIndicator();
+
+    const formData = new FormData();
+
+    if (file && sessionPhotos.includes(currentFileBase64)) {
+        formData.append("message", "Bạn hãy phân tích món ăn gần nhất tui vừa mới hỏi bạn ấy");
+    } else {
+        formData.append("message", text);
+        if (file) formData.append("image", file);
+    }
+
+    try {
+        const res = await fetch("/api/chat", { 
+            method: "POST", 
+            body: formData,
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const result = await res.json();
+        document.getElementById('typing-indicator-box')?.remove();
+
+if (result.reply) {
+    if (result.reply.includes("<error>")) {
+        const errorMatch = result.reply.match(/<error>([\s\S]*?)<\/error>/);
+        const errorMsg = errorMatch ? errorMatch[1] : "Không phải thức ăn";
+        showToast(errorMsg, "error");
+        flag = true
+        renderMessage("bot", result.reply);
+        resetSidebar();
+        return; 
+    }
+
+    renderMessage("bot", result.reply);
+    const dataMatch = result.reply.match(/<data>([\s\S]*?)<\/data>/);
+    if (dataMatch && dataMatch[1]) {
+        updateSidebar(dataMatch[1]);
+        if (file && !sessionPhotos.includes(currentFileBase64)) {
+            sessionPhotos.push(currentFileBase64);
+        }
+    }
+}
+    } catch (e) {
+        if (!flag) showToast("Có lỗi đang xảy ra!", "error");
+    } finally {
+        isAnalyzing = false;
+        toggleInputState(false);
+        input.value = "";
+        fileInput.value = "";
+    }
+}
+function renderMessage(role, text) {
+    const chatWindow = document.getElementById('chat-window');
+    const msgDiv = document.createElement('div');
+    
+    msgDiv.className = 'card';
+    msgDiv.style.marginBottom = '20px';
+    msgDiv.style.whiteSpace = 'pre-line';
+    
+    if (role === 'user') {
+        msgDiv.style.backgroundColor = '#E8F5E9';
+        msgDiv.style.borderBottomRightRadius = '4px';
+    } else {
+        msgDiv.style.borderBottomLeftRadius = '4px';
+    }
+    
+    let displayContent = text;
+
+    displayContent = displayContent.replace(/<data>[\s\S]*?<\/data>/g, '');
+    displayContent = displayContent.replace(/<image>[\s\S]*?<\/image>/g, '');
+    displayContent = displayContent.replace(/<error>[\s\S]*?<\/error>/g, '');
+
+    const urlIndex = displayContent.indexOf("có url:");
+    if (urlIndex !== -1) {
+        displayContent = displayContent.substring(0, urlIndex).trim();
+    }
+
+    if (displayContent.includes("Nội dung cụ thể:")) {
+        const parts = displayContent.split("Nội dung cụ thể:");
+        const prefix = parts[0].trim();
+        const suffix = parts[1].trim();
+        
+        if (prefix === suffix || suffix === "") {
+            displayContent = prefix;
+        } else {
+            displayContent = suffix;
+        }
+    }
+
+    displayContent = displayContent.replace(/\n{3,}/g, '\n\n').trim();
+    msgDiv.innerText = displayContent || "Đang phân tích ảnh...";
+    
+    chatWindow.appendChild(msgDiv);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+}function showTypingIndicator() {
+    const chatWindow = document.getElementById('chat-window');
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'typing-indicator-box';
+    typingDiv.className = 'card typing-indicator';
+    typingDiv.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+    chatWindow.appendChild(typingDiv);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function updateSidebar(jsonText) {
+    try {
+        const data = JSON.parse(jsonText);
+        document.getElementById('val-calories').innerText = data.calories || 0;
+        document.getElementById('val-desc').innerText = data.description || "";
+        document.getElementById('val-protein').innerText = data.protein || "--";
+        document.getElementById('val-fat').innerText = data.fat || "--";
+        document.getElementById('val-carbs').innerText = data.carbs || "--";
+        document.getElementById('val-fiber').innerText = data.fiber || "--";
+        document.getElementById('val-sugar').innerText = data.sugar || "--";
+        document.getElementById('val-sodium').innerText = data.sodium || "--";
+    } catch (e) {
+        console.error("Lỗi cập nhật Sidebar:", e);
+    }
+}
+
+
+document.getElementById('user-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+});
+document.querySelector('.nav-item:nth-child(2)').onclick = async function() {
+    const token = localStorage.getItem('calorie_ai_token');
+    
+    const mainWrapper = document.querySelector('.chat-section'); 
+    const loader = document.createElement('div');
+    loader.className = 'loading-overlay';
+    loader.id = 'status-loader';
+    loader.innerHTML = '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+    
+    if (mainWrapper) mainWrapper.appendChild(loader);
+
+    try {
+        const res = await fetch('/api/status', {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        if (data.is_setup_completed) {
+            window.location.href = 'diet-details.html';
+        } else {
+            setTimeout(() => {
+                window.location.href = 'setup.html';
+            }, 0);
+        }
+    } catch (err) {
+        if (document.getElementById('status-loader')) {
+            document.getElementById('status-loader').remove();
+        }
+        console.error("Lỗi kết nối API status");
+        showToast("Không thể kiểm tra trạng thái, vui lòng thử lại!", "error");
+    }
+};
+</script>
+</body>
+</html>

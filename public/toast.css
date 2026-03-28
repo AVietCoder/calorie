@@ -1,0 +1,44 @@
+/* Container chứa các thông báo */
+#toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Giao diện từng thẻ thông báo */
+.toast-msg {
+    min-width: 280px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-main, #2d3436);
+    font-weight: 500;
+    border-left: 5px solid #ccc;
+    animation: slideIn 0.3s ease forwards;
+}
+
+/* Màu sắc cho từng loại thông báo */
+.toast-msg.success { border-left-color: #58A677; }
+.toast-msg.error { border-left-color: #ff7675; }
+.toast-msg.info { border-left-color: #74b9ff; }
+
+/* Hiệu ứng trượt vào từ bên phải */
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Hiệu ứng trượt ra khi biến mất */
+.toast-msg.fade-out {
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.4s ease;
+}
