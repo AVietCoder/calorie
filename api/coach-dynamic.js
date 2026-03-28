@@ -23,42 +23,105 @@ export default async function handler(req, res) {
         let currentPlan = profile.weekly_plan;
         const lastUpdated = profile.plan_updated_at ? new Date(profile.plan_updated_at) : null;
         const now = new Date();
-        const { message, isQueryOnly } = req.body; // Thêm nhận message từ body
-
-        // --- GIỮ NGUYÊN LOGIC CŨ: Kiểm tra tạo mới ---
+        const { message, isQueryOnly } = req.body; 
         const diffDays = lastUpdated ? (now - lastUpdated) / (1000 * 60 * 60 * 24) : 999;
         const isMonday = now.getDay() === 1; 
         const needsNewPlan = !currentPlan || diffDays >= 7 || (isMonday && diffDays >= 1);
 
         let aiReply = "";
 
-        // --- LOGIC MỚI: Xử lý khi có tin nhắn chat ---
        if (message && !isQueryOnly) {
-    console.log("--- Noah đang tương tác với HLV AI ---");
+    console.log("--- Người dùng đang tương tác với HLV AI ---");
     
     const chatPrompt = `
-        Bạn là HLV Dinh dưỡng AI thông minh và tâm lý. Noah vừa nhắn: "${message}"
-        Thông tin Noah: ${profile.weight}kg, Mục tiêu: ${profile.goal}, Calo mục tiêu/ngày: ${profile.target_calories || '1500-1800'} kcal.
-        Đây là thực đơn 7 ngày hiện tại: ${JSON.stringify(currentPlan)}
-        
-        NHIỆM VỤ CỦA BẠN (Xử lý theo 3 kịch bản):
-        
-        1. XÃ GIAO/HỎI ĐÁP: Nếu Noah chỉ chào hỏi hoặc hỏi kiến thức (ví dụ: "Ăn táo có tốt không?"), hãy trả lời thân thiện. "newPlan" giữ nguyên thực đơn cũ.
-        
-        2. BÁO CÁO ĂN UỐNG (BÙ TRỪ CALO): Nếu Noah báo vừa ăn gì đó ngoài kế hoạch (ví dụ: "Trưa nay lỡ ăn 1 cái pizza 1000kcal"):
-           - Hãy tính toán lượng calo dư thừa.
-           - Điều chỉnh các bữa tiếp theo (Tối hôm nay hoặc cả ngày mai) giảm calo lại, tăng rau xanh/protein để bù đắp nhưng vẫn đủ chất.
-        
-        3. THAY ĐỔI MÓN/LỐI SỐNG: Nếu Noah muốn đổi món (ví dụ: "Đổi trưa T3 thành bún chả"):
-           - Cập nhật món đó vào đúng ngày.
-           - QUAN TRỌNG: Tự động rà soát và điều chỉnh các món còn lại trong ngày hoặc các ngày sau đó để đảm bảo tổng Macro (Protein/Carb/Fat) cả tuần vẫn bám sát mục tiêu ${profile.focus_macro}.
+        Bạn là HLV Dinh dưỡng AI thông minh, thân thiện và am hiểu ẩm thực Việt Nam.
 
-        YÊU CẦU ĐỊNH DẠNG:
-        - Phản hồi "reply": Thân thiện, giải thích ngắn gọn lý do bạn điều chỉnh (ví dụ: "Vì trưa nay bạn ăn hơi nhiều tinh bột nên tối mình nhẹ nhàng lại với salad nhé").
-        - "newPlan": Luôn trả về ĐỦ 7 ngày (day 1-7) sau khi đã chỉnh sửa.
+        Người dùng vừa nhắn:
+        "${message}"
 
-        BẮT BUỘC trả về JSON: { "reply": "...", "newPlan": [...] }
-    `;
+        THÔNG TIN NGƯỜI DÙNG
+        - Cân nặng: ${profile.weight}kg
+        - Mục tiêu: ${profile.goal}
+        - Macro ưu tiên: ${profile.focus_macro}
+        - Calo mục tiêu/ngày: ${profile.target_calories || '1500-1800'} kcal
+
+        THỰC ĐƠN 7 NGÀY HIỆN TẠI
+        ${JSON.stringify(currentPlan)}
+
+        Người dùng thường ăn các món Việt như: cơm, phở, bún, hủ tiếu, cháo, cá, thịt gà, thịt heo, rau luộc, canh, trái cây, sữa chua... 
+        Khi thay đổi món hãy ưu tiên món phổ biến, dễ mua ở Việt Nam.
+
+        --------------------------------
+
+        NHIỆM VỤ CỦA BẠN
+
+        Xử lý theo 3 kịch bản:
+
+        XÃ GIAO / HỎI KIẾN THỨC  
+        Nếu người dùng chỉ chào hỏi hoặc hỏi kiến thức (ví dụ: "Ăn táo có tốt không?"):
+        - Trả lời thân thiện và dễ hiểu.
+        - Không thay đổi thực đơn.
+        - "newPlan" giữ nguyên thực đơn cũ.
+
+        BÁO CÁO ĂN UỐNG (BÙ TRỪ CALO)  
+        Nếu người dùng báo vừa ăn gì ngoài kế hoạch (ví dụ: "Trưa nay lỡ ăn pizza 1000kcal"):
+
+        - Ước lượng lượng calo đã ăn.
+        - So sánh với calo mục tiêu trong ngày.
+        - Nếu dư calo:
+        - Giảm calo các bữa còn lại trong ngày (ưu tiên giảm carb/fat).
+        - Tăng rau xanh, protein nạc.
+        - Có thể điều chỉnh nhẹ ngày hôm sau nếu cần.
+        - Không giảm calo quá mức gây thiếu dinh dưỡng.
+
+        THAY ĐỔI MÓN / LỐI SỐNG  
+        Nếu người dùng muốn đổi món (ví dụ: "Đổi trưa thứ 3 thành bún chả"):
+
+        - Cập nhật món đó vào đúng ngày và đúng bữa.
+        - Ước tính lại calories của món mới.
+        - Tự động điều chỉnh các bữa còn lại trong ngày để tổng calo gần với mục tiêu.
+        - Đảm bảo Macro (Protein / Carb / Fat) của cả tuần vẫn bám sát mục tiêu ${profile.focus_macro}.
+        - Ưu tiên món ăn Việt Nam đa dạng giữa các ngày.
+
+        --------------------------------
+
+        QUY TẮC ĐIỀU CHỈNH THỰC ĐƠN
+
+        - Mỗi ngày có 4 bữa: Sáng, Trưa, Tối, Phụ
+        - Thực đơn phải đủ 7 ngày (day 1 → day 7)
+        - Không làm mất ngày nào
+        - Không để thiếu bữa
+        - Hạn chế lặp lại món quá nhiều
+
+        --------------------------------
+
+        ĐỊNH DẠNG MỖI BỮA
+
+        {
+        "meal": "Sáng | Trưa | Tối | Phụ",
+        "food": "Tên món",
+        "amount": "khẩu phần",
+        "calories": số_calories
+        }
+
+        --------------------------------
+
+        PHẢN HỒI
+
+        - "reply": giải thích thân thiện, ngắn gọn tại sao bạn điều chỉnh
+        - "newPlan": luôn trả về đầy đủ thực đơn 7 ngày sau khi cập nhật
+
+        --------------------------------
+
+        BẮT BUỘC TRẢ VỀ JSON HỢP LỆ
+
+        {
+        "reply": "...",
+        "newPlan": [...]
+        }
+
+        Không viết thêm bất kỳ văn bản nào ngoài JSON.
+        `;
 
     const chatCompletion = await openai.chat.completions.create({
         model: "gpt-4o", 
@@ -69,10 +132,9 @@ export default async function handler(req, res) {
     const result = JSON.parse(chatCompletion.choices[0].message.content);
     aiReply = result.reply;
     
-    // Phòng thủ: Nếu AI trả về newPlan rỗng hoặc lỗi, giữ nguyên plan cũ
+    
     currentPlan = (result.newPlan && result.newPlan.length > 0) ? result.newPlan : currentPlan;
 
-    // Cập nhật lại vào Database
     await supabase.from('profiles').update({ 
         weekly_plan: currentPlan,
         plan_updated_at: now 
@@ -80,11 +142,18 @@ export default async function handler(req, res) {
 }
         else if (needsNewPlan) {
             console.log("--- Đang khởi tạo lộ trình 7 ngày mới ---");
-            const aiPrompt = `Bạn là chuyên gia dinh dưỡng. Tạo thực đơn 7 ngày (Thứ 2 đến Chủ Nhật) cho Noah:
+            const aiPrompt = `Bạn là chuyên gia dinh dưỡng và am hiểu ẩm thực Việt Nam. 
+Hãy tạo thực đơn 7 ngày (Thứ 2 đến Chủ Nhật) cho người dùng:
             - Cân nặng: ${profile.weight}kg, Mục tiêu: ${profile.goal}
             - Macro ưu tiên: ${profile.focus_macro}, Vận động: ${profile.activity_level}
             
-            YÊU CẦU: Trả về JSON mảng 7 ngày. Mỗi ngày có 4 bữa: Sáng, Trưa, Tối, Phụ.
+            YÊU CẦU:
+            - Ưu tiên các món ăn phổ biến của người Việt Nam.
+            - Thực đơn đa dạng giữa các ngày (không lặp lại món quá nhiều).
+            - Có sự cân bằng dinh dưỡng phù hợp với mục tiêu (giảm cân / tăng cơ / duy trì).
+            - Bao gồm món ăn quen thuộc như: cơm, bún, phở, hủ tiếu, canh, cá, thịt, trứng, đậu, rau xanh, trái cây,...
+            - Có thể kết hợp món hiện đại lành mạnh (salad, yến mạch, sữa chua, sinh tố).
+            Trả về JSON mảng 7 ngày. Mỗi ngày có 4 bữa: Sáng, Trưa, Tối, Phụ.
             Định dạng: 
             [
               {
@@ -109,10 +178,9 @@ export default async function handler(req, res) {
 
             await supabase.from('profiles').update({ weekly_plan: currentPlan, plan_updated_at: now }).eq('id', user.id);
         } else {
-            aiReply = "Lộ trình tuần này của Noah vẫn đang được áp dụng rất tốt!";
+            aiReply = "Lộ trình tuần này của người dùng vẫn đang được áp dụng rất tốt!";
         }
 
-        // BIẾN ĐỔI: Phẳng hóa để Frontend render (Giữ nguyên như cũ)
         const formattedPlan = currentPlan.flatMap(dEntry => 
             dEntry.meals.map(m => ({ ...m, day: dEntry.day }))
         );
