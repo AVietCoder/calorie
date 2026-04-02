@@ -667,39 +667,9 @@ function updateSidebar(jsonText) {
 document.getElementById('user-input').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendMessage();
 });
-document.querySelector('.nav-item:nth-child(2)').onclick = async function() {
-    const token = localStorage.getItem('calorie_ai_token');
-    
-    const mainWrapper = document.querySelector('.chat-section'); 
-    const loader = document.createElement('div');
-    loader.className = 'loading-overlay';
-    loader.id = 'status-loader';
-    loader.innerHTML = '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
-    
-    if (mainWrapper) mainWrapper.appendChild(loader);
+document.querySelector('.nav-item:nth-child(2)').onclick = () => window.location.href = 'diet-details.html';
+document.querySelector('.nav-item:nth-child(3)').onclick = () => window.location.href = 'schedule.html';
 
-    try {
-        const res = await fetch('/api/status', {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-
-        if (data.is_setup_completed) {
-            window.location.href = 'diet-details.html';
-        } else {
-            setTimeout(() => {
-                window.location.href = 'setup.html';
-            }, 0);
-        }
-    } catch (err) {
-        if (document.getElementById('status-loader')) {
-            document.getElementById('status-loader').remove();
-        }
-        console.error("Lỗi kết nối API status");
-        showToast("Không thể kiểm tra trạng thái, vui lòng thử lại!", "error");
-    }
-};
 </script>
 </body>
 </html>

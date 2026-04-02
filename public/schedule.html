@@ -9,15 +9,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="toast.css">
     <link rel="stylesheet" href="both.css">
-
 </head>
 <body>
     <div id="toast-container"></div>
     
     <aside class="side-nav">
         <div class="nav-item" id="nav-home"><i class="fa-solid fa-house"></i><span>HOME</span></div>
-        <div class="nav-item active" id="nav-diet"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
-        <div class="nav-item" id="nav-plan"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
+        <div class="nav-item" id="nav-diet"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
+        <div class="nav-item active" id="nav-plan"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
         <div class="nav-item" id="nav-profile"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
     </aside>
     <div class="main-wrapper">
@@ -35,64 +34,9 @@
         </div>
     </div>
         </header>
- <div class="diet-tabs" style="display: flex; gap: 10px; margin: 36px;    margin-bottom: 0;">
-            <button class="tab-btn active" id="btn-overview">
-                <i class="fa-solid fa-chart-pie"></i> Tổng quan
-            </button>
-            <button class="tab-btn" onclick="location.href='setup.html'">
-                <i class="fa-solid fa-gears"></i> Thiết lập
-            </button>
-        </div>
        <main class="content" id="main-content">
-    <div class="roadmap-container">
-       
 
-        <div id="overview-content">
-            <div class="main-card">
-                <div class="target-label">Mục tiêu nạp mỗi ngày</div>
-                <div class="target-value" id="display-calories">-- <span class="target-unit">kcal</span></div>
-                <div style="display: flex; gap: 20px; font-size: 0.9rem;">
-                    <span id="display-bmr"><i class="fa-solid fa-bolt"></i> BMR: --</span>
-                    <span id="display-tdee"><i class="fa-solid fa-fire"></i> TDEE: --</span>
-                </div>
-            </div>
-
-            <div class="stats-grid">
-                <div class="stat-box">
-                    <i class="fa-solid fa-weight-scale"></i>
-                    <div class="stat-label">Cân nặng hiện tại</div>
-                    <div class="stat-value" id="display-weight">-- kg</div>
-                </div>
-                <div class="stat-box">
-                    <i class="fa-solid fa-bullseye"></i>
-                    <div class="stat-label">Mục tiêu hướng đến</div>
-                    <div class="stat-value" id="display-target" style="color: var(--primary);">-- kg</div>
-                </div>
-                <div class="stat-box">
-                    <i class="fa-solid fa-calendar-day"></i>
-                    <div class="stat-label">Thời hạn (Deadline)</div>
-                    <div class="stat-value" id="display-deadline">--/--/--</div>
-                </div>
-            </div>
-
-            <div class="card" style="margin-top: 25px;">
-                <h3>Tỷ lệ dinh dưỡng (Macros)</h3>
-                <div class="macro-item">
-                    <div class="macro-info"><span>Protein (Đạm)</span><span id="p-val">--g</span></div>
-                    <div class="macro-bar"><div id="p-bar" class="macro-fill" style="width: 0%; background: #e74c3c;"></div></div>
-                </div>
-                <div class="macro-item">
-                    <div class="macro-info"><span>Carbs (Tinh bột)</span><span id="c-val">--g</span></div>
-                    <div class="macro-bar"><div id="c-bar" class="macro-fill" style="width: 0%; background: #f1c40f;"></div></div>
-                </div>
-                <div class="macro-item">
-                    <div class="macro-info"><span>Fats (Chất béo)</span><span id="f-val">--g</span></div>
-                    <div class="macro-bar"><div id="f-bar" class="macro-fill" style="width: 0%; background: #3498db;"></div></div>
-                </div>
-            </div>
-        </div>
-
-     <div id="ai-menu-container" style="display: none;">
+     <div id="ai-menu-container">
     <div class="card chat-section">
         <div class="chat-header">
             <h3 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 10px;">
@@ -159,6 +103,53 @@
 
     <script src="toast.js"></script>
     <script>
+   async function sendMessage() {
+    const input = document.getElementById('user-input');
+    const history = document.getElementById('chat-history');
+    const typingIndicator = document.getElementById('typing-indicator');
+    const message = input.value.trim();
+    if (!message) return;
+    const userHtml = `<div class="user-msg">${message}</div>`;
+    history.insertAdjacentHTML('beforeend', userHtml);
+    input.value = '';
+    scrollToBottom();
+
+    typingIndicator.style.display = 'block';
+    scrollToBottom();
+
+    try {
+        const token = localStorage.getItem('calorie_ai_token'); 
+        
+        const response = await fetch('/api/coach-dynamic', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ message: message }) 
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const aiHtml = `<div class="ai-msg">${data.reply}</div>`;
+            history.insertAdjacentHTML('beforeend', aiHtml);
+            
+            if (data.newPlan) {
+                updateRemainingTimetable(data.newPlan);
+            }
+        } else {
+            const errorHtml = `<div class="ai-msg" style="color: #ef4444;">Rất tiếc, mình gặp lỗi khi xử lý yêu cầu. Bạn thử lại nhé!</div>`;
+            history.insertAdjacentHTML('beforeend', errorHtml);
+        }
+    } catch (error) {
+        console.error("Lỗi Chat AI:", error);
+    } finally {
+        typingIndicator.style.display = 'none';
+        scrollToBottom();
+    }
+}
+
 function scrollToBottom() {
     const history = document.getElementById('chat-history');
     history.scrollTo({
@@ -166,7 +157,31 @@ function scrollToBottom() {
         behavior: 'smooth'
     });
 }
+function updateRemainingTimetable(newPlan) {
+    if (!newPlan) return;
 
+    const mealIdMap = {
+        "Sáng": "morning",
+        "Trưa": "lunch",
+        "Tối": "evening",
+        "Phụ": "snack"
+    };
+
+    newPlan.forEach(item => {
+        const cellId = `d${item.day}-${mealIdMap[item.meal]}`; 
+        const cell = document.getElementById(cellId);
+        
+        if (cell) {
+            cell.style.border = "1.5px solid var(--primary-green)";
+            cell.style.background = "linear-gradient(to bottom, #ffffff, #f0fdf4)";
+            cell.innerHTML = `
+                <div style="font-weight: 700; color: var(--dark-green); font-size: 0.82rem;">${item.food}</div>
+                <div style="font-size: 0.65rem; color: var(--text-sub);">${item.amount}</div>
+                <div style="margin-top: 4px; font-weight: 800; color: var(--primary-green); font-size: 0.75rem;">${item.calories} kcal</div>
+            `;
+        }
+    });
+}
 function updateProgress(startWeight, currentWeight, targetWeight) {
     const displayPercent = document.getElementById('display-percent');
     const displayStart = document.getElementById('display-start');
@@ -185,9 +200,7 @@ function updateProgress(startWeight, currentWeight, targetWeight) {
     displayRemain.innerText = remain > 0 ? `Còn lại: ${remain}kg` : `Đã đạt mục tiêu!`;
 }
 
-
-
-async function loadDietData() 
+async function loadAIMenu() 
 {
     const token = localStorage.getItem('calorie_ai_token');
     if (!token) 
@@ -196,7 +209,9 @@ async function loadDietData()
         return;
     }
 
+    const responseArea = document.getElementById('ai-response-text'); 
     const roadmapContainer = document.querySelector('.content');
+
     const loader = document.createElement('div');
     loader.className = 'loading-overlay';
     loader.id = 'main-loader';
@@ -204,51 +219,50 @@ async function loadDietData()
     roadmapContainer.appendChild(loader);
 
     try {
-        const statusRes = await fetch('/api/status', {
+        const statusRes = await fetch('/api/status', 
+        {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const statusData = await statusRes.json();
+
         if (!statusData.is_setup_completed) 
         {
             window.location.href = 'setup.html';
             return; 
         }
 
-        const res = await fetch('/api/diet-info', {
-            headers: { 'Authorization': `Bearer ${token}` }
+        const res = await fetch('/api/coach-dynamic', {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ isQueryOnly: true }) 
         });
+        
         const result = await res.json();
-
+        
         if (result.success) {
-            const d = result.data;
-            
-            document.getElementById('display-calories').innerHTML = `${d.calories.toLocaleString()} <span class="target-unit">kcal</span>`;
-            document.getElementById('display-weight').innerText = `${d.profile.weight} kg`;
-            document.getElementById('display-target').innerText = `${d.profile.target_weight} kg`;
-            document.getElementById('display-deadline').innerText = d.profile.deadline;
-            document.getElementById('display-bmr').innerHTML = `<i class="fa-solid fa-bolt"></i> BMR: ${d.bmr}`;
-            document.getElementById('display-tdee').innerHTML = `<i class="fa-solid fa-fire"></i> TDEE: ${d.tdee}`;
-            
-            document.getElementById('p-val').innerText = `${d.macros.protein}g`;
-            document.getElementById('c-val').innerText = `${d.macros.carbs}g`;
-            document.getElementById('f-val').innerText = `${d.macros.fat}g`;
-            
-            const pPercent = (d.macros.protein * 4 / d.calories * 100).toFixed(0);
-            const cPercent = (d.macros.carbs * 4 / d.calories * 100).toFixed(0);
-            const fPercent = (d.macros.fat * 9 / d.calories * 100).toFixed(0);
-            
-            document.getElementById('p-bar').style.width = pPercent + '%';
-            document.getElementById('c-bar').style.width = cPercent + '%';
-            document.getElementById('f-bar').style.width = fPercent + '%';
+            responseArea.innerHTML = `
+                <div class="ai-reply-text" style="line-height:1.6; color:var(--text-main); padding: 15px; background: #f0fdf4; border-radius: 12px; border-left: 4px solid var(--primary-green); margin-bottom: 20px;">
+                    <i class="fa-solid fa-quote-left" style="opacity:0.3"></i> ${result.reply}
+                </div>`;
 
-            if (typeof updateProgress === 'function') {
-                updateProgress(d.profile.start_weight, d.profile.weight, d.profile.target_weight);
+            if (result.newPlan && result.newPlan.length > 0) {
+                if (typeof updateRemainingTimetable === 'function') {
+                    updateRemainingTimetable(result.newPlan);
+                }
+                showToast("Đã cập nhật thực đơn mới từ AI!", "success");
             }
+        } else {
+            showToast(result.message || "Không thể lấy thực đơn", "warning");
         }
+
     } catch (err) {
-        console.error("Lỗi:", err);
-        showToast("Không thể tải dữ liệu lộ trình", "error");
+        console.error("Lỗi kết nối HLV AI:", err);
+        showToast("Lỗi kết nối HLV AI", "error");
+        responseArea.innerHTML = '<p style="color: #e74c3c; font-size: 0.9rem; text-align: center;">Không thể kết nối với HLV AI. Vui lòng thử lại sau.</p>';
     } finally {
         const loaderObj = document.getElementById('main-loader');
         if (loaderObj) {
@@ -257,39 +271,46 @@ async function loadDietData()
     }
 }
 
+function showLongAnalysisToast(message, duration) {
+    const oldToast = document.querySelector('.long-analysis-toast');
+    if (oldToast) oldToast.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'toast long-analysis-toast';
+    toast.innerHTML = `
+        <div class="toast-content">
+            <i class="fa-solid fa-microchip fa-spin"></i>
+            <div class="toast-text">
+                <span class="toast-title">Đang phân tích sâu...</span>
+                <p>${message}</p>
+                <div class="toast-progress-bar"><div class="progress-fill"></div></div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('toast-container').appendChild(toast);
+    
+    const fill = toast.querySelector('.progress-fill');
+    setTimeout(() => {
+        fill.style.transition = `width ${duration}ms linear`;
+        fill.style.width = '100%';
+    }, 100);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 500);
+    }, duration);
+}
+
 function handleLogout() {
     localStorage.removeItem('calorie_ai_token');
     showToast("Đang đăng xuất...", "info");
     setTimeout(() => window.location.href = "signin.html", 1000);
 }
-
-async function checkUserStatusAndLoad() {
-    const token = localStorage.getItem('calorie_ai_token');
-    if (!token) {
-        window.location.href = 'signin.html';
-        return;
-    }
-
-    try {
-        const statusRes = await fetch('/api/status', {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const statusData = await statusRes.json();
-
-        if (!statusData.is_setup_completed) {
-            window.location.href = 'setup.html';
-            return;
-        }
-        await loadDietData(token);
-
-    } catch (err) {
-        console.error("Lỗi kiểm tra trạng thái:", err);
-        if (typeof showToast === 'function') showToast("Lỗi kết nối hệ thống", "error");
-    }
-}
-window.onload = loadDietData;
+window.onload = loadAIMenu;
 document.getElementById('nav-home').onclick = () => window.location.href = 'chat.html';
-document.getElementById('nav-plan').onclick = () => window.location.href = 'schedule.html';</script>
+document.getElementById('nav-diet').onclick = () => window.location.href = 'diet-details.html';
+
+</script>
 </body>
 </html>
