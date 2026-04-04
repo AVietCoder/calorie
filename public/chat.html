@@ -366,7 +366,7 @@
         <div class="input-wrapper">
             <div class="input-tools" onclick="document.getElementById('file-upload').click()">
                 <i class="fa-solid fa-circle-plus"></i>
-                <input type="file" id="file-upload" style="display: none;" accept="image/*" onchange="handleFileSelect()">
+               <input type="file" id="file-upload" accept=".jpg,.jpeg" onchange="handleFileSelect()">
             </div>
             
             <input id="user-input" type="text" placeholder="Hỏi tôi liên quan về dinh dưỡng..." class="chat-input">
@@ -500,12 +500,20 @@ function toggleInputState(disabled, placeholder = "Hỏi tôi liên quan về di
     input.placeholder = placeholder;
 }
 
-
 async function handleFileSelect() {
     const file = document.getElementById('file-upload').files[0];
     const input = document.getElementById('user-input');
     
     if (file) {
+
+        if (!file.name.toLowerCase().endsWith(".jpg") && 
+            !file.name.toLowerCase().endsWith(".jpeg")) {
+            
+            showToast("Chỉ được upload ảnh JPG!", "error");
+            document.getElementById('file-upload').value = "";
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = function(e) {
             const base64Data = e.target.result;
@@ -532,7 +540,11 @@ async function sendMessage() {
     const file = fileInput.files[0];
     flag = false
     if (!text && !file) return;
-
+    if (file && !file.name.toLowerCase().endsWith(".jpg") && 
+        !file.name.toLowerCase().endsWith(".jpeg")) {
+        showToast("Chỉ được gửi ảnh JPG!", "error");
+        return;
+    }
     let currentFileBase64 = null;
     if (file) {
         currentFileBase64 = await new Promise(resolve => {
