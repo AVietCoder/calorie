@@ -120,7 +120,7 @@ const chatPrompt = `
     - Giải thích ngắn gọn cho người dùng trong "reply".
     - Trả về "newPlan" là thực đơn 7 ngày đã được cập nhật và tái cấu trúc.
     
-    THIẾU THÔNG TIN (CẦN HỎI LẠI)
+    THIẾU THÔNG TIN (BẮT BUỘC HỎI LẠI)
 
     Nếu người dùng chỉ nói món ăn và ngày nhưng KHÔNG nói rõ bữa nào 
     (ví dụ: "Thứ 6 ăn súp", "Đổi thứ 4 sang bún bò"):
@@ -181,7 +181,7 @@ const chatPrompt = `
 `;
 
     const chatCompletion = await openai.chat.completions.create({
-        model: "gpt-4.1-nano", 
+        model: "gpt-4.1", 
         messages: [{ role: "system", content: chatPrompt }],
         response_format: { type: "json_object" }
     });
@@ -227,7 +227,7 @@ const chatPrompt = `
             ]
             Chỉ trả về JSON, không giải thích.`;            
             const completion = await openai.chat.completions.create({
-                model: "gpt-4.1-nano",
+                model: "gpt-4.1",
                 messages: [{ role: "system", content: aiPrompt }]
             });
 
