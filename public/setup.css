@@ -62,7 +62,7 @@ h2 { font-size: 1.5rem; margin-bottom: 10px; }
 
 /* Form Styling */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.input-group { display: flex; flex-direction: column; gap: 8px; }
+.input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
 .input-group.full { grid-column: span 2; }
 
 label { font-weight: 600; font-size: 0.9rem; color: #444; }

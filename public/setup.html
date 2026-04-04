@@ -261,9 +261,31 @@ function hideLoader() {
 const loader = document.getElementById('setup-loader');
 if (loader) loader.remove();
 }
-async function loadCurrentData() {
+async function loadCurrentData() 
+{
 const token = localStorage.getItem('calorie_ai_token');
 if (!token) return;
+    try {
+        const res = await fetch("/api/chat-history", {
+            method: "GET",
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (res.ok == false)
+        {
+            showToast("Vui lòng đăng nhập!", "info");
+            setTimeout(() => {
+                window.location.href = "signin.html";
+            }, 1369); 
+            return;
+        }
+    } catch (e) {
+        console.error(e)
+        showToast("Vui lòng đăng nhập!", "info");
+        setTimeout(() => {
+            window.location.href = "signin.html";
+        }, 1369);   
+    }
 showLoader();
 try {
     const res = await fetch('/api/diet-info', {
