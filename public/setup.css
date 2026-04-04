@@ -38,6 +38,7 @@ body {
 /* --- Layout Content cho Form Setup --- */
 .content {
     flex: 1;  overflow-y: auto;
+    flex-direction: unset;
     display: flex; justify-content: center; /* Căn giữa card setup */
 }
 

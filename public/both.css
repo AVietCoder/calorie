@@ -98,29 +98,6 @@
             content: '\f44b'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
             position: absolute; right: -20px; bottom: -20px; font-size: 150px; opacity: 0.1;
         }
-.diet-tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-.tab-btn {
-    flex: 1;
-    padding: 12px;
-    border-radius: 14px;
-    border: 1.5px solid #eee;
-    background: white;
-    color: var(--text-sub);
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.tab-btn.active {
-    background: var(--primary-green);
-    color: white;
-    border-color: var(--primary-green);
-    box-shadow: 0 4px 12px rgba(88, 166, 119, 0.2);
-}
 .timetable-grid {
     display: grid;
     grid-template-columns: 60px repeat(7, 1fr);

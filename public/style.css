@@ -1,7 +1,7 @@
 :root {
     --primary-green: #58A677;
     --dark-green: #3D7353;
-    --bg-light: #F4F7F4;
+    --bg-light: #F0FDF4;
     --text-dark: #2D3436;
     --text-gray: #636E72;
     --white: #ffffff;
@@ -154,21 +154,24 @@ p {
 .hero-visual img {
     width: 85%;
     border-radius: 30px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    height: 300px;
+    object-fit: cover;
 }
 
 .floating-card {
     position: absolute;
-    top: 20%;
-    left: 0;
+    top: -10%;
+    left: 7%;
     background: white;
-    padding: 15px 25px;
+    padding: 10px 15px;
     border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
     gap: 12px;
     font-weight: 700;
+    font-size: 60px;
     color: var(--primary-green);
     animation: floating 3s ease-in-out infinite;
 }
@@ -242,10 +245,7 @@ footer {
 }
 
 @media (max-width: 768px) {
-    .navbar {
-        flex-direction: column; /* Logo trên, nút dưới */
-        gap: 15px;
-    }
+
 
     .nav-link {
         display: none; /* Ẩn các link phụ trên mobile để gọn */

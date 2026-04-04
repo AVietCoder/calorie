@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="toast.css">
+    <link rel="stylesheet" href="both.css">
     <link rel="stylesheet" href="setup.css">
 </head>
 <body>
@@ -15,9 +16,9 @@
 
     <aside class="side-nav">
         <div class="nav-item"><i class="fa-solid fa-house"></i><span>HOME</span></div>
-        <div class="nav-item active"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
+        <div class="nav-item"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
         <div class="nav-item"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
-        <div class="nav-item"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
+        <div class="nav-item active"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
     </aside>
 
     <div class="main-wrapper">
@@ -32,14 +33,6 @@
                 </div>
             </div>
         </header>
-<div class="diet-tabs" style="display: flex; gap: 10px; margin: 36px;    margin-bottom: 0;">
-            <button class="tab-btn" id="btn-overview" onclick="location.href='diet-details.html'">
-                <i class="fa-solid fa-chart-pie"></i> Tổng quan
-            </button>
-            <button class="tab-btn active" onclick="location.href='setup.html'">
-                <i class="fa-solid fa-gears"></i> Thiết lập
-            </button>
-        </div>
         <main class="content">
            
             <div class="setup-card">
@@ -159,10 +152,9 @@
 
     <script src="toast.js"></script>
     <script>
-        document.querySelector('.nav-item:nth-child(1)').onclick = function() {
-            window.location.href = 'chat.html'; 
-        };
-
+        document.querySelector('.nav-item:nth-child(1)').onclick = () => window.location.href = 'chat.html';
+        document.querySelector('.nav-item:nth-child(2)').onclick = () => window.location.href = 'diet-details.html';
+        document.querySelector('.nav-item:nth-child(3)').onclick = () => window.location.href = 'schedule.html';
         function handleLogout() {
             localStorage.removeItem('calorie_ai_token');
             window.location.href = "signin.html";
@@ -327,6 +319,7 @@ const fieldMap = {
 }
 }document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('calorie_ai_token');
+    console.log(token)
     if (!token) {
         showToast("Vui lòng đăng nhập!", "info");
         setTimeout(() => {

@@ -380,7 +380,7 @@
     <aside class="info-sidebar">
         <div class="card card-food">
             <div class="food-img-container">
-                <img id="display-food-img" src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600" alt="Food">
+                <img id="display-food-img" src="https://i.pinimg.com/736x/9d/51/c3/9d51c32cccb77dcf89cc2fb11aa20a17.jpg" alt="Food">
             </div>
 
             <div class="calories-box">
@@ -422,7 +422,8 @@ function handleLogout() {
 }
 document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('calorie_ai_token');
-    if (!token) {
+    if (!token) 
+    {
         showToast("Vui lòng đăng nhập!", "info");
         setTimeout(() => {
             window.location.href = "signin.html";
@@ -594,10 +595,12 @@ if (result.reply) {
         fileInput.value = "";
     }
 }
-function renderMessage(role, text) {
+function renderMessage(role, text) 
+{
     const chatWindow = document.getElementById('chat-window');
+    if (!chatWindow) return;
+
     const msgDiv = document.createElement('div');
-    
     msgDiv.className = 'card';
     msgDiv.style.marginBottom = '20px';
     msgDiv.style.whiteSpace = 'pre-line';
@@ -607,10 +610,12 @@ function renderMessage(role, text) {
         msgDiv.style.borderBottomRightRadius = '4px';
     } else {
         msgDiv.style.borderBottomLeftRadius = '4px';
+        msgDiv.style.backgroundColor = '#FFFFFF';
     }
     
     let displayContent = text;
 
+    displayContent = displayContent.replace(/<message>[\s\S]*?<\/message>/g, ''); 
     displayContent = displayContent.replace(/<data>[\s\S]*?<\/data>/g, '');
     displayContent = displayContent.replace(/<image>[\s\S]*?<\/image>/g, '');
     displayContent = displayContent.replace(/<error>[\s\S]*?<\/error>/g, '');
@@ -625,19 +630,17 @@ function renderMessage(role, text) {
         const prefix = parts[0].trim();
         const suffix = parts[1].trim();
         
-        if (prefix === suffix || suffix === "") {
-            displayContent = prefix;
-        } else {
-            displayContent = suffix;
-        }
+        displayContent = (prefix === suffix || suffix === "") ? prefix : suffix;
     }
 
     displayContent = displayContent.replace(/\n{3,}/g, '\n\n').trim();
-    msgDiv.innerText = displayContent || "Đang phân tích ảnh...";
+    msgDiv.innerText = displayContent || "Đang phân tích dữ liệu...";
     
     chatWindow.appendChild(msgDiv);
     chatWindow.scrollTop = chatWindow.scrollHeight;
-}function showTypingIndicator() {
+}
+
+function showTypingIndicator() {
     const chatWindow = document.getElementById('chat-window');
     const typingDiv = document.createElement('div');
     typingDiv.id = 'typing-indicator-box';
@@ -669,6 +672,7 @@ document.getElementById('user-input').addEventListener('keypress', (e) => {
 });
 document.querySelector('.nav-item:nth-child(2)').onclick = () => window.location.href = 'diet-details.html';
 document.querySelector('.nav-item:nth-child(3)').onclick = () => window.location.href = 'schedule.html';
+document.querySelector('.nav-item:nth-child(4)').onclick = () => window.location.href = 'setup.html';
 
 </script>
 </body>

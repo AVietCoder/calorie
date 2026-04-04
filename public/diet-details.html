@@ -35,14 +35,7 @@
         </div>
     </div>
         </header>
- <div class="diet-tabs" style="display: flex; gap: 10px; margin: 36px;    margin-bottom: 0;">
-            <button class="tab-btn active" id="btn-overview">
-                <i class="fa-solid fa-chart-pie"></i> Tổng quan
-            </button>
-            <button class="tab-btn" onclick="location.href='setup.html'">
-                <i class="fa-solid fa-gears"></i> Thiết lập
-            </button>
-        </div>
+ 
        <main class="content" id="main-content">
     <div class="roadmap-container">
        
@@ -265,7 +258,8 @@ function handleLogout() {
 
 async function checkUserStatusAndLoad() {
     const token = localStorage.getItem('calorie_ai_token');
-    if (!token) {
+    if (!token) 
+    {
         window.location.href = 'signin.html';
         return;
     }
@@ -290,6 +284,8 @@ async function checkUserStatusAndLoad() {
 }
 window.onload = loadDietData;
 document.getElementById('nav-home').onclick = () => window.location.href = 'chat.html';
-document.getElementById('nav-plan').onclick = () => window.location.href = 'schedule.html';</script>
+document.getElementById('nav-plan').onclick = () => window.location.href = 'schedule.html';
+document.getElementById('nav-profile').onclick = () => window.location.href = 'setup.html';
+</script>
 </body>
 </html>
