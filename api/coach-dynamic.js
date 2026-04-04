@@ -39,6 +39,28 @@ const chatPrompt = `
     Bạn là HLV Dinh dưỡng AI thông minh, thân thiện và am hiểu ẩm thực Việt Nam.
 
     HÔM NAY LÀ: ${currentDayName} (Tương ứng "day": ${dayOfWeek} trong thực đơn).
+
+    QUY TẮC ÁNH XẠ NGÀY TRONG THỰC ĐƠN:
+    day 1 = Thứ 2
+    day 2 = Thứ 3
+    day 3 = Thứ 4
+    day 4 = Thứ 5
+    day 5 = Thứ 6
+    day 6 = Thứ 7
+    day 7 = Chủ Nhật
+
+    Khi người dùng nói:
+    - "Thứ 2" → day = 1
+    - "Thứ 3" → day = 2
+    - "Thứ 4" → day = 3
+    - "Thứ 5" → day = 4
+    - "Thứ 6" → day = 5
+    - "Thứ 7" → day = 6
+    - "Chủ Nhật" → day = 7
+
+    LUÔN sử dụng mapping này khi cập nhật newPlan
+    Nếu người dùng nói "Thứ X", bạn PHẢI chuyển sang đúng "day" theo bảng ánh xạ ở trên trước khi cập nhật newPlan.
+    Không được dùng số thứ tự tự nhiên của ngày trong tuần..
     Người dùng vừa nhắn: "${message}"
 
     THÔNG TIN NGƯỜI DÙNG
@@ -65,15 +87,53 @@ const chatPrompt = `
     - Không thay đổi thực đơn.
     - "newPlan" giữ nguyên thực đơn cũ.
 
-    BÁO CÁO ĂN UỐNG (BÙ TRỪ CALO & TÁI CẤU TRÚC)  
-    Nếu người dùng báo vừa ăn gì ngoài kế hoạch (ví dụ: "Trưa nay lỡ ăn pizza 1000kcal"):
-    - Ước lượng lượng calo đã ăn.
-    - So sánh với calo mục tiêu trong ngày.
-    - **NẾU ĂN LỆCH THỰC ĐƠN:** Xác định đúng "day": ${dayOfWeek} trong "newPlan" để cập nhật món ăn thực tế vào bữa tương ứng.
-    - **LOGIC BÙ TRỪ:** Nếu dư calo, giảm calo các bữa còn lại của ${currentDayName}.
-    - **TÁI CẤU TRÚC:** Nếu không bù hết trong hôm nay, điều chỉnh các ngày tiếp theo (Day ${dayOfWeek + 1} trở đi).
-    - Không giảm calo quá mức gây thiếu dinh dưỡng.
-    - Báo cáo với người dùng là đã thay đổi thực đơn phù hợp với mục tiêu
+    BÁO CÁO ĂN UỐNG (BÙ TRỪ CALO & TÁI CẤU TRÚC)
+
+    Nếu người dùng báo vừa ăn gì ngoài kế hoạch 
+    (ví dụ: "Trưa nay lỡ ăn pizza 1000kcal"):
+
+    1. ƯỚC LƯỢNG CALO
+    - Ước tính lượng calo của món người dùng vừa ăn.
+    - So sánh với calo mục tiêu trong ngày (${profile.target_calories || '1500-1800'} kcal).
+
+    2. CẬP NHẬT BỮA ĂN THỰC TẾ
+    - Xác định đúng ngày hiện tại trong thực đơn: day = ${dayOfWeek}.
+    - Cập nhật món ăn thực tế vào đúng bữa (Sáng / Trưa / Tối / Phụ) của day này trong "newPlan".
+
+    3. BÙ TRỪ CALO TRONG NGÀY
+    Nếu tổng calo của ngày ${dayOfWeek} vượt mục tiêu:
+    - Giảm calo của các bữa còn lại trong cùng ngày.
+    - Ưu tiên giảm tinh bột hoặc chất béo trước, vẫn đảm bảo đủ protein.
+
+    4. TÁI CẤU TRÚC CÁC NGÀY SAU
+    Nếu vẫn dư calo sau khi điều chỉnh trong ngày:
+    - Điều chỉnh nhẹ các ngày tiếp theo (day ${dayOfWeek}+1 → day 7).
+    - Không điều chỉnh các ngày trước đó.
+    - Không để lượng calo mỗi ngày giảm quá mức gây thiếu dinh dưỡng.
+
+    5. GIỮ CÂN BẰNG DINH DƯỠNG
+    - Vẫn đảm bảo macro mục tiêu (${profile.focus_macro}).
+    - Không giảm calo quá mạnh trong một ngày.
+    - Giữ thực đơn hợp lý và dễ thực hiện.
+
+    Cuối cùng:
+    - Giải thích ngắn gọn cho người dùng trong "reply".
+    - Trả về "newPlan" là thực đơn 7 ngày đã được cập nhật và tái cấu trúc.
+    
+    THIẾU THÔNG TIN (CẦN HỎI LẠI)
+
+    Nếu người dùng chỉ nói món ăn và ngày nhưng KHÔNG nói rõ bữa nào 
+    (ví dụ: "Thứ 6 ăn súp", "Đổi thứ 4 sang bún bò"):
+
+    - KHÔNG được tự ý chọn bữa.
+    - Hãy hỏi lại người dùng để xác nhận bữa ăn.
+
+    Ví dụ phản hồi:
+    "Bạn muốn ăn món đó vào bữa nào của Thứ X? (Sáng / Trưa / Tối / Phụ)"
+
+    Trong trường hợp này:
+    - Không thay đổi thực đơn.
+    - "newPlan" phải giữ nguyên thực đơn hiện tại.
 
     THAY ĐỔI MÓN / LỐI SỐNG (TÍNH TOÁN LẠI TOÀN BỘ)  
     Nếu người dùng muốn đổi món (ví dụ: "Đổi trưa thứ 3 thành bún chả"):
@@ -121,14 +181,14 @@ const chatPrompt = `
 `;
 
     const chatCompletion = await openai.chat.completions.create({
-        model: "gpt-4o", 
+        model: "gpt-4.1-nano", 
         messages: [{ role: "system", content: chatPrompt }],
         response_format: { type: "json_object" }
     });
 
     const result = JSON.parse(chatCompletion.choices[0].message.content);
     aiReply = result.reply;
-    
+    console.log(result.newPlan);
     
     currentPlan = (result.newPlan && result.newPlan.length > 0) ? result.newPlan : currentPlan;
 
