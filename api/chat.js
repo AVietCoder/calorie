@@ -45,6 +45,33 @@ const safeJsonParse = (text) => {
   }
 };
 
+const MEAL_TIME_REGEX = /\b(sáng|trưa|chiều|tối|bữa phụ|bua phu|ăn lúc|lúc nào|mấy giờ)\b/i;
+
+const FOLLOW_UP_MEAL_TIME_QUESTION =
+  "Bạn có thể cho tôi biết bạn ăn vào sáng, trưa, tối hay bữa phụ không?";
+
+const shouldAskMealTime = (message = "") => {
+  return !MEAL_TIME_REGEX.test(String(message || ""));
+};
+
+const appendMealTimeFollowUp = (reply, message) => {
+  const text = String(reply || "").trim();
+  if (!text) return FOLLOW_UP_MEAL_TIME_QUESTION;
+
+  if (!shouldAskMealTime(message)) return text;
+
+  const lower = text.toLowerCase();
+  const alreadyAsked =
+    lower.includes("sáng, trưa, tối hay bữa phụ") ||
+    lower.includes("bạn có thể cho tôi biết bạn ăn vào") ||
+    lower.includes("bữa phụ không") ||
+    lower.includes("ăn vào lúc nào");
+
+  if (alreadyAsked) return text;
+
+  return `${text}\n\n${FOLLOW_UP_MEAL_TIME_QUESTION}`;
+};
+
 const buildCoachPrompt = ({ profile, currentPlan, currentDayName, dayOfWeek, message, isQueryOnly }) => {
   return `
 Bạn là HLV Dinh dưỡng AI thông minh, thân thiện và am hiểu ẩm thực Việt Nam.
@@ -211,6 +238,9 @@ QUY TẮC TRẢ VỀ (Khi là thực phẩm):
   "description": "tên món ăn hoặc tóm tắt ngắn"
 }
 
+Nếu người dùng chỉ gửi ảnh mà không nói rõ bữa ăn, sau khi phân tích xong hãy hỏi thêm:
+"Bạn có thể cho tôi biết bạn ăn vào sáng, trưa, tối hay bữa phụ không?"
+
 Ví dụ khi không phải thức ăn (chỉ khi người dùng gửi ảnh không liên quan):
 "Xin lỗi, tôi thấy đây là một chiếc xe hơi. Tôi chỉ có thể phân tích dinh dưỡng từ thực phẩm. <error>Không phải thức ăn</error>"
 
@@ -275,7 +305,7 @@ export default async function handler(req, res) {
     const dayNames = ["", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
     const currentDayName = dayNames[dayOfWeek];
 
-    // Có ảnh: vẫn phân tích ảnh + text
+    // Có ảnh: phân tích ảnh + text
     if (imageFile) {
       let userContent = [];
 
@@ -311,7 +341,8 @@ export default async function handler(req, res) {
         max_tokens: 1000,
       });
 
-      const aiReply = completion.choices[0]?.message?.content || "";
+      let aiReply = completion.choices[0]?.message?.content || "";
+      aiReply = appendMealTimeFollowUp(aiReply, message);
 
       const userEntry = {
         role: "user",
@@ -363,10 +394,17 @@ export default async function handler(req, res) {
     const raw = chatCompletion.choices[0]?.message?.content || "{}";
     const result = safeJsonParse(raw) || {};
 
-    const aiReply = String(result.reply || "");
+    let aiReply = String(result.reply || "");
     const action = String(result.action || "analyze_only");
     const needsClarification = Boolean(result.needsClarification);
     const clarifyQuestion = String(result.clarifyQuestion || "");
+
+    if (action === "analyze_only") {
+      aiReply = appendMealTimeFollowUp(aiReply, message);
+    } else if (action === "ask_clarify" && !clarifyQuestion) {
+      // Nếu model quên hỏi rõ, thêm câu hỏi bữa ăn vào phần làm rõ
+      aiReply = appendMealTimeFollowUp(aiReply, message);
+    }
 
     if (
       action === "update_plan" &&
