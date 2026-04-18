@@ -1,802 +1,405 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nutrition AI Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-       <link rel="stylesheet" href="toast.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HLV AI · Calorie AI</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="toast.css" />
+<link rel="stylesheet" href="both.css" />
+<style>
+  /* Chat page specific */
+  body{height:100vh;overflow:hidden}
+  .main-wrapper{height:100vh;overflow:hidden}
+  .content{
+    display:grid;grid-template-columns:1.6fr 1fr;gap:24px;
+    padding:24px 32px;flex:1;min-height:0;
+    max-width:1400px;margin:0 auto;width:100%;
+  }
+  .chat-section{display:flex;flex-direction:column;gap:16px;min-height:0;position:relative}
+  .chat-window{
+    flex:1;overflow-y:auto;
+    padding:8px 4px;
+    display:flex;flex-direction:column;gap:12px;
+    scroll-behavior:smooth;
+  }
+  .chat-window .card{padding:14px 18px;font-size:14px;border-radius:18px}
+  .input-wrapper{
+    background:var(--surface);
+    padding:6px 8px 6px 16px;border-radius:999px;
+    box-shadow:var(--shadow);border:1px solid var(--border);
+    display:flex;align-items:center;gap:10px;
+  }
+  .input-tools{
+    width:38px;height:38px;border-radius:50%;
+    background:var(--sage-50);color:var(--primary-deep);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:all .2s;font-size:16px;
+  }
+  .input-tools:hover{background:var(--primary);color:#fff}
+  .chat-input{flex:1;border:0;outline:0;padding:12px 4px;font-size:14px;background:transparent;color:var(--text-main)}
+  .chat-input:focus{box-shadow:none}
+  .send-btn{
+    width:42px;height:42px;border-radius:50%;border:0;cursor:pointer;
+    background:var(--gradient-primary);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .25s;font-size:14px;
+  }
+  .send-btn:hover{transform:rotate(-15deg) scale(1.05);box-shadow:0 10px 22px -8px rgba(125,155,118,0.5)}
+  .send-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
 
-   <style>
-        :root {
-            --bg-color: #F4F7F4;
-            --primary-green: #58A677;
-            --dark-green: #3D7353;
-            --text-main: #2D3436;
-            --text-sub: #636E72;
-            --card-bg: #FFFFFF;
-            --accent-gray: #E9ECEF;
-        }
-.hidden { display: none !important; }
+  /* Sidebar info */
+  .info-sidebar{display:flex;flex-direction:column;gap:18px;overflow-y:auto;min-height:0;padding-right:4px}
+  .food-img-container{
+    background:var(--gradient-primary);
+    padding:6px;border-radius:20px;margin-bottom:18px;
+  }
+  .food-img-container img{width:100%;border-radius:16px;display:block;aspect-ratio:16/10;object-fit:cover}
+  .calories-box .title{color:var(--text-sub);font-size:12px;display:flex;align-items:center;gap:8px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px}
+  .calories-box .value{font-size:36px;font-weight:800;color:var(--text-main);margin-top:4px;letter-spacing:-1px}
+  .desc-text{
+    color:var(--primary-deep);
+    background:var(--sage-50);
+    padding:14px 16px;border-radius:14px;
+    font-size:13px;line-height:1.6;
+    margin:18px 0;
+    border-left:3px solid var(--primary);
+  }
+  .stats-grid-mini{
+    display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;
+    border-top:1px solid var(--border-soft);padding-top:18px;
+  }
+  .stat-item-mini{font-size:13px;color:var(--text-sub);display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--border-soft)}
+  .stat-item-mini b{color:var(--text-main);font-size:13px;font-weight:700}
 
-.meal-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 99999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(244, 247, 244, 0.96);
-    backdrop-filter: blur(8px);
-    padding: 20px;
-}
+  /* Chat bubbles */
+  .msg-container{max-width:85%;padding:12px 16px;border-radius:18px;font-size:14px;line-height:1.55;animation:fadeIn .3s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .msg-user{align-self:flex-end;background:var(--gradient-primary);color:#fff;border-bottom-right-radius:4px}
+  .msg-bot{align-self:flex-start;background:#fff;color:var(--text-main);border-bottom-left-radius:4px;border:1px solid var(--border-soft);box-shadow:var(--shadow-sm)}
 
-.meal-modal-card {
-    width: min(92vw, 460px);
-    background: #fff;
-    border-radius: 24px;
-    padding: 24px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-    border: 1px solid var(--accent-gray);
-}
+  .typing-indicator{display:inline-flex;gap:5px;padding:14px 18px;background:#fff;border:1px solid var(--border-soft);border-radius:18px;align-self:flex-start;width:fit-content}
+  .typing-indicator .typing-dot{width:8px;height:8px;animation:typing-jump 1.4s infinite ease-in-out}
+  .typing-indicator .typing-dot:nth-child(2){animation-delay:.2s}
+  .typing-indicator .typing-dot:nth-child(3){animation-delay:.4s}
+  @keyframes typing-jump{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-8px);opacity:1}}
 
-.meal-modal-title {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--text-main);
-    line-height: 1.4;
-}
+  .loading-overlay{position:absolute;inset:0;background:rgba(251,250,246,0.85);backdrop-filter:blur(4px);border-radius:var(--radius-lg);z-index:50}
 
-.meal-modal-subtitle {
-    margin-top: 8px;
-    font-size: 0.92rem;
-    color: var(--text-sub);
-}
+  /* Meal selection */
+  .meal-interactive-card{background:var(--cream-0);border:1px solid var(--primary)!important;border-radius:18px;padding:18px;margin-bottom:8px}
+  .meal-modal-title{font-size:14px;font-weight:700;color:var(--text-main);margin-bottom:4px}
+  .meal-modal-section{margin-top:14px}
+  .meal-label{font-size:12px;font-weight:600;color:var(--text-sub);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.6px}
+  .meal-choice-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .meal-choice-btn{
+    border:1px solid var(--border);background:#fff;color:var(--text-main);
+    border-radius:12px;padding:10px 12px;font-size:13px;cursor:pointer;
+    transition:.2s;font-family:inherit;font-weight:500;
+  }
+  .meal-choice-btn:hover{border-color:var(--primary);transform:translateY(-1px)}
+  .meal-choice-btn.active{background:var(--sage-50)!important;border-color:var(--primary)!important;color:var(--primary-deep);font-weight:600}
+  .other-day-wrap{margin-top:10px}
+  .other-day-input{width:100%;border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px;outline:none;font-family:inherit}
+  .meal-modal-actions{display:flex;gap:10px;margin-top:14px}
+  .meal-modal-btn{flex:1;border:0;border-radius:12px;padding:11px 14px;font-weight:600;cursor:pointer;font-family:inherit;font-size:13px;transition:.2s}
+  .meal-modal-btn.primary{background:var(--gradient-primary);color:#fff;flex:2}
+  .meal-modal-btn.primary:hover{box-shadow:0 8px 20px -8px rgba(125,155,118,0.6)}
+  .meal-modal-btn.secondary{background:var(--sage-50);color:var(--primary-deep)}
+  .hidden{display:none!important}
 
-.meal-modal-section {
-    margin-top: 18px;
-}
-
-.meal-label {
-    font-size: 0.86rem;
-    font-weight: 600;
-    color: var(--text-sub);
-    margin-bottom: 10px;
-}
-
-.meal-choice-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-}
-
-.meal-choice-btn {
-    border: 1px solid var(--accent-gray);
-    background: #fff;
-    border-radius: 14px;
-    padding: 12px 14px;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: 0.2s ease;
-    color: var(--text-main);
-}
-
-.meal-choice-btn:hover {
-    border-color: var(--primary-green);
-    transform: translateY(-1px);
-}
-
-
-.other-day-wrap {
-    margin-top: 14px;
-}
-
-.other-day-input {
-    width: 100%;
-    border: 1px solid var(--accent-gray);
-    border-radius: 14px;
-    padding: 12px 14px;
-    outline: none;
-    font-size: 0.95rem;
-}
-
-.meal-modal-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 20px;
-}
-
-.meal-modal-btn {
-    flex: 1;
-    border: none;
-    border-radius: 14px;
-    padding: 12px 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s ease;
-}
-
-.meal-modal-btn.primary {
-    background: var(--primary-green);
-    color: white;
-}
-
-.meal-modal-btn.primary:hover {
-    background: var(--dark-green);
-}
-
-.meal-modal-btn.secondary {
-    background: #eef2f3;
-    color: var(--text-main);
-}
-
-body.modal-lock {
-    overflow: hidden;
-}
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            display: flex;
-            height: 100vh;
-            color: var(--text-main);
-        }
-
-        /* Sidebar bên trái gọn gàng */
-        .side-nav {
-            width: 90px;
-            background-color: white;
-            border-right: 1px solid var(--accent-gray);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 30px 0;
-            gap: 40px;
-        }
-
-        .nav-item {
-            font-size: 1.4rem;
-            color: #B2BEC3;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-        
-        .nav-item span { font-size: 0.65rem; display: block; margin-top: 5px; font-weight: 600; }
-        .nav-item:hover, .nav-item.active { color: var(--primary-green); }
-
-        /* Main Wrapper */
-        .main-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* Header Website */
-        .header {
-            height: 70px;
-            background: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 40px;
-            border-bottom: 1px solid var(--accent-gray);
-        }
-
-        .logo { font-weight: 700; font-size: 1.5rem; color: var(--primary-green); }
-        .header-tools { display: flex; gap: 25px; color: var(--text-sub); cursor: pointer; }
-
-        /* Layout Content */
-        .content {
-            display: flex;
-            flex: 1;
-            padding: 25px 40px;
-            gap: 30px;
-            overflow: hidden;
-        }
-
-        /* Phần Chat chính */
-        .chat-section {
-            flex: 2;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .chat-window {
-            flex: 1;
-            overflow: auto; /* Enables scrolling */
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE and Edge */            padding-right: 15px;
-        }
-
-        /* Thanh Chat dài và hiện đại */
-        .input-wrapper {
-            background: white;
-            padding: 10px 20px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            border: 1px solid var(--accent-gray);
-        }
-
-        .chat-input {
-            flex: 1;
-            border: none;
-            outline: none;
-            padding: 15px 0;
-            font-size: 1rem;
-            color: var(--text-main);
-        }
-
-        .input-tools { display: flex; gap: 15px; color: var(--text-sub); font-size: 1.1rem; }
-        .input-tools i { cursor: pointer; transition: 0.2s; }
-        .input-tools i:hover { color: var(--primary-green); }
-
-        .send-btn {
-            background: var(--primary-green);
-            color: white;
-            border: none;
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .send-btn:hover { background: var(--dark-green); transform: translateY(-2px); }
-
-        /* Sidebar Thông tin Dinh dưỡng */
-        .info-sidebar {
-            flex: 1;
-            max-width: 420px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 24px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-        }
-        
-        .card-food
-        {
-            overflow: auto; /* Enables scrolling */
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE and Edge */
-        }
-/* Hiệu ứng mờ màn hình khi đang load lịch sử */
-.loading-overlay {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(255, 255, 255, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 100;
-    border-radius: 16px;
-}
-        .food-img-container {
-            background-color: var(--primary-green);
-            padding: 8px;
-            border-radius: 20px;
-            margin-bottom: 20px;
-        }
-
-        .food-img-container img {
-            width: 100%;
-            border-radius: 14px;
-            display: block;
-        }
-
-        .calories-box { margin-bottom: 20px; }
-        .calories-box .title { color: var(--text-sub); font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
-        .calories-box .value { font-size: 2.2rem; font-weight: 700; color: #1e272e; margin-top: 5px; }
-
-        .desc-text {
-            color: var(--primary-green);
-            background: #F0F9F4;
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            border-top: 1px solid var(--accent-gray);
-            padding-top: 20px;
-        }
-
-        .stat-item { font-size: 0.85rem; color: var(--text-sub); }
-        .stat-item b { color: var(--text-main); font-size: 0.95rem; }
-/* --- Tối ưu hóa Chat Bubble --- */
-.chat-window {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.msg-container {
-    max-width: 85%;
-    padding: 12px 18px;
-    border-radius: 18px;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    position: relative;
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.msg-user {
-    align-self: flex-end;
-    background-color: var(--primary-green);
-    color: white;
-    border-bottom-right-radius: 4px;
-}
-
-.msg-bot {
-    align-self: flex-start;
-    background-color: white;
-    color: var(--text-main);
-    border-bottom-left-radius: 4px;
-    border: 1px solid var(--accent-gray);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-}
-/* Hiệu ứng bọt nhảy typing */
-    .typing-indicator { display: flex; gap: 5px; padding: 15px; }
-    .typing-dot { width: 8px; height: 8px; background: var(--primary-green); border-radius: 50%; animation: jump 1.4s infinite ease-in-out; }
-    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes jump { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-10px); } }
-
-    /* Custom scrollbar cho sidebar đẹp hơn */
-    .info-sidebar::-webkit-scrollbar { width: 5px; }
-    .info-sidebar::-webkit-scrollbar-track { background: transparent; }
-    .info-sidebar::-webkit-scrollbar-thumb { background: #dcdde1; border-radius: 10px; }
-/* --- RESPONSIVE DASHBOARD --- */
-
-/* Tablet & Laptop nhỏ (Dưới 1100px) */
-@media (max-width: 1100px) {
-    .content {
-        flex-direction: column;
-            overflow: auto; /* Enables scrolling */
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE and Edge */    }
-    .info-sidebar {
-        max-width: 100%;
-        order: -1; /* Đưa thông tin dinh dưỡng lên đầu trên mobile */
-    }
-    .chat-section {
-        min-height: 500px;
-    }
-}
-.user-profile-nav {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: #fff;
-    padding: 6px 16px;
-    border-radius: 50px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: 1px solid #eee;
-    user-select: none;
-}
-
-.user-profile-nav:hover {
-    background: #fff5f5;
-    border-color: #ff4757;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.15);
-}
-
-.user-name {
-    font-size: 0.85rem;
-    color: #444;
-    font-weight: 500;
-}
-
-.user-profile-nav:hover .user-name, 
-.user-profile-nav:hover .btn-logout-icon {
-    color: #ff4757;
-}
-
-.btn-logout-icon {
-    color: #666;
-    font-size: 0.9rem;
-}
-/* Mobile (Dưới 768px) */
-@media (max-width: 768px) {
-    body {
-        flex-direction: column; /* Đưa Side-nav lên đầu hoặc xuống dưới */
-    }
-    .side-nav {
-        width: 100%;
-        height: 60px;
-        flex-direction: row;
-        justify-content: space-around;
-        padding: 0;
-        order: 2; /* Đặt dưới cùng như thanh điều hướng điện thoại */
-    }
-    .side-nav .nav-item span { display: none; }
-    
-    .header { padding: 0 20px; }
-    .header-tools { display: none; } /* Ẩn công cụ phụ trên mobile */
-    
-    .content { padding: 15px; }
-}
-    </style>
+  @media (max-width:1024px){
+    body{height:auto;overflow:auto}
+    .main-wrapper{height:auto;overflow:visible}
+    .content{grid-template-columns:1fr;height:auto}
+    .chat-section{min-height:60vh}
+    .info-sidebar{order:-1;max-height:none}
+  }
+  @media (max-width:720px){
+    .content{padding:16px;gap:16px}
+    .calories-box .value{font-size:30px}
+  }
+</style>
 </head>
 <body>
-<div id="toast-container"></div>
-    <aside class="side-nav">
-        <div class="nav-item active"><i class="fa-solid fa-house"></i><span>HOME</span></div>
-        <div class="nav-item"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
-        <div class="nav-item"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
-        <div class="nav-item"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
-    </aside>
+  <div id="toast-container"></div>
 
-    <div class="main-wrapper">
-<header class="header">
-    <a href="index.html" style="text-decoration: none;" class="logo">
-        <i class="fa-solid fa-leaf"></i> Calorie AI
-    </a>
-    
-    <div id="auth-zone" class="header-tools">
+  <aside class="side-nav">
+    <div class="nav-item active" id="nav-home"><i class="fa-solid fa-house"></i><span>HOME</span></div>
+    <div class="nav-item" id="nav-diet"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
+    <div class="nav-item" id="nav-plan"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
+    <div class="nav-item" id="nav-profile"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="header">
+      <a href="index.html" class="logo"><i class="fa-solid fa-leaf"></i> Calorie AI</a>
+      <div id="auth-zone" class="header-tools">
         <div class="user-profile-nav" onclick="handleLogout()" title="Nhấn để đăng xuất">
-            <span class="user-name">
-                <i class="fa-solid fa-circle-user"></i> 
-                <strong>Đăng xuất</strong>
-            </span>
-            <div class="btn-logout-icon">
-                <i class="fa-solid fa-right-from-bracket"></i>
-            </div>
+          <span class="user-name"><i class="fa-solid fa-circle-user"></i> <strong>Đăng xuất</strong></span>
+          <div class="btn-logout-icon"><i class="fa-solid fa-right-from-bracket"></i></div>
         </div>
-    </div>
-</header>
+      </div>
+    </header>
 
-     <main class="content">
-    <section class="chat-section">
+    <main class="content">
+      <section class="chat-section">
         <div class="chat-window" id="chat-window">
-            <div class="card" style="margin-bottom: 20px;">
-                Chào bạn! Hãy gửi tin nhắn hoặc ảnh món ăn, tôi sẽ phân tích giúp bạn.
-            </div>
+          <div class="card">Chào bạn! Hãy gửi tin nhắn hoặc ảnh món ăn, tôi sẽ phân tích giúp bạn.</div>
         </div>
 
         <div class="input-wrapper">
-            <div class="input-tools" onclick="document.getElementById('file-upload').click()">
-                <i class="fa-solid fa-circle-plus"></i>
-               <input type="file" id="file-upload" accept=".jpg,.jpeg" style="    display: none;"onchange="handleFileSelect()">
-            </div>
-            
-            <input id="user-input" type="text" placeholder="Hỏi tôi liên quan về dinh dưỡng..." class="chat-input">
-            
-            <button class="send-btn" onclick="sendMessage()">
-                <i class="fa-solid fa-paper-plane"></i>
-            </button>
+          <div class="input-tools" onclick="document.getElementById('file-upload').click()" title="Tải ảnh món ăn">
+            <i class="fa-solid fa-circle-plus"></i>
+            <input type="file" id="file-upload" accept=".jpg,.jpeg" style="display:none" onchange="handleFileSelect()" />
+          </div>
+          <input id="user-input" type="text" placeholder="Hỏi tôi liên quan về dinh dưỡng..." class="chat-input" />
+          <button class="send-btn" onclick="sendMessage()" title="Gửi"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
-    </section>
+      </section>
 
-    <aside class="info-sidebar">
+      <aside class="info-sidebar">
         <div class="card card-food">
-            <div class="food-img-container">
-                <img id="display-food-img" src="https://i.pinimg.com/736x/9d/51/c3/9d51c32cccb77dcf89cc2fb11aa20a17.jpg" alt="Food">
-            </div>
+          <div class="food-img-container">
+            <img id="display-food-img" src="https://i.pinimg.com/736x/9d/51/c3/9d51c32cccb77dcf89cc2fb11aa20a17.jpg" alt="Food" />
+          </div>
 
-            <div class="calories-box">
-                <div class="title"><i class="fa-solid fa-utensils"></i> Tổng năng lượng:</div>
-                <div class="value"><span id="val-calories">0</span> <span style="font-size: 1rem; font-weight: 400;">kcal</span></div>
-            </div>
+          <div class="calories-box">
+            <div class="title"><i class="fa-solid fa-utensils"></i> Tổng năng lượng</div>
+            <div class="value"><span id="val-calories">0</span> <span style="font-size:14px;font-weight:500;color:var(--text-sub)">kcal</span></div>
+          </div>
 
-            <div id="val-desc" class="desc-text">Thông tin sẽ cập nhật sau khi phân tích.</div>
+          <div id="val-desc" class="desc-text">Thông tin sẽ cập nhật sau khi phân tích.</div>
 
-            <div class="stats-grid">
-                <div class="stat-item">Protein: <b id="val-protein">--</b></div>
-                <div class="stat-item">Chất béo: <b id="val-fat">--</b></div>
-                <div class="stat-item">Carbs: <b id="val-carbs">--</b></div>
-                <div class="stat-item">Chất xơ: <b id="val-fiber">--</b></div>
-                <div class="stat-item">Đường: <b id="val-sugar">--</b></div>
-                <div class="stat-item">Natri: <b id="val-sodium">--</b></div>
-            </div>
+          <div class="stats-grid-mini">
+            <div class="stat-item-mini"><span>Protein</span><b id="val-protein">--</b></div>
+            <div class="stat-item-mini"><span>Chất béo</span><b id="val-fat">--</b></div>
+            <div class="stat-item-mini"><span>Carbs</span><b id="val-carbs">--</b></div>
+            <div class="stat-item-mini"><span>Chất xơ</span><b id="val-fiber">--</b></div>
+            <div class="stat-item-mini"><span>Đường</span><b id="val-sugar">--</b></div>
+            <div class="stat-item-mini"><span>Natri</span><b id="val-sodium">--</b></div>
+          </div>
         </div>
-    </aside>
-</main>
+      </aside>
+    </main>
+  </div>
 
-
-<template id="meal-selection-template">
-    <div class="card meal-interactive-card" style="background: #f9f9f9; border: 1px solid var(--primary-green); margin-bottom: 20px;">
-        <div class="meal-modal-title" style="font-size: 0.95rem; font-weight: 700;">Xác nhận bữa ăn của bạn</div>
-        
-        <div class="meal-modal-section">
-            <div class="meal-label" style="font-size: 0.8rem; margin-bottom: 5px;">Chọn buổi ăn:</div>
-            <div class="meal-choice-grid">
-                <button type="button" class="meal-choice-btn" data-meal-time="Sáng">Sáng</button>
-                <button type="button" class="meal-choice-btn" data-meal-time="Trưa">Trưa</button>
-                <button type="button" class="meal-choice-btn" data-meal-time="Tối">Tối</button>
-                <button type="button" class="meal-choice-btn" data-meal-time="Bữa phụ">Bữa phụ</button>
-            </div>
+  <template id="meal-selection-template">
+    <div class="meal-interactive-card">
+      <div class="meal-modal-title">✨ Xác nhận bữa ăn của bạn</div>
+      <div class="meal-modal-section">
+        <div class="meal-label">Chọn buổi ăn</div>
+        <div class="meal-choice-grid">
+          <button type="button" class="meal-choice-btn" data-meal-time="Sáng">Sáng</button>
+          <button type="button" class="meal-choice-btn" data-meal-time="Trưa">Trưa</button>
+          <button type="button" class="meal-choice-btn" data-meal-time="Tối">Tối</button>
+          <button type="button" class="meal-choice-btn" data-meal-time="Bữa phụ">Bữa phụ</button>
         </div>
-
-        <div class="meal-modal-section" style="margin-top: 10px;">
-            <div class="meal-label" style="font-size: 0.8rem; margin-bottom: 5px;">Thời điểm:</div>
-            <div class="meal-choice-grid">
-                <button type="button" class="meal-choice-btn day-btn active" data-day-mode="today">Hôm nay</button>
-                <button type="button" class="meal-choice-btn day-btn" data-day-mode="other">Ngày khác</button>
-            </div>
+      </div>
+      <div class="meal-modal-section">
+        <div class="meal-label">Thời điểm</div>
+        <div class="meal-choice-grid">
+          <button type="button" class="meal-choice-btn day-btn active" data-day-mode="today">Hôm nay</button>
+          <button type="button" class="meal-choice-btn day-btn" data-day-mode="other">Ngày khác</button>
         </div>
-
-        <div class="other-day-wrap hidden" style="margin-top: 10px;">
-            <input class="other-day-input" type="date" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--accent-gray);">
-        </div>
-        
-        <div class="meal-modal-actions" style="margin-top: 15px; display: flex; gap: 10px;">
-            <button type="button" class="meal-modal-btn primary btn-confirm-meal" style="flex: 2;">Xác nhận</button>
-            <button type="button" class="meal-modal-btn secondary btn-cancel-meal" style="flex: 1; background: #eee;">Hủy</button>
-        </div>
+      </div>
+      <div class="other-day-wrap hidden">
+        <input class="other-day-input" type="date" />
+      </div>
+      <div class="meal-modal-actions">
+        <button type="button" class="meal-modal-btn primary btn-confirm-meal">Xác nhận</button>
+        <button type="button" class="meal-modal-btn secondary btn-cancel-meal">Hủy</button>
+      </div>
     </div>
-</template>
+  </template>
 
-</div>
-<script src="toast.js"></script>
-<script>
-window.currentConvId = null;
-let isAnalyzing = false;
-let isLoadingHistory = false;
-let flag = false;
-let pendingMealData = null;
-let selectedMealTime = "";
-let selectedDayMode = "today";
-const sessionPhotos = [];
+  <script src="toast.js"></script>
+  <script>
+  /* ====== Backend logic preserved verbatim ====== */
+  window.currentConvId = null;
+  let isAnalyzing = false;
+  let isLoadingHistory = false;
+  let flag = false;
+  let pendingMealData = null;
+  let selectedMealTime = "";
+  let selectedDayMode = "today";
+  const sessionPhotos = [];
 
-function handleLogout() {
+  function handleLogout() {
     localStorage.removeItem('calorie_ai_token');
     localStorage.removeItem('user_id');
+    if (typeof showToast === 'function') showToast('Đang đăng xuất...', 'info');
+    setTimeout(() => { window.location.href = 'signin.html'; }, 1000);
+  }
 
-    if (typeof showToast === 'function') {
-        showToast('Đang đăng xuất...', 'info');
-    }
-
-    setTimeout(() => {
-        window.location.href = 'signin.html';
-    }, 1000);
-}
-
-function toggleInputState(disabled, placeholder = 'Hỏi tôi liên quan về dinh dưỡng...') {
+  function toggleInputState(disabled, placeholder = 'Hỏi tôi liên quan về dinh dưỡng...') {
     const input = document.getElementById('user-input');
     const btn = document.querySelector('.send-btn');
     const uploadBtn = document.querySelector('.input-tools');
-
     if (input) input.disabled = disabled;
     if (btn) btn.disabled = disabled;
     if (uploadBtn) uploadBtn.style.pointerEvents = disabled ? 'none' : 'auto';
     if (input) input.placeholder = placeholder;
-}
+  }
 
-function showTypingIndicator() {
+  function showTypingIndicator() {
     const chatWindow = document.getElementById('chat-window');
     if (!chatWindow) return;
-
     document.getElementById('typing-indicator-box')?.remove();
-
     const typingDiv = document.createElement('div');
     typingDiv.id = 'typing-indicator-box';
-    typingDiv.className = 'card typing-indicator';
+    typingDiv.className = 'typing-indicator';
     typingDiv.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
     chatWindow.appendChild(typingDiv);
     chatWindow.scrollTop = chatWindow.scrollHeight;
-}
+  }
 
-function renderMessage(role, text) {
+  function renderMessage(role, text) {
     const chatWindow = document.getElementById('chat-window');
     if (!chatWindow) return;
     let displayContent = String(text ?? '').trim();
-
-    if (displayContent.includes('<deleted please>'))  return;
+    if (displayContent.includes('<deleted please>')) return;
     const msgDiv = document.createElement('div');
-    msgDiv.className = 'card';
-    msgDiv.style.marginBottom = '20px';
+    msgDiv.className = 'msg-container ' + (role === 'user' ? 'msg-user' : 'msg-bot');
     msgDiv.style.whiteSpace = 'pre-line';
-
-    if (role === 'user') {
-        msgDiv.style.backgroundColor = '#E8F5E9';
-        msgDiv.style.borderBottomRightRadius = '4px';
-    } else {
-        msgDiv.style.borderBottomLeftRadius = '4px';
-        msgDiv.style.backgroundColor = '#FFFFFF';
-    }
-
 
     displayContent = displayContent.replace(/<message>[\s\S]*?<\/message>/g, '');
     displayContent = displayContent.replace(/<data>[\s\S]*?<\/data>/g, '');
     displayContent = displayContent.replace(/<image>[\s\S]*?<\/image>/g, '');
     displayContent = displayContent.replace(/<error>[\s\S]*?<\/error>/g, '');
-    displayContent = displayContent.replace(/<deleted>[\s\S]*?<deleted>/gi, '');    
+    displayContent = displayContent.replace(/<deleted>[\s\S]*?<deleted>/gi, '');
     const urlIndex = displayContent.indexOf('có url:');
-    if (urlIndex !== -1) {
-        displayContent = displayContent.substring(0, urlIndex).trim();
-    }
-
+    if (urlIndex !== -1) displayContent = displayContent.substring(0, urlIndex).trim();
     if (displayContent.includes('Nội dung cụ thể:')) {
-        const parts = displayContent.split('Nội dung cụ thể:');
-        const prefix = parts[0].trim();
-        const suffix = parts[1].trim();
-        displayContent = (prefix === suffix || suffix === '') ? prefix : suffix;
+      const parts = displayContent.split('Nội dung cụ thể:');
+      const prefix = parts[0].trim();
+      const suffix = parts[1].trim();
+      displayContent = (prefix === suffix || suffix === '') ? prefix : suffix;
     }
-
     displayContent = displayContent.replace(/\n{3,}/g, '\n\n').trim();
     msgDiv.innerText = displayContent || 'Đang phân tích dữ liệu...';
 
     chatWindow.appendChild(msgDiv);
     chatWindow.scrollTop = chatWindow.scrollHeight;
-}
+  }
 
-function updateSidebar(jsonText) {
+  function updateSidebar(jsonText) {
     try {
-        const data = typeof jsonText === 'string' ? JSON.parse(jsonText) : jsonText;
-        document.getElementById('val-calories').innerText = data.calories || 0;
-        document.getElementById('val-desc').innerText = data.description || '';
-        document.getElementById('val-protein').innerText = data.protein || '--';
-        document.getElementById('val-fat').innerText = data.fat || '--';
-        document.getElementById('val-carbs').innerText = data.carbs || '--';
-        document.getElementById('val-fiber').innerText = data.fiber || '--';
-        document.getElementById('val-sugar').innerText = data.sugar || '--';
-        document.getElementById('val-sodium').innerText = data.sodium || '--';
-    } catch (e) {
-        console.error('Lỗi cập nhật Sidebar:', e);
-    }
-}
+      const data = typeof jsonText === 'string' ? JSON.parse(jsonText) : jsonText;
+      document.getElementById('val-calories').innerText = data.calories || 0;
+      document.getElementById('val-desc').innerText = data.description || '';
+      document.getElementById('val-protein').innerText = data.protein || '--';
+      document.getElementById('val-fat').innerText = data.fat || '--';
+      document.getElementById('val-carbs').innerText = data.carbs || '--';
+      document.getElementById('val-fiber').innerText = data.fiber || '--';
+      document.getElementById('val-sugar').innerText = data.sugar || '--';
+      document.getElementById('val-sodium').innerText = data.sodium || '--';
+    } catch (e) { console.error('Lỗi cập nhật Sidebar:', e); }
+  }
 
-function extractDataBlock(text = '') {
+  function extractDataBlock(text = '') {
     const match = String(text).match(/<data>([\s\S]*?)<\/data>/i);
     if (!match) return null;
-    try {
-        return JSON.parse(match[1]);
-    } catch {
-        return null;
-    }
-}
+    try { return JSON.parse(match[1]); } catch { return null; }
+  }
 
-function openMealModal(nutritionData) {
+  function openMealModal(nutritionData) {
     pendingMealData = nutritionData;
     const chatWindow = document.getElementById('chat-window');
     const template = document.getElementById('meal-selection-template');
     if (!template || !chatWindow) return;
-
     const container = document.createElement('div');
-    container.className = 'meal-inline-container message bot-message'; 
-    container.style.background = "transparent"; 
-    
+    container.className = 'meal-inline-container';
     container.appendChild(template.content.cloneNode(true));
     chatWindow.appendChild(container);
     chatWindow.scrollTop = chatWindow.scrollHeight;
-}
+  }
 
-function closeMealModal() {
+  function closeMealModal() {
     const modal = document.getElementById('meal-modal');
     if (modal) modal.classList.add('hidden');
     document.body.classList.remove('modal-lock');
-}
+  }
 
-function wireMealModalEvents() {
+  function wireMealModalEvents() {
     const chatWindow = document.getElementById('chat-window');
     if (!chatWindow) return;
-
     chatWindow.onclick = async (e) => {
-        const target = e.target;
-        const container = target.closest('.meal-inline-container');
-        if (!container) return;
+      const target = e.target;
+      const container = target.closest('.meal-inline-container');
+      if (!container) return;
 
-        // Chọn buổi ăn
-        if (target.classList.contains('meal-choice-btn') && target.hasAttribute('data-meal-time')) {
-            container.querySelectorAll('.meal-choice-btn[data-meal-time]').forEach(b => {
-                b.style.background = 'white';
-                b.style.borderColor = '#ddd';
-                b.classList.remove('active');
-            });
-            target.style.background = '#e8f5e9';
-            target.style.borderColor = 'var(--primary-green)';
-            target.classList.add('active');
+      if (target.classList.contains('meal-choice-btn') && target.hasAttribute('data-meal-time')) {
+        container.querySelectorAll('.meal-choice-btn[data-meal-time]').forEach(b => b.classList.remove('active'));
+        target.classList.add('active');
+      }
+
+      if (target.classList.contains('day-btn')) {
+        container.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+        target.classList.add('active');
+        const inputWrap = container.querySelector('.other-day-wrap');
+        if (target.dataset.dayMode === 'other') {
+          inputWrap.classList.remove('hidden');
+          const dateInp = container.querySelector('.other-day-input');
+          if (!dateInp.value) dateInp.value = new Date().toISOString().split('T')[0];
+        } else {
+          inputWrap.classList.add('hidden');
         }
+      }
 
-        // Chọn ngày
-        if (target.classList.contains('day-btn')) {
-            container.querySelectorAll('.day-btn').forEach(b => {
-                b.style.background = 'white';
-                b.classList.remove('active');
-            });
-            target.style.background = '#e8f5e9';
-            target.classList.add('active');
-            
-            const inputWrap = container.querySelector('.other-day-wrap');
-            if (target.dataset.dayMode === 'other') {
-                inputWrap.classList.remove('hidden');
-                const dateInp = container.querySelector('.other-day-input');
-                if(!dateInp.value) dateInp.value = new Date().toISOString().split('T')[0];
-            } else {
-                inputWrap.classList.add('hidden');
-            }
-        }
+      if (target.classList.contains('btn-cancel-meal')) {
+        container.remove();
+        renderMessage('bot', 'Đã hủy. Bạn có thể nhập món khác.');
+        pendingMealData = null;
+      }
 
-        // Nút Hủy
-        if (target.classList.contains('btn-cancel-meal')) {
-            container.remove();
-            renderMessage('bot', 'Đã hủy. Bạn có thể nhập món khác.');
-            pendingMealData = null;
-        }
-
-        // Nút Xác nhận
-        if (target.classList.contains('btn-confirm-meal')) {
-            const activeTime = container.querySelector('.meal-choice-btn[data-meal-time].active');
-            const activeDay = container.querySelector('.day-btn.active');
-            if (!activeTime) return showToast('Hãy chọn buổi ăn', 'info');
-
-            const time = activeTime.dataset.mealTime;
-            const mode = activeDay.dataset.dayMode;
-            const dateVal = mode === 'today' ? 'today' : container.querySelector('.other-day-input').value;
-
-            container.remove();
-            submitMealUpdate(time, mode, dateVal);
-        }
+      if (target.classList.contains('btn-confirm-meal')) {
+        const activeTime = container.querySelector('.meal-choice-btn[data-meal-time].active');
+        const activeDay = container.querySelector('.day-btn.active');
+        if (!activeTime) return showToast('Hãy chọn buổi ăn', 'info');
+        const time = activeTime.dataset.mealTime;
+        const mode = activeDay.dataset.dayMode;
+        const dateVal = mode === 'today' ? 'today' : container.querySelector('.other-day-input').value;
+        container.remove();
+        submitMealUpdate(time, mode, dateVal);
+      }
     };
-}
-async function submitMealUpdate(mealTime, dayMode, dayValue) {
+  }
+
+  async function submitMealUpdate(mealTime, dayMode, dayValue) {
     const displayDate = dayValue === 'today' ? 'hôm nay' : dayValue;
     const confirmMessage = `Xác nhận: Ăn vào buổi ${mealTime}, ${displayDate}`;
-    
     renderMessage('user', confirmMessage);
     showTypingIndicator();
     toggleInputState(true, 'Đang cập nhật thực đơn...');
 
     const token = localStorage.getItem('calorie_ai_token');
     const formData = new FormData();
-    
-    // Gửi dữ liệu đồng bộ với Backend
-    formData.append('message', confirmMessage); 
+    formData.append('message', confirmMessage);
     formData.append('followupType', 'meal_time_update');
     formData.append('mealData', JSON.stringify(pendingMealData));
     formData.append('mealTime', mealTime);
     formData.append('mealDayText', displayDate);
-    formData.append('mealDayValue', dayValue); // Gửi dayValue (today hoặc date string)
+    formData.append('mealDayValue', dayValue);
     try {
-        const res = await fetch('/api/chat', {
-            method: 'POST',
-            body: formData,
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        const result = await res.json();
-        document.getElementById('typing-indicator-box')?.remove();
-        
-        if (result.success) {
-            renderMessage('bot', result.reply || 'Đã ghi lại bữa ăn của bạn!');
-            // Nếu có thực đơn mới, bạn có thể gọi hàm update UI ở đây
-            if(result.newPlan) console.log("Thực đơn mới:", result.newPlan);
-        }
+      const res = await fetch('/api/chat', { method:'POST', body:formData, headers:{ 'Authorization':`Bearer ${token}` } });
+      const result = await res.json();
+      document.getElementById('typing-indicator-box')?.remove();
+      if (result.success) {
+        renderMessage('bot', result.reply || 'Đã ghi lại bữa ăn của bạn!');
+        if (result.newPlan) console.log("Thực đơn mới:", result.newPlan);
+      }
     } catch (err) {
-        document.getElementById('typing-indicator-box')?.remove();
-        showToast('Lỗi kết nối server', 'error');
+      document.getElementById('typing-indicator-box')?.remove();
+      showToast('Lỗi kết nối server', 'error');
     } finally {
-        toggleInputState(false);
-        pendingMealData = null;
+      toggleInputState(false);
+      pendingMealData = null;
     }
-}
+  }
 
-function resetSidebar() {
+  function resetSidebar() {
     document.getElementById('val-calories').innerText = 0;
     document.getElementById('val-desc').innerText = 'Thông tin sẽ cập nhật sau khi phân tích.';
     document.getElementById('val-protein').innerText = '--';
@@ -806,12 +409,11 @@ function resetSidebar() {
     document.getElementById('val-sugar').innerText = '--';
     document.getElementById('val-sodium').innerText = '--';
     document.getElementById('display-food-img').src = 'https://i.pinimg.com/736x/9d/51/c3/9d51c32cccb77dcf89cc2fb11aa20a17.jpg';
-}
+  }
 
-async function loadChatHistory() {
+  async function loadChatHistory() {
     const token = localStorage.getItem('calorie_ai_token');
     if (!token || isLoadingHistory) return;
-
     isLoadingHistory = true;
     toggleInputState(true, 'Đang tải lịch sử...');
 
@@ -823,192 +425,143 @@ async function loadChatHistory() {
     if (chatSection) chatSection.appendChild(loader);
 
     try {
-        const res = await fetch('/api/chat-history', {
-            method: 'GET',
-            headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const data = await res.json();
-
-        if (res.ok === false) {
-            if (typeof showToast === 'function') showToast('Vui lòng đăng nhập!', 'info');
-            setTimeout(() => {
-                window.location.href = 'signin.html';
-            }, 1369);
-            return;
-        }
-
-        if (data.history && Array.isArray(data.history)) {
-            data.history.forEach(msg => {
-                renderMessage(msg.role, msg.content);
-            });
-        }
-    } catch (e) {
-        console.error(e);
+      const res = await fetch('/api/chat-history', { method:'GET', headers:{ Authorization:`Bearer ${token}` } });
+      const data = await res.json();
+      if (res.ok === false) {
         if (typeof showToast === 'function') showToast('Vui lòng đăng nhập!', 'info');
-        setTimeout(() => {
-            window.location.href = 'signin.html';
-        }, 1369);
+        setTimeout(() => { window.location.href = 'signin.html'; }, 1369);
+        return;
+      }
+      if (data.history && Array.isArray(data.history)) {
+        data.history.forEach(msg => renderMessage(msg.role, msg.content));
+      }
+    } catch (e) {
+      console.error(e);
+      if (typeof showToast === 'function') showToast('Vui lòng đăng nhập!', 'info');
+      setTimeout(() => { window.location.href = 'signin.html'; }, 1369);
     } finally {
-        isLoadingHistory = false;
-        document.getElementById('history-loader')?.remove();
-        toggleInputState(false);
+      isLoadingHistory = false;
+      document.getElementById('history-loader')?.remove();
+      toggleInputState(false);
     }
-}
+  }
 
-async function handleFileSelect() {
+  async function handleFileSelect() {
     const file = document.getElementById('file-upload')?.files?.[0];
     const input = document.getElementById('user-input');
-
     if (!file || !input) return;
-
     if (!file.name.toLowerCase().endsWith('.jpg') && !file.name.toLowerCase().endsWith('.jpeg')) {
-        if (typeof showToast === 'function') showToast('Chỉ được upload ảnh JPG!', 'error');
-        document.getElementById('file-upload').value = '';
-        return;
+      if (typeof showToast === 'function') showToast('Chỉ được upload ảnh JPG!', 'error');
+      document.getElementById('file-upload').value = '';
+      return;
     }
-
     const reader = new FileReader();
     reader.onload = function(e) {
-        const base64Data = e.target.result;
-        document.getElementById('display-food-img').src = base64Data;
-
-        if (sessionPhotos.includes(base64Data)) {
-            input.value = 'Bạn hãy phân tích món ăn gần nhất tui vừa mới hỏi bạn ấy';
-        } else {
-            input.value = 'Phân tích hình ảnh này';
-        }
+      const base64Data = e.target.result;
+      document.getElementById('display-food-img').src = base64Data;
+      if (sessionPhotos.includes(base64Data)) {
+        input.value = 'Bạn hãy phân tích món ăn gần nhất tui vừa mới hỏi bạn ấy';
+      } else {
+        input.value = 'Phân tích hình ảnh này';
+      }
     };
     reader.readAsDataURL(file);
-}
+  }
 
-async function sendMessage() {
+  async function sendMessage() {
     if (isAnalyzing || isLoadingHistory) return;
-
     const token = localStorage.getItem('calorie_ai_token');
     if (!token) {
-        if (typeof showToast === 'function') showToast('Vui lòng đăng nhập!', 'info');
-        window.location.href = 'signin.html';
-        return;
+      if (typeof showToast === 'function') showToast('Vui lòng đăng nhập!', 'info');
+      window.location.href = 'signin.html';
+      return;
     }
-
     const input = document.getElementById('user-input');
     const fileInput = document.getElementById('file-upload');
     const text = input ? input.value.trim() : '';
     const file = fileInput?.files?.[0];
-
     flag = false;
     if (!text && !file) return;
-
     if (file && !file.name.toLowerCase().endsWith('.jpg') && !file.name.toLowerCase().endsWith('.jpeg')) {
-        if (typeof showToast === 'function') showToast('Chỉ được gửi ảnh JPG!', 'error');
-        return;
+      if (typeof showToast === 'function') showToast('Chỉ được gửi ảnh JPG!', 'error');
+      return;
     }
-
     let currentFileBase64 = null;
     if (file) {
-        currentFileBase64 = await new Promise(resolve => {
-            const r = new FileReader();
-            r.onload = (e) => resolve(e.target.result);
-            r.readAsDataURL(file);
-        });
+      currentFileBase64 = await new Promise(resolve => {
+        const r = new FileReader();
+        r.onload = (e) => resolve(e.target.result);
+        r.readAsDataURL(file);
+      });
     }
-
     isAnalyzing = true;
     toggleInputState(true, 'AI đang phân tích...');
     renderMessage('user', text || (file ? '[Người dùng đã gửi ảnh]' : ''));
     showTypingIndicator();
 
     const formData = new FormData();
-
     if (file && sessionPhotos.includes(currentFileBase64)) {
-        formData.append('message', 'Bạn hãy phân tích món ăn gần nhất tui vừa mới hỏi bạn ấy');
+      formData.append('message', 'Bạn hãy phân tích món ăn gần nhất tui vừa mới hỏi bạn ấy');
     } else {
-        formData.append('message', text);
-        if (file) formData.append('image', file);
+      formData.append('message', text);
+      if (file) formData.append('image', file);
     }
 
     try {
-        const res = await fetch('/api/chat', {
-            method: 'POST',
-            body: formData,
-            headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const result = await res.json();
-        document.getElementById('typing-indicator-box')?.remove();
-
-        if (result.reply) {
-            if (result.reply.includes('<error>')) {
-                const errorMatch = result.reply.match(/<error>([\s\S]*?)<\/error>/);
-                const errorMsg = errorMatch ? errorMatch[1] : 'Không phải thức ăn';
-                if (typeof showToast === 'function') showToast(errorMsg, 'error');
-                flag = true;
-                renderMessage('bot', result.reply);
-                resetSidebar();
-                return;
-            }
-
-            renderMessage('bot', result.reply);
-            const dataMatch = result.reply.match(/<data>([\s\S]*?)<\/data>/);
-            if (dataMatch && dataMatch[1]) {
-                updateSidebar(dataMatch[1]);
-
-                try {
-                    const nutritionData = JSON.parse(dataMatch[1]);
-                    openMealModal(nutritionData);
-                } catch (e) {
-                    console.error('Không parse được data dinh dưỡng:', e);
-                }
-
-                if (file && !sessionPhotos.includes(currentFileBase64)) {
-                    sessionPhotos.push(currentFileBase64);
-                }
-            }
+      const res = await fetch('/api/chat', { method:'POST', body:formData, headers:{ Authorization:`Bearer ${token}` } });
+      const result = await res.json();
+      document.getElementById('typing-indicator-box')?.remove();
+      if (result.reply) {
+        if (result.reply.includes('<error>')) {
+          const errorMatch = result.reply.match(/<error>([\s\S]*?)<\/error>/);
+          const errorMsg = errorMatch ? errorMatch[1] : 'Không phải thức ăn';
+          if (typeof showToast === 'function') showToast(errorMsg, 'error');
+          flag = true;
+          renderMessage('bot', result.reply);
+          resetSidebar();
+          return;
         }
+        renderMessage('bot', result.reply);
+        const dataMatch = result.reply.match(/<data>([\s\S]*?)<\/data>/);
+        if (dataMatch && dataMatch[1]) {
+          updateSidebar(dataMatch[1]);
+          try {
+            const nutritionData = JSON.parse(dataMatch[1]);
+            openMealModal(nutritionData);
+          } catch (e) { console.error('Không parse được data dinh dưỡng:', e); }
+          if (file && !sessionPhotos.includes(currentFileBase64)) sessionPhotos.push(currentFileBase64);
+        }
+      }
     } catch (e) {
-        console.error(e);
-        if (!flag && typeof showToast === 'function') showToast('Có lỗi đang xảy ra!', 'error');
+      console.error(e);
+      if (!flag && typeof showToast === 'function') showToast('Có lỗi đang xảy ra!', 'error');
     } finally {
-        isAnalyzing = false;
-        toggleInputState(false);
-        if (input) input.value = '';
-        if (fileInput) fileInput.value = '';
+      isAnalyzing = false;
+      toggleInputState(false);
+      if (input) input.value = '';
+      if (fileInput) fileInput.value = '';
     }
-}
+  }
 
-function initNavigation() {
-    const nav2 = document.querySelector('.nav-item:nth-child(2)');
-    const nav3 = document.querySelector('.nav-item:nth-child(3)');
-    const nav4 = document.querySelector('.nav-item:nth-child(4)');
+  function initNavigation() {
+    document.getElementById('nav-diet').onclick = () => window.location.href = 'diet-details.html';
+    document.getElementById('nav-plan').onclick = () => window.location.href = 'schedule.html';
+    document.getElementById('nav-profile').onclick = () => window.location.href = 'setup.html';
+  }
 
-    if (nav2) nav2.onclick = () => window.location.href = 'diet-details.html';
-    if (nav3) nav3.onclick = () => window.location.href = 'schedule.html';
-    if (nav4) nav4.onclick = () => window.location.href = 'setup.html';
-}
-
-document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', () => {
     wireMealModalEvents();
     initNavigation();
-
     const token = localStorage.getItem('calorie_ai_token');
     if (!token) {
-        if (typeof showToast === 'function') showToast('Vui lòng đăng nhập!', 'info');
-        setTimeout(() => {
-            window.location.href = 'signin.html';
-        }, 1369);
-        return;
+      if (typeof showToast === 'function') showToast('Vui lòng đăng nhập!', 'info');
+      setTimeout(() => { window.location.href = 'signin.html'; }, 1369);
+      return;
     }
-
     loadChatHistory();
-
     const input = document.getElementById('user-input');
-    if (input) {
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
-    }
-});
-</script>
+    if (input) input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+  });
+  </script>
 </body>
 </html>

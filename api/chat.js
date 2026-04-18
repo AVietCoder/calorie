@@ -308,10 +308,13 @@ export default async function handler(req, res) {
     const mealDataRaw = normalizeText(getFirst(fields.mealData));
     const mealTime = normalizeText(getFirst(fields.mealTime));
     const mealDayMode = normalizeText(getFirst(fields.mealDayMode));
+    
     const mealDayText =
-      normalizeText(getFirst(fields.mealDayText)) ||
-      normalizeText(getFirst(fields.mealDayValue));
+    normalizeText(getFirst(fields.mealDayText)) ||
+    normalizeText(getFirst(fields.mealDayValue));
     const pendingMealData = safeJsonParse(mealDataRaw);
+    console.log("0: " + mealTime)
+    console.log("2: " + mealDayText)
 
     if (!message && !imageFile) {
       return res.status(400).json({ error: "Thiếu dữ liệu: Gửi tin nhắn hoặc ảnh." });
@@ -330,21 +333,19 @@ export default async function handler(req, res) {
     let history = normalizeHistory(profile.chat_history || []);
     let currentPlan = Array.isArray(profile.weekly_plan) ? profile.weekly_plan : [];
     const now = new Date();
-    const formatDate = (date) => {
+    const formatDate = (dateInput) => {
+      const date = new Date(dateInput); 
       const d = String(date.getDate()).padStart(2, "0");
       const m = String(date.getMonth() + 1).padStart(2, "0");
       const y = date.getFullYear();
       return `${d}/${m}/${y}`;
     };
 
-    const todayText = formatDate(now);
+    const todayText = formatDate((mealDayText == "hôm nay" ? now : mealDayText));
     const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
     const dayNames = ["", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
     const currentDayName = dayNames[dayOfWeek];
-    const resolvedDayText =
-      mealDayText === "today"
-        ? todayText
-        : mealDayText || todayText;
+    const resolvedDayText = todayText
     // Có ảnh: phân tích ảnh + text
     if (imageFile) {
       let userContent = [];
@@ -418,6 +419,7 @@ export default async function handler(req, res) {
       pendingMealData &&
       mealTime;
 if (isMealFollowup) {
+  console.log(resolvedDayText)
   finalMessage = `Bạn đã ăn ${pendingMealData.description || "món ăn"} vào buổi ${mealTime}, ngày ${resolvedDayText}.
 
 Thông tin dinh dưỡng ước tính:
@@ -480,8 +482,6 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
       result.newPlan.length > 0
     ) {
       currentPlan = result.newPlan;
-      console.log("HI")
-      console.log(user)
     await supabase.from('profiles').update({ 
         weekly_plan: currentPlan,
         plan_updated_at: now 

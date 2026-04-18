@@ -1,193 +1,388 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nutrition AI Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="toast.css">
-    <link rel="stylesheet" href="both.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Diet Dashboard · Calorie AI</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="toast.css" />
+<link rel="stylesheet" href="both.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  /* Page-specific styles */
+  .hero{
+    position:relative;overflow:hidden;
+    border-radius:var(--radius-xl);padding:36px 40px;
+    background:var(--gradient-hero);
+    border:1px solid var(--border);
+    box-shadow:var(--shadow);
+  }
+  .hero-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:32px;align-items:center}
+  .hero-eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:6px 12px;border-radius:999px;
+    background:var(--sage-50);color:var(--primary-deep);
+    font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;
+    margin-bottom:14px;
+  }
+  .hero-eyebrow i{color:var(--gold)}
+  .target-value{
+    font-size:64px;line-height:1;font-weight:800;
+    color:var(--text-main);letter-spacing:-2px;
+    margin-bottom:16px;
+  }
+  .target-value .target-unit{font-size:20px;font-weight:600;color:var(--text-sub);letter-spacing:0;margin-left:6px}
+  .hero-meta{display:flex;gap:10px;flex-wrap:wrap}
+  .chip{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:8px 14px;border-radius:999px;
+    background:var(--surface);border:1px solid var(--border);
+    font-size:12px;font-weight:600;color:var(--text-main);
+  }
+  .chip i{color:var(--primary)}
+  .hero-chart{position:relative;height:240px}
 
+  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:22px}
+  .stat-box{
+    position:relative;padding:22px;border-radius:var(--radius-lg);
+    background:var(--surface);border:1px solid var(--border-soft);
+    transition:all .3s;box-shadow:var(--shadow-sm);
+  }
+  .stat-box:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--primary)}
+  .stat-icon{
+    width:42px;height:42px;border-radius:12px;
+    background:var(--sage-50);color:var(--primary-deep);
+    display:flex;align-items:center;justify-content:center;font-size:16px;
+    margin-bottom:14px;
+  }
+  .stat-label{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-sub);margin-bottom:4px;font-weight:600}
+  .stat-value{font-size:24px;font-weight:700;color:var(--text-main);letter-spacing:-0.5px}
+
+  .grid-2{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;margin-top:18px}
+  .grid-charts{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:18px}
+
+  .macro-donut-wrap{position:relative;height:240px;display:flex;align-items:center;justify-content:center}
+  .macro-center{position:absolute;text-align:center;pointer-events:none}
+  .macro-center .num{font-size:26px;font-weight:800;color:var(--text-main);letter-spacing:-0.5px}
+  .macro-center .lbl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-sub);font-weight:600;margin-top:2px}
+
+  .macro-list{display:flex;flex-direction:column;gap:16px;justify-content:center}
+  .macro-item .macro-info{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;font-weight:500;color:var(--text-main)}
+  .macro-info .macro-val{color:var(--text-main);font-weight:700;font-variant-numeric:tabular-nums}
+  .macro-bar{height:8px;border-radius:999px;background:var(--cream-2);overflow:hidden}
+  .macro-fill{height:100%;border-radius:999px;transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+
+  .chart-wrap{position:relative;height:280px}
+
+  .timetable-grid{display:grid;grid-template-columns:90px repeat(7,1fr);gap:8px;margin-top:8px}
+  .time-header,.day-header{
+    text-align:center;padding:10px 4px;
+    font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;
+    color:var(--text-sub);
+  }
+  .time-label{
+    display:flex;align-items:center;justify-content:center;
+    font-size:14px;font-weight:700;color:var(--primary-deep);
+    background:var(--sage-50);
+    border:1px solid var(--border-soft);border-radius:12px;
+  }
+  .meal-cell{
+    min-height:68px;padding:10px 8px;border-radius:12px;
+    background:var(--surface-2);border:1px solid var(--border-soft);
+    font-size:12px;line-height:1.4;color:var(--text-main);
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    transition:all .25s;
+  }
+  .meal-cell:hover{border-color:var(--primary);background:#fff;transform:scale(1.02)}
+
+  /* Chat */
+  .chat-section{margin-top:0}
+  .chat-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  #chat-history{
+    max-height:280px;overflow-y:auto;
+    padding:18px;border-radius:var(--radius);
+    background:var(--cream-0);border:1px solid var(--border-soft);
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .ai-msg,.user-msg{max-width:80%;padding:11px 16px;border-radius:16px;font-size:14px;line-height:1.5}
+  .ai-msg{background:#fff;border:1px solid var(--border-soft);color:var(--text-main);align-self:flex-start;border-top-left-radius:4px}
+  .user-msg{background:var(--gradient-primary);color:#fff;align-self:flex-end;border-top-right-radius:4px;font-weight:500}
+  .typing{font-size:12px;color:var(--text-sub);padding:8px 4px;font-style:italic}
+  .chat-input-wrapper{
+    display:flex;gap:10px;margin-top:14px;
+    padding:6px;border-radius:999px;
+    background:var(--surface);border:1px solid var(--border);
+    box-shadow:var(--shadow-sm);
+  }
+  .chat-input-wrapper input{
+    flex:1;background:transparent;border:0;outline:none;
+    color:var(--text-main);font-size:14px;padding:10px 16px;
+  }
+  .chat-input-wrapper input::placeholder{color:var(--text-dim)}
+  .send-btn{
+    width:42px;height:42px;border-radius:999px;border:0;cursor:pointer;
+    background:var(--gradient-primary);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .25s;
+  }
+  .send-btn:hover{transform:rotate(-15deg) scale(1.05);box-shadow:0 10px 22px -8px rgba(125,155,118,0.5)}
+
+  @media (max-width:1024px){
+    .hero-grid,.grid-2,.grid-charts{grid-template-columns:1fr}
+    .target-value{font-size:48px}
+  }
+  @media (max-width:720px){
+    .hero{padding:24px 20px}
+    .target-value{font-size:40px}
+    .stats-grid{grid-template-columns:1fr}
+    .timetable-grid{grid-template-columns:60px repeat(7,minmax(80px,1fr));overflow-x:auto}
+  }
+</style>
 </head>
 <body>
-    <div id="toast-container"></div>
-    
-    <aside class="side-nav">
-        <div class="nav-item" id="nav-home"><i class="fa-solid fa-house"></i><span>HOME</span></div>
-        <div class="nav-item active" id="nav-diet"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
-        <div class="nav-item" id="nav-plan"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
-        <div class="nav-item" id="nav-profile"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
-    </aside>
-    <div class="main-wrapper">
-        <header class="header">
-            <a href="index.html" class="logo"><i class="fa-solid fa-leaf"></i> Calorie AI</a>
-             <div id="auth-zone" class="header-tools">
+  <div id="toast-container"></div>
+
+  <aside class="side-nav">
+    <div class="nav-item" id="nav-home"><i class="fa-solid fa-house"></i><span>HOME</span></div>
+    <div class="nav-item active" id="nav-diet"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
+    <div class="nav-item" id="nav-plan"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
+    <div class="nav-item" id="nav-profile"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="header">
+      <a href="index.html" class="logo"><i class="fa-solid fa-leaf"></i> Calorie AI</a>
+      <div id="auth-zone" class="header-tools">
         <div class="user-profile-nav" onclick="handleLogout()" title="Nhấn để đăng xuất">
-            <span class="user-name">
-                <i class="fa-solid fa-circle-user"></i> 
-                <strong>Đăng xuất</strong>
-            </span>
-            <div class="btn-logout-icon">
-                <i class="fa-solid fa-right-from-bracket"></i>
-            </div>
+          <span class="user-name"><i class="fa-solid fa-circle-user"></i> <strong>Đăng xuất</strong></span>
+          <div class="btn-logout-icon"><i class="fa-solid fa-right-from-bracket"></i></div>
         </div>
-    </div>
-        </header>
- 
-       <main class="content" id="main-content">
-    <div class="roadmap-container">
-       
+      </div>
+    </header>
+
+    <main class="content" id="main-content">
+      <div class="roadmap-container">
 
         <div id="overview-content">
-            <div class="main-card">
-                <div class="target-label">Mục tiêu nạp mỗi ngày</div>
+          <div class="hero">
+            <div class="hero-grid">
+              <div>
+                <span class="hero-eyebrow"><i class="fa-solid fa-sparkles"></i> Lộ trình hôm nay</span>
+                <div style="font-size:13px;color:var(--text-sub);margin-bottom:6px;font-weight:500">Mục tiêu nạp mỗi ngày</div>
                 <div class="target-value" id="display-calories">-- <span class="target-unit">kcal</span></div>
-                <div style="display: flex; gap: 20px; font-size: 0.9rem;">
-                    <span id="display-bmr"><i class="fa-solid fa-bolt"></i> BMR: --</span>
-                    <span id="display-tdee"><i class="fa-solid fa-fire"></i> TDEE: --</span>
+                <div class="hero-meta">
+                  <span class="chip" id="display-bmr"><i class="fa-solid fa-bolt"></i> BMR: --</span>
+                  <span class="chip" id="display-tdee"><i class="fa-solid fa-fire"></i> TDEE: --</span>
+                  <span class="chip"><i class="fa-solid fa-seedling"></i> Cá nhân hoá</span>
                 </div>
+              </div>
+              <div class="hero-chart"><canvas id="energyChart"></canvas></div>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-icon"><i class="fa-solid fa-weight-scale"></i></div>
+              <div class="stat-label">Cân nặng hiện tại</div>
+              <div class="stat-value" id="display-weight">-- kg</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-icon"><i class="fa-solid fa-bullseye"></i></div>
+              <div class="stat-label">Mục tiêu hướng đến</div>
+              <div class="stat-value" id="display-target">-- kg</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-icon"><i class="fa-solid fa-calendar-day"></i></div>
+              <div class="stat-label">Thời hạn (Deadline)</div>
+              <div class="stat-value" id="display-deadline">--/--/--</div>
+            </div>
+          </div>
+
+          <div class="section-title">
+            <h2>Phân tích dinh dưỡng</h2>
+            <p>Tỉ lệ macro & tiến độ cân nặng theo lộ trình</p>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h3><i class="fa-solid fa-chart-pie"></i> Tỉ lệ Macro đề xuất</h3>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center">
+                <div class="macro-donut-wrap">
+                  <canvas id="macroChart"></canvas>
+                  <div class="macro-center">
+                    <div class="num" id="macro-center-cal">--</div>
+                    <div class="lbl">kcal / ngày</div>
+                  </div>
+                </div>
+                <div class="macro-list">
+                  <div class="macro-item">
+                    <div class="macro-info"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:#c25b4a"></span>Protein</span><span class="macro-val" id="p-val">--g</span></div>
+                    <div class="macro-bar"><div id="p-bar" class="macro-fill" style="width:0%;background:#c25b4a"></div></div>
+                  </div>
+                  <div class="macro-item">
+                    <div class="macro-info"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:#b8975a"></span>Carbs</span><span class="macro-val" id="c-val">--g</span></div>
+                    <div class="macro-bar"><div id="c-bar" class="macro-fill" style="width:0%;background:#b8975a"></div></div>
+                  </div>
+                  <div class="macro-item">
+                    <div class="macro-info"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:#7d9b76"></span>Fats</span><span class="macro-val" id="f-val">--g</span></div>
+                    <div class="macro-bar"><div id="f-bar" class="macro-fill" style="width:0%;background:#7d9b76"></div></div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div class="stats-grid">
-                <div class="stat-box">
-                    <i class="fa-solid fa-weight-scale"></i>
-                    <div class="stat-label">Cân nặng hiện tại</div>
-                    <div class="stat-value" id="display-weight">-- kg</div>
-                </div>
-                <div class="stat-box">
-                    <i class="fa-solid fa-bullseye"></i>
-                    <div class="stat-label">Mục tiêu hướng đến</div>
-                    <div class="stat-value" id="display-target" style="color: var(--primary);">-- kg</div>
-                </div>
-                <div class="stat-box">
-                    <i class="fa-solid fa-calendar-day"></i>
-                    <div class="stat-label">Thời hạn (Deadline)</div>
-                    <div class="stat-value" id="display-deadline">--/--/--</div>
-                </div>
+            <div class="card">
+              <h3><i class="fa-solid fa-route"></i> Tiến độ cân nặng</h3>
+              <div class="chart-wrap"><canvas id="weightChart"></canvas></div>
             </div>
+          </div>
 
-            <div class="card" style="margin-top: 25px;">
-                <h3>Tỉ lệ dinh dưỡng đề xuất</h3>
-                <div class="macro-item">
-                    <div class="macro-info"><span>Protein (Đạm)</span><span id="p-val">--g</span></div>
-                    <div class="macro-bar"><div id="p-bar" class="macro-fill" style="width: 0%; background: #e74c3c;"></div></div>
-                </div>
-                <div class="macro-item">
-                    <div class="macro-info"><span>Carbs (Tinh bột)</span><span id="c-val">--g</span></div>
-                    <div class="macro-bar"><div id="c-bar" class="macro-fill" style="width: 0%; background: #f1c40f;"></div></div>
-                </div>
-                <div class="macro-item">
-                    <div class="macro-info"><span>Fats (Chất béo)</span><span id="f-val">--g</span></div>
-                    <div class="macro-bar"><div id="f-bar" class="macro-fill" style="width: 0%; background: #3498db;"></div></div>
-                </div>
+          <div class="grid-charts">
+            <div class="card">
+              <h3><i class="fa-solid fa-chart-column"></i> Calo theo từng ngày trong tuần</h3>
+              <div class="chart-wrap"><canvas id="weeklyChart"></canvas></div>
             </div>
-        </div>
-
-     <div id="ai-menu-container" style="display: none;">
-    <div class="card chat-section">
-        <div class="chat-header">
-            <h3 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 10px;">
-                <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--primary-green);"></i>
-                HLV Dinh Dưỡng AI
-            </h3>
-        </div>
-
-        <div id="chat-history">
-            <div class="ai-msg">
-                Chào Noah! Mình đã sẵn sàng. Bạn muốn thay đổi món nào trong thực đơn tuần này không?
+            <div class="card">
+              <h3><i class="fa-solid fa-gauge-high"></i> BMR vs TDEE</h3>
+              <div class="chart-wrap"><canvas id="bmrChart"></canvas></div>
             </div>
+          </div>
         </div>
 
-        <div id="typing-indicator" style="display: none;" class="typing">AI đang suy nghĩ...</div>
+        
 
-        <div class="chat-input-wrapper">
-            <input type="text" id="user-input" placeholder="Ví dụ: Đổi bữa trưa Thứ 3 thành bún chả..." onkeypress="if(event.key === 'Enter') sendMessage()">
-            <button class="send-btn" onclick="sendMessage()">
-                <i class="fa-solid fa-paper-plane"></i>
-            </button>
-        </div>
-    </div>
+      </div>
+    </main>
+  </div>
 
-     <div class="card">
-    <h3><i class="fa-solid fa-calendar-week"></i> Lộ trình thực đơn 7 ngày</h3>
-    <div id="menu-content-area">
-        <div id="ai-response-text"></div> 
+  <script src="toast.js"></script>
+  <script>
+  if (typeof window.showToast !== 'function') window.showToast = (m)=>console.log('[toast]',m);
 
-       <div class="timetable-grid">
-    <div class="time-header">Bữa</div>
-    <div class="day-header">T2</div><div class="day-header">T3</div><div class="day-header">T4</div>
-    <div class="day-header">T5</div><div class="day-header">T6</div><div class="day-header">T7</div><div class="day-header">CN</div>
+  if (window.Chart) {
+    Chart.defaults.color = '#6a7a66';
+    Chart.defaults.font.family = 'Inter, sans-serif';
+    Chart.defaults.borderColor = 'rgba(125,155,118,0.12)';
+  }
 
-    <div class="time-label">Sáng</div>
-    <div class="meal-cell" id="d1-morning">-</div><div class="meal-cell" id="d2-morning">-</div>
-    <div class="meal-cell" id="d3-morning">-</div><div class="meal-cell" id="d4-morning">-</div>
-    <div class="meal-cell" id="d5-morning">-</div><div class="meal-cell" id="d6-morning">-</div>
-    <div class="meal-cell" id="d7-morning">-</div>
+  const PALETTE = {
+    protein:'#c25b4a', carbs:'#b8975a', fat:'#7d9b76',
+    primary:'#7d9b76', primaryDeep:'#4d6549', gold:'#b8975a', sageLight:'#dce5d4'
+  };
 
-    <div class="time-label">Trưa</div>
-    <div class="meal-cell" id="d1-lunch">-</div><div class="meal-cell" id="d2-lunch">-</div>
-    <div class="meal-cell" id="d3-lunch">-</div><div class="meal-cell" id="d4-lunch">-</div>
-    <div class="meal-cell" id="d5-lunch">-</div><div class="meal-cell" id="d6-lunch">-</div>
-    <div class="meal-cell" id="d7-lunch">-</div>
+  let macroChart, weightChart, weeklyChart, bmrChart, energyChart;
 
-    <div class="time-label">Tối</div>
-    <div class="meal-cell" id="d1-evening">-</div><div class="meal-cell" id="d2-evening">-</div>
-    <div class="meal-cell" id="d3-evening">-</div><div class="meal-cell" id="d4-evening">-</div>
-    <div class="meal-cell" id="d5-evening">-</div><div class="meal-cell" id="d6-evening">-</div>
-    <div class="meal-cell" id="d7-evening">-</div>
-
-    <div class="time-label">Phụ</div>
-    <div class="meal-cell" id="d1-snack">-</div><div class="meal-cell" id="d2-snack">-</div>
-    <div class="meal-cell" id="d3-snack">-</div><div class="meal-cell" id="d4-snack">-</div>
-    <div class="meal-cell" id="d5-snack">-</div><div class="meal-cell" id="d6-snack">-</div>
-    <div class="meal-cell" id="d7-snack">-</div>
-</div>
-    </div>
-</div>
-</div>
-</main>
-    </div>
-
-    <script src="toast.js"></script>
-    <script>
-function scrollToBottom() {
-    const history = document.getElementById('chat-history');
-    history.scrollTo({
-        top: history.scrollHeight,
-        behavior: 'smooth'
+  function renderMacroChart(p, c, f){
+    const ctx = document.getElementById('macroChart');
+    if (!ctx) return;
+    if (macroChart) macroChart.destroy();
+    macroChart = new Chart(ctx,{
+      type:'doughnut',
+      data:{labels:['Protein','Carbs','Fats'],datasets:[{
+        data:[p*4, c*4, f*9],
+        backgroundColor:[PALETTE.protein,PALETTE.carbs,PALETTE.fat],
+        borderColor:'#fff',borderWidth:3,hoverOffset:8
+      }]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'72%',
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>` ${ctx.label}: ${Math.round(ctx.parsed)} kcal`}}}}
     });
-}
+  }
 
-function updateProgress(startWeight, currentWeight, targetWeight) {
-    const displayPercent = document.getElementById('display-percent');
-    const displayStart = document.getElementById('display-start');
-    const displayRemain = document.getElementById('display-remain');
+  function renderWeightChart(start, current, target, deadline){
+    const ctx = document.getElementById('weightChart');
+    if (!ctx) return;
+    const s=Number(start)||current||0, cur=Number(current)||0, tgt=Number(target)||cur;
+    const labels=['Bắt đầu','Tuần 1','Tuần 2','Hiện tại','...',deadline||'Mục tiêu'];
+    const series=[s, +(s+(cur-s)*0.33).toFixed(1), +(s+(cur-s)*0.66).toFixed(1), cur, null, tgt];
+    const targetLine=labels.map(()=>tgt);
+    const grad=ctx.getContext('2d').createLinearGradient(0,0,0,280);
+    grad.addColorStop(0,'rgba(125,155,118,0.45)');grad.addColorStop(1,'rgba(125,155,118,0)');
+    if (weightChart) weightChart.destroy();
+    weightChart=new Chart(ctx,{
+      type:'line',
+      data:{labels,datasets:[
+        {label:'Cân nặng (kg)',data:series,spanGaps:true,
+         borderColor:PALETTE.primary,backgroundColor:grad,fill:true,tension:0.4,
+         borderWidth:3,pointBackgroundColor:PALETTE.gold,pointBorderColor:'#fff',pointRadius:5,pointHoverRadius:7,pointBorderWidth:2},
+        {label:'Mục tiêu',data:targetLine,borderColor:PALETTE.gold,borderDash:[6,6],borderWidth:2,pointRadius:0,fill:false}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{usePointStyle:true,boxWidth:8,padding:14}}},
+        scales:{y:{grid:{color:'rgba(125,155,118,0.08)'},ticks:{callback:(v)=>v+' kg'}},
+                x:{grid:{display:false}}}}
+    });
+  }
 
-    if (!displayPercent || !startWeight) return;
+  function renderWeeklyChart(targetCal){
+    const ctx = document.getElementById('weeklyChart');
+    if (!ctx) return;
+    const tc=Number(targetCal)||2000;
+    const variation=[1.00,0.96,1.02,0.98,1.05,1.10,1.04];
+    const data=variation.map(v=>Math.round(tc*v));
+    const labels=['T2','T3','T4','T5','T6','T7','CN'];
+    const goalLine=labels.map(()=>tc);
+    const grad=ctx.getContext('2d').createLinearGradient(0,0,0,280);
+    grad.addColorStop(0,PALETTE.primary);grad.addColorStop(1,'rgba(220,229,212,0.6)');
+    if (weeklyChart) weeklyChart.destroy();
+    weeklyChart=new Chart(ctx,{
+      type:'bar',
+      data:{labels,datasets:[
+        {label:'Calo nạp (ước tính)',data,backgroundColor:grad,borderRadius:10,borderSkipped:false,maxBarThickness:36},
+        {label:'Mục tiêu',data:goalLine,type:'line',borderColor:PALETTE.gold,borderDash:[5,5],borderWidth:2,pointRadius:0,fill:false}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{usePointStyle:true,boxWidth:8,padding:14}},
+                 tooltip:{callbacks:{label:(c)=>` ${c.dataset.label}: ${c.parsed.y} kcal`}}},
+        scales:{y:{grid:{color:'rgba(125,155,118,0.08)'},ticks:{callback:v=>v+' kcal'}},
+                x:{grid:{display:false}}}}
+    });
+  }
 
-    const totalChangeNeeded = Math.abs(startWeight - targetWeight);
-    const achieved = Math.abs(startWeight - currentWeight);
-    const percent = totalChangeNeeded === 0 ? 100 : Math.min(100, Math.round((achieved / totalChangeNeeded) * 100));
-    
-    displayPercent.innerText = `${percent}%`;
-    displayStart.innerText = `Bắt đầu: ${startWeight}kg`;
-    
-    const remain = (currentWeight - targetWeight).toFixed(1);
-    displayRemain.innerText = remain > 0 ? `Còn lại: ${remain}kg` : `Đã đạt mục tiêu!`;
-}
+  function renderBmrChart(bmr, tdee){
+    const ctx = document.getElementById('bmrChart');
+    if (!ctx) return;
+    const b=Number(bmr)||0, t=Number(tdee)||0;
+    const activity=Math.max(0, t-b);
+    if (bmrChart) bmrChart.destroy();
+    bmrChart=new Chart(ctx,{
+      type:'doughnut',
+      data:{labels:['BMR (cơ bản)','Vận động'],datasets:[{
+        data:[b, activity],
+        backgroundColor:[PALETTE.primaryDeep, PALETTE.gold],
+        borderColor:'#fff',borderWidth:3,hoverOffset:6
+      }]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
+        plugins:{legend:{position:'bottom',labels:{usePointStyle:true,boxWidth:8,padding:14}},
+                 tooltip:{callbacks:{label:(c)=>` ${c.label}: ${Math.round(c.parsed)} kcal`}}}}
+    });
+  }
 
+  function renderEnergyChart(bmr, tdee, target){
+    const ctx = document.getElementById('energyChart');
+    if (!ctx) return;
+    const b=Number(bmr)||1, t=Number(tdee)||1, tg=Number(target)||1;
+    if (energyChart) energyChart.destroy();
+    energyChart=new Chart(ctx,{
+      type:'polarArea',
+      data:{labels:['BMR','TDEE','Mục tiêu'],datasets:[{
+        data:[b,t,tg],
+        backgroundColor:['rgba(77,101,73,0.55)','rgba(125,155,118,0.55)','rgba(184,151,90,0.55)'],
+        borderColor:[PALETTE.primaryDeep,PALETTE.primary,PALETTE.gold],borderWidth:2
+      }]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{usePointStyle:true,boxWidth:8,padding:14}}},
+        scales:{r:{ticks:{display:false,backdropColor:'transparent'},grid:{color:'rgba(125,155,118,0.15)'},angleLines:{color:'rgba(125,155,118,0.15)'}}}}
+    });
+  }
 
+  /* ====== Backend logic preserved ====== */
+  function scrollToBottom(){const h=document.getElementById('chat-history');if(h)h.scrollTo({top:h.scrollHeight,behavior:'smooth'});}
+  function updateProgress(){}
 
-async function loadDietData() 
-{
+  async function loadDietData() {
     const token = localStorage.getItem('calorie_ai_token');
-    if (!token) 
-    {
-        window.location.href = "signin.html";
-        return;
-    }
+    if (!token) { window.location.href = "signin.html"; return; }
 
     const roadmapContainer = document.querySelector('.content');
     const loader = document.createElement('div');
@@ -197,115 +392,64 @@ async function loadDietData()
     roadmapContainer.appendChild(loader);
 
     try {
-        const statusRes = await fetch('/api/status', {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const statusData = await statusRes.json();
-        if (!statusData.is_setup_completed) 
-        {
-            window.location.href = 'setup.html';
-            return; 
-        }
+      const statusRes = await fetch('/api/status', { method:'GET', headers:{ 'Authorization':`Bearer ${token}` } });
+      const statusData = await statusRes.json();
+      if (!statusData.is_setup_completed) { window.location.href = 'setup.html'; return; }
 
-        const res = await fetch('/api/diet-info', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const result = await res.json();
+      const res = await fetch('/api/diet-info', { headers:{ 'Authorization':`Bearer ${token}` } });
+      const result = await res.json();
 
-        if (result.success) {
-            const d = result.data;
-            
-            document.getElementById('display-calories').innerHTML = `${d.calories.toLocaleString()} <span class="target-unit">kcal</span>`;
-            document.getElementById('display-weight').innerText = `${d.profile.weight} kg`;
-            document.getElementById('display-target').innerText = `${d.profile.target_weight} kg`;
-            document.getElementById('display-deadline').innerText = d.profile.deadline;
-            document.getElementById('display-bmr').innerHTML = `<i class="fa-solid fa-bolt"></i> BMR: ${d.bmr}`;
-            document.getElementById('display-tdee').innerHTML = `<i class="fa-solid fa-fire"></i> TDEE: ${d.tdee}`;
-            
-            document.getElementById('p-val').innerText = `${d.macros.protein}g`;
-            document.getElementById('c-val').innerText = `${d.macros.carbs}g`;
-            document.getElementById('f-val').innerText = `${d.macros.fat}g`;
-            
-            const pPercent = (d.macros.protein * 4 / d.calories * 100).toFixed(0);
-            const cPercent = (d.macros.carbs * 4 / d.calories * 100).toFixed(0);
-            const fPercent = (d.macros.fat * 9 / d.calories * 100).toFixed(0);
-            
-            document.getElementById('p-bar').style.width = pPercent + '%';
-            document.getElementById('c-bar').style.width = cPercent + '%';
-            document.getElementById('f-bar').style.width = fPercent + '%';
+      if (result.success) {
+        const d = result.data;
+        document.getElementById('display-calories').innerHTML = `${Number(d.calories).toLocaleString()} <span class="target-unit">kcal</span>`;
+        document.getElementById('display-weight').innerText = `${d.profile.weight} kg`;
+        document.getElementById('display-target').innerText = `${d.profile.target_weight} kg`;
+        document.getElementById('display-deadline').innerText = d.profile.deadline;
+        document.getElementById('display-bmr').innerHTML = `<i class="fa-solid fa-bolt"></i> BMR: ${d.bmr}`;
+        document.getElementById('display-tdee').innerHTML = `<i class="fa-solid fa-fire"></i> TDEE: ${d.tdee}`;
+        document.getElementById('p-val').innerText = `${d.macros.protein}g`;
+        document.getElementById('c-val').innerText = `${d.macros.carbs}g`;
+        document.getElementById('f-val').innerText = `${d.macros.fat}g`;
+        const pPercent = (d.macros.protein * 4 / d.calories * 100).toFixed(0);
+        const cPercent = (d.macros.carbs * 4 / d.calories * 100).toFixed(0);
+        const fPercent = (d.macros.fat * 9 / d.calories * 100).toFixed(0);
+        document.getElementById('p-bar').style.width = pPercent + '%';
+        document.getElementById('c-bar').style.width = cPercent + '%';
+        document.getElementById('f-bar').style.width = fPercent + '%';
+        document.getElementById('macro-center-cal').innerText = Number(d.calories).toLocaleString();
 
-            if (typeof updateProgress === 'function') {
-                updateProgress(d.profile.start_weight, d.profile.weight, d.profile.target_weight);
-            }
-        }
+        renderMacroChart(d.macros.protein, d.macros.carbs, d.macros.fat);
+        renderWeightChart(d.profile.start_weight, d.profile.weight, d.profile.target_weight, d.profile.deadline);
+        renderWeeklyChart(d.calories);
+        renderBmrChart(d.bmr, d.tdee);
+        renderEnergyChart(d.bmr, d.tdee, d.calories);
+      }
     } catch (err) {
-        console.error("Lỗi:", err);
-        showToast("Không thể tải dữ liệu lộ trình", "error");
+      console.error("Lỗi:", err);
+      showToast("Không thể tải dữ liệu lộ trình", "error");
+      // Demo fallback
+      renderMacroChart(140, 220, 60);
+      renderWeightChart(78, 74, 68, '01/12/2025');
+      renderWeeklyChart(2000);
+      renderBmrChart(1600, 2200);
+      renderEnergyChart(1600, 2200, 2000);
+      document.getElementById('macro-center-cal').innerText = '2,000';
     } finally {
-        const loaderObj = document.getElementById('main-loader');
-        if (loaderObj) {
-            setTimeout(() => loaderObj.remove(), 400);
-        }
+      const loaderObj = document.getElementById('main-loader');
+      if (loaderObj) setTimeout(() => loaderObj.remove(), 400);
     }
-}
+  }
 
-function handleLogout() {
+  function handleLogout() {
     localStorage.removeItem('calorie_ai_token');
     showToast("Đang đăng xuất...", "info");
     setTimeout(() => window.location.href = "signin.html", 1000);
-}
+  }
 
-async function checkUserStatusAndLoad() {
-    const token = localStorage.getItem('calorie_ai_token');
-    if (!token) 
-    {
-        window.location.href = 'signin.html';
-        return;
-    }
-    try {
-        const res = await fetch("/api/chat-history", {
-            method: "GET",
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (res.ok == false)
-        {
-            showToast("Vui lòng đăng nhập!", "info");
-            setTimeout(() => {
-                window.location.href = "signin.html";
-            }, 1369); 
-            return;
-        }
-    } catch (e) {
-        console.error(e)
-        showToast("Vui lòng đăng nhập!", "info");
-        setTimeout(() => {
-            window.location.href = "signin.html";
-        }, 1369);   
-    }
-    try {
-        const statusRes = await fetch('/api/status', {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const statusData = await statusRes.json();
-
-        if (!statusData.is_setup_completed) {
-            window.location.href = 'setup.html';
-            return;
-        }
-        await loadDietData(token);
-
-    } catch (err) {
-        console.error("Lỗi kiểm tra trạng thái:", err);
-        if (typeof showToast === 'function') showToast("Lỗi kết nối hệ thống", "error");
-    }
-}
-window.onload = loadDietData;
-document.getElementById('nav-home').onclick = () => window.location.href = 'chat.html';
-document.getElementById('nav-plan').onclick = () => window.location.href = 'schedule.html';
-document.getElementById('nav-profile').onclick = () => window.location.href = 'setup.html';
-</script>
+  window.onload = loadDietData;
+  document.getElementById('nav-home').onclick = () => window.location.href = 'chat.html';
+  document.getElementById('nav-plan').onclick = () => window.location.href = 'schedule.html';
+  document.getElementById('nav-profile').onclick = () => window.location.href = 'setup.html';
+  </script>
 </body>
 </html>
