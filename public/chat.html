@@ -18,7 +18,122 @@
             --card-bg: #FFFFFF;
             --accent-gray: #E9ECEF;
         }
+.hidden { display: none !important; }
 
+.meal-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(244, 247, 244, 0.96);
+    backdrop-filter: blur(8px);
+    padding: 20px;
+}
+
+.meal-modal-card {
+    width: min(92vw, 460px);
+    background: #fff;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    border: 1px solid var(--accent-gray);
+}
+
+.meal-modal-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.4;
+}
+
+.meal-modal-subtitle {
+    margin-top: 8px;
+    font-size: 0.92rem;
+    color: var(--text-sub);
+}
+
+.meal-modal-section {
+    margin-top: 18px;
+}
+
+.meal-label {
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--text-sub);
+    margin-bottom: 10px;
+}
+
+.meal-choice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.meal-choice-btn {
+    border: 1px solid var(--accent-gray);
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px 14px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: 0.2s ease;
+    color: var(--text-main);
+}
+
+.meal-choice-btn:hover {
+    border-color: var(--primary-green);
+    transform: translateY(-1px);
+}
+
+
+.other-day-wrap {
+    margin-top: 14px;
+}
+
+.other-day-input {
+    width: 100%;
+    border: 1px solid var(--accent-gray);
+    border-radius: 14px;
+    padding: 12px 14px;
+    outline: none;
+    font-size: 0.95rem;
+}
+
+.meal-modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.meal-modal-btn {
+    flex: 1;
+    border: none;
+    border-radius: 14px;
+    padding: 12px 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.meal-modal-btn.primary {
+    background: var(--primary-green);
+    color: white;
+}
+
+.meal-modal-btn.primary:hover {
+    background: var(--dark-green);
+}
+
+.meal-modal-btn.secondary {
+    background: #eef2f3;
+    color: var(--text-main);
+}
+
+body.modal-lock {
+    overflow: hidden;
+}
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
@@ -401,86 +516,339 @@
         </div>
     </aside>
 </main>
-<script src="toast.js"></script>
 
+
+<template id="meal-selection-template">
+    <div class="card meal-interactive-card" style="background: #f9f9f9; border: 1px solid var(--primary-green); margin-bottom: 20px;">
+        <div class="meal-modal-title" style="font-size: 0.95rem; font-weight: 700;">Xác nhận bữa ăn của bạn</div>
+        
+        <div class="meal-modal-section">
+            <div class="meal-label" style="font-size: 0.8rem; margin-bottom: 5px;">Chọn buổi ăn:</div>
+            <div class="meal-choice-grid">
+                <button type="button" class="meal-choice-btn" data-meal-time="Sáng">Sáng</button>
+                <button type="button" class="meal-choice-btn" data-meal-time="Trưa">Trưa</button>
+                <button type="button" class="meal-choice-btn" data-meal-time="Tối">Tối</button>
+                <button type="button" class="meal-choice-btn" data-meal-time="Bữa phụ">Bữa phụ</button>
+            </div>
+        </div>
+
+        <div class="meal-modal-section" style="margin-top: 10px;">
+            <div class="meal-label" style="font-size: 0.8rem; margin-bottom: 5px;">Thời điểm:</div>
+            <div class="meal-choice-grid">
+                <button type="button" class="meal-choice-btn day-btn active" data-day-mode="today">Hôm nay</button>
+                <button type="button" class="meal-choice-btn day-btn" data-day-mode="other">Ngày khác</button>
+            </div>
+        </div>
+
+        <div class="other-day-wrap hidden" style="margin-top: 10px;">
+            <input class="other-day-input" type="date" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--accent-gray);">
+        </div>
+        
+        <div class="meal-modal-actions" style="margin-top: 15px; display: flex; gap: 10px;">
+            <button type="button" class="meal-modal-btn primary btn-confirm-meal" style="flex: 2;">Xác nhận</button>
+            <button type="button" class="meal-modal-btn secondary btn-cancel-meal" style="flex: 1; background: #eee;">Hủy</button>
+        </div>
+    </div>
+</template>
+
+</div>
+<script src="toast.js"></script>
 <script>
 window.currentConvId = null;
 let isAnalyzing = false;
 let isLoadingHistory = false;
+let flag = false;
+let pendingMealData = null;
+let selectedMealTime = "";
+let selectedDayMode = "today";
 const sessionPhotos = [];
+
 function handleLogout() {
     localStorage.removeItem('calorie_ai_token');
     localStorage.removeItem('user_id');
 
-    if (typeof showToast === "function") {
-        showToast("Đang đăng xuất...", "info");
+    if (typeof showToast === 'function') {
+        showToast('Đang đăng xuất...', 'info');
     }
 
     setTimeout(() => {
-        window.location.href = "signin.html";
+        window.location.href = 'signin.html';
     }, 1000);
 }
-document.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem('calorie_ai_token');
-    if (!token) 
-    {
-        showToast("Vui lòng đăng nhập!", "info");
-        setTimeout(() => {
-            window.location.href = "signin.html";
-        }, 1369);     } else {
-        loadChatHistory();
-    }
-});
 
+function toggleInputState(disabled, placeholder = 'Hỏi tôi liên quan về dinh dưỡng...') {
+    const input = document.getElementById('user-input');
+    const btn = document.querySelector('.send-btn');
+    const uploadBtn = document.querySelector('.input-tools');
+
+    if (input) input.disabled = disabled;
+    if (btn) btn.disabled = disabled;
+    if (uploadBtn) uploadBtn.style.pointerEvents = disabled ? 'none' : 'auto';
+    if (input) input.placeholder = placeholder;
+}
+
+function showTypingIndicator() {
+    const chatWindow = document.getElementById('chat-window');
+    if (!chatWindow) return;
+
+    document.getElementById('typing-indicator-box')?.remove();
+
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'typing-indicator-box';
+    typingDiv.className = 'card typing-indicator';
+    typingDiv.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+    chatWindow.appendChild(typingDiv);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function renderMessage(role, text) {
+    const chatWindow = document.getElementById('chat-window');
+    if (!chatWindow) return;
+    let displayContent = String(text ?? '').trim();
+
+    if (displayContent.includes('<deleted please>'))  return;
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'card';
+    msgDiv.style.marginBottom = '20px';
+    msgDiv.style.whiteSpace = 'pre-line';
+
+    if (role === 'user') {
+        msgDiv.style.backgroundColor = '#E8F5E9';
+        msgDiv.style.borderBottomRightRadius = '4px';
+    } else {
+        msgDiv.style.borderBottomLeftRadius = '4px';
+        msgDiv.style.backgroundColor = '#FFFFFF';
+    }
+
+
+    displayContent = displayContent.replace(/<message>[\s\S]*?<\/message>/g, '');
+    displayContent = displayContent.replace(/<data>[\s\S]*?<\/data>/g, '');
+    displayContent = displayContent.replace(/<image>[\s\S]*?<\/image>/g, '');
+    displayContent = displayContent.replace(/<error>[\s\S]*?<\/error>/g, '');
+    displayContent = displayContent.replace(/<deleted>[\s\S]*?<deleted>/gi, '');    
+    const urlIndex = displayContent.indexOf('có url:');
+    if (urlIndex !== -1) {
+        displayContent = displayContent.substring(0, urlIndex).trim();
+    }
+
+    if (displayContent.includes('Nội dung cụ thể:')) {
+        const parts = displayContent.split('Nội dung cụ thể:');
+        const prefix = parts[0].trim();
+        const suffix = parts[1].trim();
+        displayContent = (prefix === suffix || suffix === '') ? prefix : suffix;
+    }
+
+    displayContent = displayContent.replace(/\n{3,}/g, '\n\n').trim();
+    msgDiv.innerText = displayContent || 'Đang phân tích dữ liệu...';
+
+    chatWindow.appendChild(msgDiv);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function updateSidebar(jsonText) {
+    try {
+        const data = typeof jsonText === 'string' ? JSON.parse(jsonText) : jsonText;
+        document.getElementById('val-calories').innerText = data.calories || 0;
+        document.getElementById('val-desc').innerText = data.description || '';
+        document.getElementById('val-protein').innerText = data.protein || '--';
+        document.getElementById('val-fat').innerText = data.fat || '--';
+        document.getElementById('val-carbs').innerText = data.carbs || '--';
+        document.getElementById('val-fiber').innerText = data.fiber || '--';
+        document.getElementById('val-sugar').innerText = data.sugar || '--';
+        document.getElementById('val-sodium').innerText = data.sodium || '--';
+    } catch (e) {
+        console.error('Lỗi cập nhật Sidebar:', e);
+    }
+}
+
+function extractDataBlock(text = '') {
+    const match = String(text).match(/<data>([\s\S]*?)<\/data>/i);
+    if (!match) return null;
+    try {
+        return JSON.parse(match[1]);
+    } catch {
+        return null;
+    }
+}
+
+function openMealModal(nutritionData) {
+    pendingMealData = nutritionData;
+    const chatWindow = document.getElementById('chat-window');
+    const template = document.getElementById('meal-selection-template');
+    if (!template || !chatWindow) return;
+
+    const container = document.createElement('div');
+    container.className = 'meal-inline-container message bot-message'; 
+    container.style.background = "transparent"; 
+    
+    container.appendChild(template.content.cloneNode(true));
+    chatWindow.appendChild(container);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function closeMealModal() {
+    const modal = document.getElementById('meal-modal');
+    if (modal) modal.classList.add('hidden');
+    document.body.classList.remove('modal-lock');
+}
+
+function wireMealModalEvents() {
+    const chatWindow = document.getElementById('chat-window');
+    if (!chatWindow) return;
+
+    chatWindow.onclick = async (e) => {
+        const target = e.target;
+        const container = target.closest('.meal-inline-container');
+        if (!container) return;
+
+        // Chọn buổi ăn
+        if (target.classList.contains('meal-choice-btn') && target.hasAttribute('data-meal-time')) {
+            container.querySelectorAll('.meal-choice-btn[data-meal-time]').forEach(b => {
+                b.style.background = 'white';
+                b.style.borderColor = '#ddd';
+                b.classList.remove('active');
+            });
+            target.style.background = '#e8f5e9';
+            target.style.borderColor = 'var(--primary-green)';
+            target.classList.add('active');
+        }
+
+        // Chọn ngày
+        if (target.classList.contains('day-btn')) {
+            container.querySelectorAll('.day-btn').forEach(b => {
+                b.style.background = 'white';
+                b.classList.remove('active');
+            });
+            target.style.background = '#e8f5e9';
+            target.classList.add('active');
+            
+            const inputWrap = container.querySelector('.other-day-wrap');
+            if (target.dataset.dayMode === 'other') {
+                inputWrap.classList.remove('hidden');
+                const dateInp = container.querySelector('.other-day-input');
+                if(!dateInp.value) dateInp.value = new Date().toISOString().split('T')[0];
+            } else {
+                inputWrap.classList.add('hidden');
+            }
+        }
+
+        // Nút Hủy
+        if (target.classList.contains('btn-cancel-meal')) {
+            container.remove();
+            renderMessage('bot', 'Đã hủy. Bạn có thể nhập món khác.');
+            pendingMealData = null;
+        }
+
+        // Nút Xác nhận
+        if (target.classList.contains('btn-confirm-meal')) {
+            const activeTime = container.querySelector('.meal-choice-btn[data-meal-time].active');
+            const activeDay = container.querySelector('.day-btn.active');
+            if (!activeTime) return showToast('Hãy chọn buổi ăn', 'info');
+
+            const time = activeTime.dataset.mealTime;
+            const mode = activeDay.dataset.dayMode;
+            const dateVal = mode === 'today' ? 'today' : container.querySelector('.other-day-input').value;
+
+            container.remove();
+            submitMealUpdate(time, mode, dateVal);
+        }
+    };
+}
+async function submitMealUpdate(mealTime, dayMode, dayValue) {
+    const displayDate = dayValue === 'today' ? 'hôm nay' : dayValue;
+    const confirmMessage = `Xác nhận: Ăn vào buổi ${mealTime}, ${displayDate}`;
+    
+    renderMessage('user', confirmMessage);
+    showTypingIndicator();
+    toggleInputState(true, 'Đang cập nhật thực đơn...');
+
+    const token = localStorage.getItem('calorie_ai_token');
+    const formData = new FormData();
+    
+    // Gửi dữ liệu đồng bộ với Backend
+    formData.append('message', confirmMessage); 
+    formData.append('followupType', 'meal_time_update');
+    formData.append('mealData', JSON.stringify(pendingMealData));
+    formData.append('mealTime', mealTime);
+    formData.append('mealDayText', displayDate);
+    formData.append('mealDayValue', dayValue); // Gửi dayValue (today hoặc date string)
+    try {
+        const res = await fetch('/api/chat', {
+            method: 'POST',
+            body: formData,
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const result = await res.json();
+        document.getElementById('typing-indicator-box')?.remove();
+        
+        if (result.success) {
+            renderMessage('bot', result.reply || 'Đã ghi lại bữa ăn của bạn!');
+            // Nếu có thực đơn mới, bạn có thể gọi hàm update UI ở đây
+            if(result.newPlan) console.log("Thực đơn mới:", result.newPlan);
+        }
+    } catch (err) {
+        document.getElementById('typing-indicator-box')?.remove();
+        showToast('Lỗi kết nối server', 'error');
+    } finally {
+        toggleInputState(false);
+        pendingMealData = null;
+    }
+}
+
+function resetSidebar() {
+    document.getElementById('val-calories').innerText = 0;
+    document.getElementById('val-desc').innerText = 'Thông tin sẽ cập nhật sau khi phân tích.';
+    document.getElementById('val-protein').innerText = '--';
+    document.getElementById('val-fat').innerText = '--';
+    document.getElementById('val-carbs').innerText = '--';
+    document.getElementById('val-fiber').innerText = '--';
+    document.getElementById('val-sugar').innerText = '--';
+    document.getElementById('val-sodium').innerText = '--';
+    document.getElementById('display-food-img').src = 'https://i.pinimg.com/736x/9d/51/c3/9d51c32cccb77dcf89cc2fb11aa20a17.jpg';
+}
 
 async function loadChatHistory() {
     const token = localStorage.getItem('calorie_ai_token');
     if (!token || isLoadingHistory) return;
 
     isLoadingHistory = true;
-    toggleInputState(true, "Đang tải lịch sử...");
-    
-    
+    toggleInputState(true, 'Đang tải lịch sử...');
+
     const chatSection = document.querySelector('.chat-section');
     const loader = document.createElement('div');
     loader.className = 'loading-overlay';
     loader.id = 'history-loader';
     loader.innerHTML = '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
-    chatSection.appendChild(loader);
+    if (chatSection) chatSection.appendChild(loader);
 
     try {
-        const res = await fetch("/api/chat-history", {
-            method: "GET",
-            headers: { 'Authorization': `Bearer ${token}` }
+        const res = await fetch('/api/chat-history', {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${token}` },
         });
+
         const data = await res.json();
-        if (res.ok == false)
-        {
-            showToast("Vui lòng đăng nhập!", "info");
+
+        if (res.ok === false) {
+            if (typeof showToast === 'function') showToast('Vui lòng đăng nhập!', 'info');
             setTimeout(() => {
-                window.location.href = "signin.html";
-            }, 1369); 
+                window.location.href = 'signin.html';
+            }, 1369);
             return;
         }
+
         if (data.history && Array.isArray(data.history)) {
-            const chatWindow = document.getElementById('chat-window');
-            
-            
             data.history.forEach(msg => {
                 renderMessage(msg.role, msg.content);
-                
-                if (msg.role === 'assistant') {
-                    const match = msg.content.match(/<data>([\s\S]*?)<\/data>/);
-                    //if (match && match[1]) updateSidebar(match[1]);
-                }
             });
         }
     } catch (e) {
-        console.error(e)
-        showToast("Vui lòng đăng nhập!", "info");
+        console.error(e);
+        if (typeof showToast === 'function') showToast('Vui lòng đăng nhập!', 'info');
         setTimeout(() => {
-            window.location.href = "signin.html";
-        }, 1369);   
+            window.location.href = 'signin.html';
+        }, 1369);
     } finally {
         isLoadingHistory = false;
         document.getElementById('history-loader')?.remove();
@@ -488,63 +856,55 @@ async function loadChatHistory() {
     }
 }
 
-
-function toggleInputState(disabled, placeholder = "Hỏi tôi liên quan về dinh dưỡng...") {
-    const input = document.getElementById('user-input');
-    const btn = document.querySelector('.send-btn');
-    const uploadBtn = document.querySelector('.input-tools');
-    
-    input.disabled = disabled;
-    btn.disabled = disabled;
-    if(uploadBtn) uploadBtn.style.pointerEvents = disabled ? 'none' : 'auto';
-    input.placeholder = placeholder;
-}
-
 async function handleFileSelect() {
-    const file = document.getElementById('file-upload').files[0];
+    const file = document.getElementById('file-upload')?.files?.[0];
     const input = document.getElementById('user-input');
-    
-    if (file) {
 
-        if (!file.name.toLowerCase().endsWith(".jpg") && 
-            !file.name.toLowerCase().endsWith(".jpeg")) {
-            
-            showToast("Chỉ được upload ảnh JPG!", "error");
-            document.getElementById('file-upload').value = "";
-            return;
-        }
+    if (!file || !input) return;
 
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const base64Data = e.target.result;
-            document.getElementById('display-food-img').src = base64Data;
-            
-            if (sessionPhotos.includes(base64Data)) {
-                input.value = "Bạn hãy phân tích món ăn gần nhất tui vừa mới hỏi bạn ấy";
-                console.log("Ảnh cũ - Chế độ phân tích tiếp.");
-            } else {
-                input.value = "Phân tích hình ảnh này";
-                console.log("Ảnh mới hoàn toàn.");
-            }
-        };
-        reader.readAsDataURL(file);
+    if (!file.name.toLowerCase().endsWith('.jpg') && !file.name.toLowerCase().endsWith('.jpeg')) {
+        if (typeof showToast === 'function') showToast('Chỉ được upload ảnh JPG!', 'error');
+        document.getElementById('file-upload').value = '';
+        return;
     }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const base64Data = e.target.result;
+        document.getElementById('display-food-img').src = base64Data;
+
+        if (sessionPhotos.includes(base64Data)) {
+            input.value = 'Bạn hãy phân tích món ăn gần nhất tui vừa mới hỏi bạn ấy';
+        } else {
+            input.value = 'Phân tích hình ảnh này';
+        }
+    };
+    reader.readAsDataURL(file);
 }
+
 async function sendMessage() {
     if (isAnalyzing || isLoadingHistory) return;
 
     const token = localStorage.getItem('calorie_ai_token');
-    const input = document.getElementById('user-input');
-    const fileInput = document.getElementById('file-upload');
-    const text = input.value.trim();
-    const file = fileInput.files[0];
-    flag = false
-    if (!text && !file) return;
-    if (file && !file.name.toLowerCase().endsWith(".jpg") && 
-        !file.name.toLowerCase().endsWith(".jpeg")) {
-        showToast("Chỉ được gửi ảnh JPG!", "error");
+    if (!token) {
+        if (typeof showToast === 'function') showToast('Vui lòng đăng nhập!', 'info');
+        window.location.href = 'signin.html';
         return;
     }
+
+    const input = document.getElementById('user-input');
+    const fileInput = document.getElementById('file-upload');
+    const text = input ? input.value.trim() : '';
+    const file = fileInput?.files?.[0];
+
+    flag = false;
+    if (!text && !file) return;
+
+    if (file && !file.name.toLowerCase().endsWith('.jpg') && !file.name.toLowerCase().endsWith('.jpeg')) {
+        if (typeof showToast === 'function') showToast('Chỉ được gửi ảnh JPG!', 'error');
+        return;
+    }
+
     let currentFileBase64 = null;
     if (file) {
         currentFileBase64 = await new Promise(resolve => {
@@ -555,137 +915,100 @@ async function sendMessage() {
     }
 
     isAnalyzing = true;
-    toggleInputState(true, "AI đang phân tích...");
-    renderMessage("user", text); 
+    toggleInputState(true, 'AI đang phân tích...');
+    renderMessage('user', text || (file ? '[Người dùng đã gửi ảnh]' : ''));
     showTypingIndicator();
 
     const formData = new FormData();
 
     if (file && sessionPhotos.includes(currentFileBase64)) {
-        formData.append("message", "Bạn hãy phân tích món ăn gần nhất tui vừa mới hỏi bạn ấy");
+        formData.append('message', 'Bạn hãy phân tích món ăn gần nhất tui vừa mới hỏi bạn ấy');
     } else {
-        formData.append("message", text);
-        if (file) formData.append("image", file);
+        formData.append('message', text);
+        if (file) formData.append('image', file);
     }
 
     try {
-        const res = await fetch("/api/chat", { 
-            method: "POST", 
+        const res = await fetch('/api/chat', {
+            method: 'POST',
             body: formData,
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
         });
-        
+
         const result = await res.json();
         document.getElementById('typing-indicator-box')?.remove();
 
-if (result.reply) {
-    if (result.reply.includes("<error>")) {
-        const errorMatch = result.reply.match(/<error>([\s\S]*?)<\/error>/);
-        const errorMsg = errorMatch ? errorMatch[1] : "Không phải thức ăn";
-        showToast(errorMsg, "error");
-        flag = true
-        renderMessage("bot", result.reply);
-        resetSidebar();
-        return; 
-    }
+        if (result.reply) {
+            if (result.reply.includes('<error>')) {
+                const errorMatch = result.reply.match(/<error>([\s\S]*?)<\/error>/);
+                const errorMsg = errorMatch ? errorMatch[1] : 'Không phải thức ăn';
+                if (typeof showToast === 'function') showToast(errorMsg, 'error');
+                flag = true;
+                renderMessage('bot', result.reply);
+                resetSidebar();
+                return;
+            }
 
-    renderMessage("bot", result.reply);
-    const dataMatch = result.reply.match(/<data>([\s\S]*?)<\/data>/);
-    if (dataMatch && dataMatch[1]) {
-        updateSidebar(dataMatch[1]);
-        if (file && !sessionPhotos.includes(currentFileBase64)) {
-            sessionPhotos.push(currentFileBase64);
+            renderMessage('bot', result.reply);
+            const dataMatch = result.reply.match(/<data>([\s\S]*?)<\/data>/);
+            if (dataMatch && dataMatch[1]) {
+                updateSidebar(dataMatch[1]);
+
+                try {
+                    const nutritionData = JSON.parse(dataMatch[1]);
+                    openMealModal(nutritionData);
+                } catch (e) {
+                    console.error('Không parse được data dinh dưỡng:', e);
+                }
+
+                if (file && !sessionPhotos.includes(currentFileBase64)) {
+                    sessionPhotos.push(currentFileBase64);
+                }
+            }
         }
-    }
-}
     } catch (e) {
-        if (!flag) showToast("Có lỗi đang xảy ra!", "error");
+        console.error(e);
+        if (!flag && typeof showToast === 'function') showToast('Có lỗi đang xảy ra!', 'error');
     } finally {
         isAnalyzing = false;
         toggleInputState(false);
-        input.value = "";
-        fileInput.value = "";
-    }
-}
-function renderMessage(role, text) 
-{
-    const chatWindow = document.getElementById('chat-window');
-    if (!chatWindow) return;
-
-    const msgDiv = document.createElement('div');
-    msgDiv.className = 'card';
-    msgDiv.style.marginBottom = '20px';
-    msgDiv.style.whiteSpace = 'pre-line';
-    
-    if (role === 'user') {
-        msgDiv.style.backgroundColor = '#E8F5E9';
-        msgDiv.style.borderBottomRightRadius = '4px';
-    } else {
-        msgDiv.style.borderBottomLeftRadius = '4px';
-        msgDiv.style.backgroundColor = '#FFFFFF';
-    }
-    
-    let displayContent = text;
-
-    displayContent = displayContent.replace(/<message>[\s\S]*?<\/message>/g, ''); 
-    displayContent = displayContent.replace(/<data>[\s\S]*?<\/data>/g, '');
-    displayContent = displayContent.replace(/<image>[\s\S]*?<\/image>/g, '');
-    displayContent = displayContent.replace(/<error>[\s\S]*?<\/error>/g, '');
-
-    const urlIndex = displayContent.indexOf("có url:");
-    if (urlIndex !== -1) {
-        displayContent = displayContent.substring(0, urlIndex).trim();
-    }
-
-    if (displayContent.includes("Nội dung cụ thể:")) {
-        const parts = displayContent.split("Nội dung cụ thể:");
-        const prefix = parts[0].trim();
-        const suffix = parts[1].trim();
-        
-        displayContent = (prefix === suffix || suffix === "") ? prefix : suffix;
-    }
-
-    displayContent = displayContent.replace(/\n{3,}/g, '\n\n').trim();
-    msgDiv.innerText = displayContent || "Đang phân tích dữ liệu...";
-    
-    chatWindow.appendChild(msgDiv);
-    chatWindow.scrollTop = chatWindow.scrollHeight;
-}
-
-function showTypingIndicator() {
-    const chatWindow = document.getElementById('chat-window');
-    const typingDiv = document.createElement('div');
-    typingDiv.id = 'typing-indicator-box';
-    typingDiv.className = 'card typing-indicator';
-    typingDiv.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
-    chatWindow.appendChild(typingDiv);
-    chatWindow.scrollTop = chatWindow.scrollHeight;
-}
-
-function updateSidebar(jsonText) {
-    try {
-        const data = JSON.parse(jsonText);
-        document.getElementById('val-calories').innerText = data.calories || 0;
-        document.getElementById('val-desc').innerText = data.description || "";
-        document.getElementById('val-protein').innerText = data.protein || "--";
-        document.getElementById('val-fat').innerText = data.fat || "--";
-        document.getElementById('val-carbs').innerText = data.carbs || "--";
-        document.getElementById('val-fiber').innerText = data.fiber || "--";
-        document.getElementById('val-sugar').innerText = data.sugar || "--";
-        document.getElementById('val-sodium').innerText = data.sodium || "--";
-    } catch (e) {
-        console.error("Lỗi cập nhật Sidebar:", e);
+        if (input) input.value = '';
+        if (fileInput) fileInput.value = '';
     }
 }
 
+function initNavigation() {
+    const nav2 = document.querySelector('.nav-item:nth-child(2)');
+    const nav3 = document.querySelector('.nav-item:nth-child(3)');
+    const nav4 = document.querySelector('.nav-item:nth-child(4)');
 
-document.getElementById('user-input').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
+    if (nav2) nav2.onclick = () => window.location.href = 'diet-details.html';
+    if (nav3) nav3.onclick = () => window.location.href = 'schedule.html';
+    if (nav4) nav4.onclick = () => window.location.href = 'setup.html';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    wireMealModalEvents();
+    initNavigation();
+
+    const token = localStorage.getItem('calorie_ai_token');
+    if (!token) {
+        if (typeof showToast === 'function') showToast('Vui lòng đăng nhập!', 'info');
+        setTimeout(() => {
+            window.location.href = 'signin.html';
+        }, 1369);
+        return;
+    }
+
+    loadChatHistory();
+
+    const input = document.getElementById('user-input');
+    if (input) {
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    }
 });
-document.querySelector('.nav-item:nth-child(2)').onclick = () => window.location.href = 'diet-details.html';
-document.querySelector('.nav-item:nth-child(3)').onclick = () => window.location.href = 'schedule.html';
-document.querySelector('.nav-item:nth-child(4)').onclick = () => window.location.href = 'setup.html';
-
 </script>
 </body>
 </html>

@@ -9,6 +9,61 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="toast.css">
     <link rel="stylesheet" href="both.css">
+    
+<style>
+.redirect-chat-card{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:18px 20px;
+    cursor:pointer;
+    transition:0.25s ease;
+    border-radius:20px;
+    user-select:none;
+    margin-bottom: 10px;
+}
+
+.redirect-chat-card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 10px 25px rgba(0,0,0,0.06);
+}
+
+.redirect-chat-icon{
+    width:52px;
+    height:52px;
+    border-radius:16px;
+    background:#eef8f1;
+    color:var(--primary-green);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.2rem;
+    flex-shrink:0;
+}
+
+.redirect-chat-content{
+    flex:1;
+}
+
+.redirect-chat-content h3{
+    margin:0;
+    font-size:1rem;
+    font-weight:700;
+    color:var(--text-main);
+}
+
+.redirect-chat-content p{
+    margin:4px 0 0;
+    font-size:0.88rem;
+    color:var(--text-sub);
+    line-height:1.4;
+}
+
+.redirect-chat-arrow{
+    color:#999;
+    font-size:0.95rem;
+}
+</style>
 </head>
 <body>
     <div id="toast-container"></div>
@@ -37,29 +92,21 @@
        <main class="content" id="main-content">
 
      <div id="ai-menu-container">
-    <div class="card chat-section">
-        <div class="chat-header">
-            <h3 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 10px;">
-                <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--primary-green);"></i>
-                HLV Dinh Dưỡng AI
-            </h3>
-        </div>
-
-        <div id="chat-history">
-            <div class="ai-msg">
-                Chào bạn! Mình đã sẵn sàng. Bạn muốn thay đổi món nào trong thực đơn tuần này không?
-            </div>
-        </div>
-
-        <div id="typing-indicator" style="display: none;" class="typing">AI đang suy nghĩ...</div>
-
-        <div class="chat-input-wrapper">
-            <input type="text" id="user-input" placeholder="Ví dụ: Đổi bữa trưa Thứ 3 thành bún chả..." onkeypress="if(event.key === 'Enter') sendMessage()">
-            <button class="send-btn" onclick="sendMessage()">
-                <i class="fa-solid fa-paper-plane"></i>
-            </button>
-        </div>
+   <div class="card redirect-chat-card" onclick="window.location.href='chat.html'">
+    <div class="redirect-chat-icon">
+        <i class="fa-solid fa-comments"></i>
     </div>
+
+    <div class="redirect-chat-content">
+        <h3>HLV Dinh Dưỡng AI</h3>
+        <p>Trao đổi với AI để cập nhật thực đơn và theo dõi bữa ăn.</p>
+    </div>
+
+    <div class="redirect-chat-arrow">
+        <i class="fa-solid fa-chevron-right"></i>
+    </div>
+</div>
+
 
      <div class="card">
     <h3><i class="fa-solid fa-calendar-week"></i> Lộ trình thực đơn 7 ngày</h3>

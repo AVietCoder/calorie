@@ -45,6 +45,17 @@ const safeJsonParse = (text) => {
   }
 };
 
+const extractDataBlock = (text = "") => {
+  const match = String(text).match(/<data>([\s\S]*?)<\/data>/i);
+  if (!match) return null;
+
+  try {
+    return JSON.parse(match[1]);
+  } catch {
+    return null;
+  }
+};
+
 const MEAL_TIME_REGEX = /\b(sáng|trưa|chiều|tối|bữa phụ|bua phu|ăn lúc|lúc nào|mấy giờ)\b/i;
 
 const FOLLOW_UP_MEAL_TIME_QUESTION =
@@ -72,7 +83,14 @@ const appendMealTimeFollowUp = (reply, message) => {
   return `${text}\n\n${FOLLOW_UP_MEAL_TIME_QUESTION}`;
 };
 
-const buildCoachPrompt = ({ profile, currentPlan, currentDayName, dayOfWeek, message, isQueryOnly }) => {
+const buildCoachPrompt = ({
+  profile,
+  currentPlan,
+  currentDayName,
+  dayOfWeek,
+  message,
+  isQueryOnly,
+}) => {
   return `
 Bạn là HLV Dinh dưỡng AI thông minh, thân thiện và am hiểu ẩm thực Việt Nam.
 
@@ -263,7 +281,10 @@ export default async function handler(req, res) {
   }
 
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
-  const { data: { user }, error } = await supabase.auth.getUser(token);
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
 
   if (error || !user) {
     return res.status(401).json({ error: "Phiên đăng nhập không hợp lệ hoặc đã hết hạn" });
@@ -283,6 +304,15 @@ export default async function handler(req, res) {
     const imageFile = getFirst(files.image);
     const isQueryOnly = String(getFirst(fields.isQueryOnly) ?? "false") === "true";
 
+    const followupType = normalizeText(getFirst(fields.followupType));
+    const mealDataRaw = normalizeText(getFirst(fields.mealData));
+    const mealTime = normalizeText(getFirst(fields.mealTime));
+    const mealDayMode = normalizeText(getFirst(fields.mealDayMode));
+    const mealDayText =
+      normalizeText(getFirst(fields.mealDayText)) ||
+      normalizeText(getFirst(fields.mealDayValue));
+    const pendingMealData = safeJsonParse(mealDataRaw);
+
     if (!message && !imageFile) {
       return res.status(400).json({ error: "Thiếu dữ liệu: Gửi tin nhắn hoặc ảnh." });
     }
@@ -300,11 +330,21 @@ export default async function handler(req, res) {
     let history = normalizeHistory(profile.chat_history || []);
     let currentPlan = Array.isArray(profile.weekly_plan) ? profile.weekly_plan : [];
     const now = new Date();
+    const formatDate = (date) => {
+      const d = String(date.getDate()).padStart(2, "0");
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const y = date.getFullYear();
+      return `${d}/${m}/${y}`;
+    };
 
+    const todayText = formatDate(now);
     const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
     const dayNames = ["", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
     const currentDayName = dayNames[dayOfWeek];
-
+    const resolvedDayText =
+      mealDayText === "today"
+        ? todayText
+        : mealDayText || todayText;
     // Có ảnh: phân tích ảnh + text
     if (imageFile) {
       let userContent = [];
@@ -344,6 +384,8 @@ export default async function handler(req, res) {
       let aiReply = completion.choices[0]?.message?.content || "";
       aiReply = appendMealTimeFollowUp(aiReply, message);
 
+      const nutritionData = extractDataBlock(aiReply);
+
       const userEntry = {
         role: "user",
         content: message || "[Người dùng đã gửi một hình ảnh]",
@@ -352,10 +394,15 @@ export default async function handler(req, res) {
 
       const newHistory = truncateHistory([...history, userEntry, assistantEntry], 20);
 
-      await supabase
-        .from("profiles")
-        .update({ chat_history: newHistory })
-        .eq("id", user.id);
+      const updatePayload = {
+        chat_history: newHistory,
+      };
+
+      if (nutritionData) {
+        updatePayload.last_detected_meal = nutritionData;
+      }
+
+      await supabase.from("profiles").update(updatePayload).eq("id", user.id);
 
       return res.status(200).json({
         reply: aiReply,
@@ -363,13 +410,35 @@ export default async function handler(req, res) {
       });
     }
 
+    // Follow-up từ popup: người dùng đã chọn buổi/ngày sau khi phân tích ảnh
+    let finalMessage = message;
+
+    const isMealFollowup =
+      followupType === "meal_time_update" &&
+      pendingMealData &&
+      mealTime;
+if (isMealFollowup) {
+  finalMessage = `Bạn đã ăn ${pendingMealData.description || "món ăn"} vào buổi ${mealTime}, ngày ${resolvedDayText}.
+
+Thông tin dinh dưỡng ước tính:
+- Calories: ${pendingMealData.calories || "N/A"} kcal
+- Protein: ${pendingMealData.protein || "N/A"}
+- Fat: ${pendingMealData.fat || "N/A"}
+- Carbs: ${pendingMealData.carbs || "N/A"}
+- Fiber: ${pendingMealData.fiber || "N/A"}
+- Sugar: ${pendingMealData.sugar || "N/A"}
+- Sodium: ${pendingMealData.sodium || "N/A"}
+
+Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp lý nếu cần.
+<deleted> Trả về JSON đúng format coach prompt. <deleted>`;
+}
     // Chỉ text: đi qua HLV thực đơn
     const coachPrompt = buildCoachPrompt({
       profile,
       currentPlan,
       currentDayName,
       dayOfWeek,
-      message,
+      message: finalMessage,
       isQueryOnly,
     });
 
@@ -381,7 +450,7 @@ export default async function handler(req, res) {
       ...history.slice(-10),
       {
         role: "user",
-        content: message,
+        content: finalMessage,
       },
     ];
 
@@ -400,10 +469,9 @@ export default async function handler(req, res) {
     const clarifyQuestion = String(result.clarifyQuestion || "");
 
     if (action === "analyze_only") {
-      aiReply = appendMealTimeFollowUp(aiReply, message);
+      aiReply = appendMealTimeFollowUp(aiReply, finalMessage);
     } else if (action === "ask_clarify" && !clarifyQuestion) {
-      // Nếu model quên hỏi rõ, thêm câu hỏi bữa ăn vào phần làm rõ
-      aiReply = appendMealTimeFollowUp(aiReply, message);
+      aiReply = appendMealTimeFollowUp(aiReply, finalMessage);
     }
 
     if (
@@ -412,17 +480,15 @@ export default async function handler(req, res) {
       result.newPlan.length > 0
     ) {
       currentPlan = result.newPlan;
-
-      await supabase
-        .from("profiles")
-        .update({
-          weekly_plan: currentPlan,
-          plan_updated_at: now,
-        })
-        .eq("id", user.id);
+      console.log("HI")
+      console.log(user)
+    await supabase.from('profiles').update({ 
+        weekly_plan: currentPlan,
+        plan_updated_at: now 
+    }).eq('id', user.id);
     }
 
-    const userEntry = { role: "user", content: message };
+    const userEntry = { role: "user", content: finalMessage };
     const assistantEntry = { role: "assistant", content: aiReply };
 
     const newHistory = truncateHistory([...history, userEntry, assistantEntry], 20);
