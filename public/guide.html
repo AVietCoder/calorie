@@ -546,8 +546,17 @@
       </div>
     </main>
   </div>
+  <script src="toast.js"></script>
 
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('calorie_ai_token');
+    if (!token) {
+      if (typeof showToast === 'function') showToast('Vui lòng đăng nhập!', 'info');
+      setTimeout(() => { window.location.href = 'signin.html'; }, 1369);
+      return;
+    }
+  });
   // TOC scroll-spy
   const links = document.querySelectorAll('.toc a');
   const sections = [...links].map(a => document.querySelector(a.getAttribute('href')));
