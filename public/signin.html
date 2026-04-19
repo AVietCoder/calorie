@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
         <link rel="stylesheet" href="toast.css">
+    <link rel="icon" href="logo.png" type="image/png">
 
     <style>
         /* Hiệu ứng xoay cho icon loading */
@@ -101,7 +102,7 @@ document.getElementById('loginForm').onsubmit = async (e) => {
             localStorage.setItem('user_id', result.user.id);
             
             setTimeout(() => {
-                window.location.href = "chat.html";
+                window.location.href = "guide.html";
             }, 800);
         } else {
             showToast(result.error, "error");

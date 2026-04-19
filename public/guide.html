@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1024" />
+<title>Hướng dẫn sử dụng · Calorie AI</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="both.css" />
+<style>
+  /* ===== Guide-specific styles (same Sage & Cream tokens) ===== */
+  .content{ padding: 28px 40px 60px; }
+  .guide-shell{
+    display:grid;
+    grid-template-columns: 260px 1fr;
+    gap: 28px;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  /* TOC sidebar */
+  .toc{
+    position: sticky; top: 24px;
+    align-self: start;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    padding: 18px 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .toc h4{
+    margin:6px 10px 12px;
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--text-sub);
+    font-weight: 700;
+  }
+  .toc a{
+    display:flex; align-items:center; gap:10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text-main);
+    font-weight: 500;
+    font-size: .95rem;
+    transition: all .2s ease;
+  }
+  .toc a i{ color: var(--primary); width: 18px; text-align:center; }
+  .toc a:hover{ background: var(--sage-50); color: var(--primary-deep); }
+  .toc a.active{ background: var(--primary-soft); color: var(--primary-deep); font-weight: 700; }
+
+  /* Hero */
+  .guide-hero{
+    background: var(--gradient-hero);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 40px 44px;
+    margin-bottom: 28px;
+    position: relative; overflow: hidden;
+  }
+  .guide-hero .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    background: var(--primary-soft);
+    color: var(--primary-deep);
+    padding: 6px 14px; border-radius: 999px;
+    font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  }
+  .guide-hero h1{
+    font-size: 2.4rem;
+    margin: 14px 0 10px;
+    font-weight: 800;
+    color: var(--text-main);
+    line-height: 1.2;
+  }
+  .guide-hero p{
+    color: var(--text-sub);
+    font-size: 1.05rem;
+    max-width: 720px;
+    margin: 0;
+  }
+  .hero-meta{
+    display:flex; gap:14px; flex-wrap:wrap;
+    margin-top: 20px;
+  }
+  .hero-meta .chip{
+    background: rgba(255,255,255,.85);
+    border: 1px solid var(--border-soft);
+    padding: 8px 14px; border-radius: 999px;
+    font-size: .85rem; color: var(--text-main); font-weight: 600;
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .hero-meta .chip i{ color: var(--primary); }
+
+  /* Sections */
+  section.guide-section{
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    padding: 32px 36px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+    scroll-margin-top: 100px;
+  }
+  section.guide-section h2{
+    font-size: 1.6rem;
+    margin: 0 0 6px;
+    font-weight: 800;
+    color: var(--text-main);
+    display:flex; align-items:center; gap:12px;
+  }
+  section.guide-section h2 .num{
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--gradient-primary);
+    color: #fff;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size: .95rem; font-weight: 800;
+  }
+  section.guide-section .lead{
+    color: var(--text-sub);
+    font-size: 1rem;
+    margin: 0 0 22px;
+  }
+  section.guide-section h3{
+    font-size: 1.15rem;
+    margin: 22px 0 10px;
+    font-weight: 700;
+    color: var(--primary-deep);
+  }
+  section.guide-section p{ color: var(--text-main); font-size: 1rem; }
+  section.guide-section ul{ padding-left: 22px; color: var(--text-main); }
+  section.guide-section li{ margin: 8px 0; font-size: 1rem; }
+
+  /* Step cards */
+  .step-grid{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 14px;
+  }
+  .step-card{
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: all .25s ease;
+  }
+  .step-card:hover{
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+    border-color: var(--primary);
+  }
+  .step-card .step-icon{
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--primary-soft);
+    color: var(--primary-deep);
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+  }
+  .step-card h4{ margin: 0 0 6px; font-size: 1.05rem; font-weight: 700; }
+  .step-card p{ margin: 0; color: var(--text-sub); font-size: .95rem; line-height: 1.55; }
+
+  /* Feature list with icons */
+  .feature-list{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-top: 12px;
+  }
+  .feature-row{
+    display:flex; gap:14px; align-items:flex-start;
+    padding: 14px 16px;
+    background: var(--sage-50);
+    border-radius: var(--radius);
+  }
+  .feature-row i{
+    color: var(--primary-deep);
+    background: #fff;
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .feature-row strong{ display:block; margin-bottom:2px; color: var(--text-main); }
+  .feature-row span{ color: var(--text-sub); font-size: .92rem; }
+
+  /* Tip box */
+  .tip{
+    border-left: 4px solid var(--primary);
+    background: var(--sage-50);
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin: 16px 0;
+    color: var(--text-main);
+    font-size: .98rem;
+  }
+  .tip strong{ color: var(--primary-deep); }
+  .tip.warn{
+    border-color: var(--warn);
+    background: #FFF7E6;
+  }
+  .tip.warn strong{ color: #B5721E; }
+
+  /* Page nav cards */
+  .page-cards{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 14px;
+  }
+  .page-card{
+    text-decoration: none;
+    color: inherit;
+    background: linear-gradient(135deg, #fff, var(--sage-50));
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    display:block;
+    transition: all .25s ease;
+  }
+  .page-card:hover{
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+    border-color: var(--primary);
+  }
+  .page-card .pc-head{
+    display:flex; align-items:center; gap:12px; margin-bottom: 10px;
+  }
+  .page-card .pc-icon{
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--gradient-primary);
+    color: #fff;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size: 1.2rem;
+  }
+  .page-card h4{ margin:0; font-size: 1.1rem; font-weight: 700; }
+  .page-card p{ margin: 0; color: var(--text-sub); font-size: .94rem; }
+  .page-card .go{
+    margin-top: 12px;
+    color: var(--primary-deep);
+    font-weight: 700;
+    font-size: .9rem;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+
+  /* FAQ */
+  .faq details{
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    transition: all .2s;
+  }
+  .faq details[open]{ border-color: var(--primary); background: #fff; }
+  .faq summary{
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-main);
+    display:flex; align-items:center; gap:10px;
+    list-style: none;
+  }
+  .faq summary::-webkit-details-marker{ display:none; }
+  .faq summary i.chev{
+    margin-left:auto;
+    color: var(--primary);
+    transition: transform .2s;
+  }
+  .faq details[open] summary i.chev{ transform: rotate(180deg); }
+  .faq details p{ margin: 12px 0 0; color: var(--text-sub); font-size: .95rem; line-height: 1.6; }
+
+  /* Responsive: tablet ~ laptop */
+  @media (max-width: 1100px){
+    .guide-shell{ grid-template-columns: 220px 1fr; gap: 20px; }
+    .content{ padding: 24px 24px 50px; }
+    .guide-hero{ padding: 32px 28px; }
+    .guide-hero h1{ font-size: 2rem; }
+    section.guide-section{ padding: 26px 24px; }
+  }
+  @media (max-width: 900px){
+    .guide-shell{ grid-template-columns: 1fr; }
+    .toc{
+      position: static;
+      display:flex; flex-wrap:wrap; gap: 6px;
+      padding: 12px;
+    }
+    .toc h4{ width:100%; margin: 0 0 6px; }
+    .toc a{ padding: 8px 12px; font-size: .9rem; }
+    .step-grid, .feature-list, .page-cards{
+      grid-template-columns: 1fr 1fr;
+    }
+    .guide-hero h1{ font-size: 1.7rem; }
+  }
+</style>
+</head>
+<body>
+  <div id="toast-container"></div>
+
+  <aside class="side-nav">
+    <div class="nav-item" onclick="location.href='chat.html'"><i class="fa-solid fa-house"></i><span>HOME</span></div>
+    <div class="nav-item" onclick="location.href='diet-details.html'"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
+    <div class="nav-item" onclick="location.href='schedule.html'"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
+    <div class="nav-item" onclick="location.href='setup.html'"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
+    <div class="nav-item active"><i class="fa-solid fa-circle-question"></i><span>GUIDE</span></div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="header">
+      <a href="chat.html" class="logo"><i class="fa-solid fa-leaf"></i> Calorie AI</a>
+      <div class="header-tools">
+        <div class="user-profile-nav" onclick="location.href='diet-details.html'" title="Quay lại Dashboard">
+          <span class="user-name"><i class="fa-solid fa-arrow-left"></i> <strong>Về Dashboard</strong></span>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="guide-shell">
+
+        <!-- TOC -->
+        <nav class="toc" id="toc">
+          <h4>Mục lục</h4>
+          <a href="#intro" class="active"><i class="fa-solid fa-book-open"></i> Giới thiệu</a>
+          <a href="#start"><i class="fa-solid fa-rocket"></i> Bắt đầu nhanh</a>
+          <a href="#setup"><i class="fa-solid fa-user-gear"></i> Thiết lập hồ sơ</a>
+          <a href="#dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard Diet</a>
+          <a href="#chat"><i class="fa-solid fa-comments"></i> Trò chuyện AI</a>
+          <a href="#plan"><i class="fa-solid fa-calendar-week"></i> Lịch 7 ngày</a>
+          <a href="#tips"><i class="fa-solid fa-lightbulb"></i> Mẹo & Lưu ý</a>
+          <a href="#faq"><i class="fa-solid fa-circle-question"></i> Câu hỏi thường gặp</a>
+        </nav>
+
+        <!-- Main -->
+        <div>
+          <!-- HERO -->
+          <div class="guide-hero">
+            <span class="eyebrow"><i class="fa-solid fa-sparkles"></i> Hướng dẫn sử dụng</span>
+            <h1>Làm chủ Calorie AI trong 5 phút</h1>
+            <p>Tài liệu nhanh giúp bạn hiểu từng tính năng — từ thiết lập hồ sơ, theo dõi chỉ số dinh dưỡng đến trò chuyện với HLV AI và lên lịch ăn uống cả tuần.</p>
+            <div class="hero-meta">
+              <span class="chip"><i class="fa-solid fa-clock"></i> Đọc trong 5 phút</span>
+              <span class="chip"><i class="fa-solid fa-leaf"></i> Phù hợp người mới</span>
+              <span class="chip"><i class="fa-solid fa-shield-halved"></i> Cập nhật liên tục</span>
+            </div>
+          </div>
+
+          <!-- INTRO -->
+          <section class="guide-section" id="intro">
+            <h2><span class="num">1</span> Calorie AI là gì?</h2>
+            <p class="lead">Calorie AI là trợ lý dinh dưỡng cá nhân hoá. Bạn nhập chỉ số cơ thể & mục tiêu, hệ thống sẽ tính BMR/TDEE, phân bổ macro, theo dõi tiến độ và đề xuất thực đơn — tất cả trong một giao diện duy nhất.</p>
+
+            <div class="feature-list">
+              <div class="feature-row">
+                <i class="fa-solid fa-bolt"></i>
+                <div><strong>Tính toán tự động</strong><span>BMR, TDEE, mục tiêu calo & macro theo công thức chuẩn.</span></div>
+              </div>
+              <div class="feature-row">
+                <i class="fa-solid fa-comment-dots"></i>
+                <div><strong>HLV AI 24/7</strong><span>Hỏi đáp về món ăn, thay thế nguyên liệu, ghi nhận bữa ăn.</span></div>
+              </div>
+              <div class="feature-row">
+                <i class="fa-solid fa-calendar-week"></i>
+                <div><strong>Lịch 7 ngày</strong><span>Thực đơn xoay vòng, có thể yêu cầu AI sinh lại theo sở thích.</span></div>
+              </div>
+              <div class="feature-row">
+                <i class="fa-solid fa-chart-line"></i>
+                <div><strong>Tiến độ trực quan</strong><span>Biểu đồ cân nặng, calo và macro theo thời gian thực.</span></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- START -->
+          <section class="guide-section" id="start">
+            <h2><span class="num">2</span> Bắt đầu trong 4 bước</h2>
+            <p class="lead">Quy trình từ lúc đăng ký đến khi nhận thực đơn cá nhân hoá.</p>
+
+            <div class="step-grid">
+              <div class="step-card">
+                <div class="step-icon"><i class="fa-solid fa-user-plus"></i></div>
+                <h4>1. Đăng ký tài khoản</h4>
+                <p>Tạo tài khoản bằng email, sau đó đăng nhập để bắt đầu thiết lập.</p>
+              </div>
+              <div class="step-card">
+                <div class="step-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                <h4>2. Khai báo hồ sơ</h4>
+                <p>Nhập chiều cao, cân nặng, độ tuổi, mức vận động & mục tiêu của bạn.</p>
+              </div>
+              <div class="step-card">
+                <div class="step-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                <h4>3. Nhận đề xuất</h4>
+                <p>AI tính BMR/TDEE, đề xuất calo mục tiêu và tỉ lệ Protein/Carbs/Fat.</p>
+              </div>
+              <div class="step-card">
+                <div class="step-icon"><i class="fa-solid fa-utensils"></i></div>
+                <h4>4. Theo dõi mỗi ngày</h4>
+                <p>Ghi nhận bữa ăn qua chat, xem biểu đồ và điều chỉnh kế hoạch.</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- SETUP -->
+          <section class="guide-section" id="setup">
+            <h2><span class="num">3</span> Thiết lập hồ sơ (Setup)</h2>
+            <p class="lead">Trang <strong>setup.html</strong> chia làm 4 bước — biểu tượng tiến độ ở trên cùng cho biết bạn đang ở đâu.</p>
+
+            <h3>Các trường thông tin</h3>
+            <ul>
+              <li><strong>Thông tin cơ bản:</strong> tên, tuổi, giới tính.</li>
+              <li><strong>Chỉ số cơ thể:</strong> chiều cao (cm), cân nặng hiện tại (kg).</li>
+              <li><strong>Mức vận động:</strong> ít vận động → vận động nặng (ảnh hưởng TDEE).</li>
+              <li><strong>Mục tiêu:</strong> Giảm cân · Duy trì · Tăng cơ — chọn 1 trong các thẻ Goal.</li>
+            </ul>
+
+            <div class="tip">
+              <strong><i class="fa-solid fa-lightbulb"></i> Mẹo:</strong> Cập nhật cân nặng mỗi tuần để biểu đồ tiến độ phản ánh đúng thực tế.
+            </div>
+          </section>
+
+          <!-- DASHBOARD -->
+          <section class="guide-section" id="dashboard">
+            <h2><span class="num">4</span> Dashboard Diet</h2>
+            <p class="lead">Trang <strong>diet-details.html</strong> tổng hợp toàn bộ chỉ số quan trọng dưới dạng biểu đồ trực quan.</p>
+
+            <div class="feature-list">
+              <div class="feature-row">
+                <i class="fa-solid fa-chart-pie"></i>
+                <div><strong>Macro Donut</strong><span>Tỉ lệ Protein / Carbs / Fat đề xuất.</span></div>
+              </div>
+              <div class="feature-row">
+                <i class="fa-solid fa-route"></i>
+                <div><strong>Tiến độ cân nặng</strong><span>Đường biểu diễn cân theo tuần.</span></div>
+              </div>
+              <div class="feature-row">
+                <i class="fa-solid fa-chart-column"></i>
+                <div><strong>Calo theo ngày</strong><span>Cột calo nạp 7 ngày gần nhất.</span></div>
+              </div>
+              <div class="feature-row">
+                <i class="fa-solid fa-gauge-high"></i>
+                <div><strong>BMR vs TDEE</strong><span>So sánh năng lượng cơ bản và tiêu hao.</span></div>
+              </div>
+            </div>
+
+            <div class="tip warn">
+              <strong><i class="fa-solid fa-triangle-exclamation"></i> Lưu ý:</strong> Nếu các chip BMR/TDEE hiển thị "--", bạn cần hoàn tất Setup trước.
+            </div>
+          </section>
+
+          <!-- CHAT -->
+          <section class="guide-section" id="chat">
+            <h2><span class="num">5</span> Trò chuyện với HLV AI</h2>
+            <p class="lead">Trang <strong>chat.html</strong> là nơi bạn ghi nhận bữa ăn và nhận tư vấn theo ngữ cảnh.</p>
+
+            <h3>Bạn có thể hỏi gì?</h3>
+            <ul>
+              <li>"Tôi vừa ăn 1 bát phở bò, ghi nhận giúp tôi."</li>
+              <li>"Bữa tối hôm nay nên ăn gì để đủ Protein?"</li>
+              <li>"Có thể thay thịt bò bằng món chay nào?"</li>
+              <li>"Hôm nay tôi còn bao nhiêu calo?"</li>
+            </ul>
+
+            <div class="tip">
+              <strong><i class="fa-solid fa-circle-info"></i> Lưu ý:</strong> Khi AI nhận diện món ăn, sẽ hiện hộp xác nhận trước khi lưu vào nhật ký để đảm bảo dữ liệu chính xác.
+            </div>
+          </section>
+
+          <!-- PLAN -->
+          <section class="guide-section" id="plan">
+            <h2><span class="num">6</span> Lịch ăn 7 ngày</h2>
+            <p class="lead">Trang <strong>schedule.html</strong> hiển thị thực đơn dạng bảng theo ngày × bữa.</p>
+
+            <ul>
+              <li>Mỗi ô là một bữa được AI gợi ý phù hợp với mục tiêu calo & macro.</li>
+              <li>Bấm <strong>"Sinh lại lịch"</strong> để AI tạo phương án mới.</li>
+              <li>Kéo thanh bên dưới để xem các phản hồi/giải thích từ AI về kế hoạch.</li>
+            </ul>
+          </section>
+
+          <!-- TIPS -->
+          <section class="guide-section" id="tips">
+            <h2><span class="num">7</span> Mẹo dùng hiệu quả</h2>
+            <div class="page-cards">
+              <a class="page-card" href="diet-details.html">
+                <div class="pc-head">
+                  <div class="pc-icon"><i class="fa-solid fa-fire-flame-curved"></i></div>
+                  <h4>Vào Dashboard</h4>
+                </div>
+                <p>Kiểm tra chỉ số mỗi sáng để có kế hoạch ăn phù hợp trong ngày.</p>
+                <span class="go">Mở Diet <i class="fa-solid fa-arrow-right"></i></span>
+              </a>
+              <a class="page-card" href="chat.html">
+                <div class="pc-head">
+                  <div class="pc-icon"><i class="fa-solid fa-comments"></i></div>
+                  <h4>Ghi nhận bữa ăn</h4>
+                </div>
+                <p>Nhập càng sớm càng tốt sau khi ăn để dữ liệu được chính xác.</p>
+                <span class="go">Mở Chat <i class="fa-solid fa-arrow-right"></i></span>
+              </a>
+              <a class="page-card" href="schedule.html">
+                <div class="pc-head">
+                  <div class="pc-icon"><i class="fa-solid fa-calendar-week"></i></div>
+                  <h4>Lên kế hoạch tuần</h4>
+                </div>
+                <p>Sinh lịch vào đầu tuần để chuẩn bị nguyên liệu trước.</p>
+                <span class="go">Mở Plan <i class="fa-solid fa-arrow-right"></i></span>
+              </a>
+              <a class="page-card" href="setup.html">
+                <div class="pc-head">
+                  <div class="pc-icon"><i class="fa-solid fa-user-gear"></i></div>
+                  <h4>Cập nhật hồ sơ</h4>
+                </div>
+                <p>Thay đổi cân nặng/mục tiêu định kỳ để AI tính lại chỉ số.</p>
+                <span class="go">Mở Setup <i class="fa-solid fa-arrow-right"></i></span>
+              </a>
+            </div>
+          </section>
+
+          <!-- FAQ -->
+          <section class="guide-section faq" id="faq">
+            <h2><span class="num">8</span> Câu hỏi thường gặp</h2>
+            <details open>
+              <summary><i class="fa-solid fa-circle-question"></i> Dữ liệu của tôi có được bảo mật?<i class="fa-solid fa-chevron-down chev"></i></summary>
+              <p>Toàn bộ dữ liệu cá nhân được lưu trên tài khoản riêng và chỉ bạn truy cập được sau khi đăng nhập.</p>
+            </details>
+            <details>
+              <summary><i class="fa-solid fa-circle-question"></i> Tại sao calo tôi nhập không khớp với AI tính?<i class="fa-solid fa-chevron-down chev"></i></summary>
+              <p>AI ước lượng theo khẩu phần trung bình. Nếu món của bạn lớn/nhỏ hơn, hãy nói rõ trong chat (ví dụ: "1 bát phở lớn 500ml").</p>
+            </details>
+            <details>
+              <summary><i class="fa-solid fa-circle-question"></i> Tôi có thể đổi mục tiêu sau khi setup?<i class="fa-solid fa-chevron-down chev"></i></summary>
+              <p>Có. Vào trang Setup → chọn mục tiêu mới → AI sẽ tính lại calo và macro mục tiêu.</p>
+            </details>
+            <details>
+              <summary><i class="fa-solid fa-circle-question"></i> Lịch 7 ngày có thay đổi mỗi tuần không?<i class="fa-solid fa-chevron-down chev"></i></summary>
+              <p>Bạn có thể bấm "Sinh lại" bất kỳ lúc nào để có thực đơn mới phù hợp khẩu vị/mùa.</p>
+            </details>
+          </section>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script>
+  // TOC scroll-spy
+  const links = document.querySelectorAll('.toc a');
+  const sections = [...links].map(a => document.querySelector(a.getAttribute('href')));
+  const onScroll = () => {
+    const y = window.scrollY + 140;
+    let activeIdx = 0;
+    sections.forEach((s, i) => { if (s && s.offsetTop <= y) activeIdx = i; });
+    links.forEach((l, i) => l.classList.toggle('active', i === activeIdx));
+  };
+  document.addEventListener('scroll', onScroll, { passive: true });
+
+  // Smooth scroll
+  links.forEach(a => a.addEventListener('click', e => {
+    e.preventDefault();
+    const t = document.querySelector(a.getAttribute('href'));
+    if (t) window.scrollTo({ top: t.offsetTop - 90, behavior: 'smooth' });
+  }));
+</script>
+</body>
+</html>
