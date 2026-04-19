@@ -90,8 +90,9 @@ const buildCoachPrompt = ({
   dayOfWeek,
   message,
   isQueryOnly,
+  isDeadlinePassed,
 }) => {
-  return `
+  let prompt = `
 Bạn là HLV Dinh dưỡng AI thông minh, thân thiện và am hiểu ẩm thực Việt Nam.
 
 HÔM NAY LÀ: ${currentDayName} (Tương ứng "day": ${dayOfWeek} trong thực đơn).
@@ -170,13 +171,20 @@ RÀNG BUỘC ĐIỀU CHỈNH THỰC ĐƠN
 - Hạn chế lặp lại món quá nhiều.
 - Giữ macro phù hợp mục tiêu ${profile.focus_macro || "cân bằng"}.
 
-ĐỊNH DẠNG MỖI BỮA
+ĐỊNH DẠNG MỖI BỮA (BẮT BUỘC ĐẦY ĐỦ TẤT CẢ CÁC TRƯỜNG)
 {
   "meal": "Sáng | Trưa | Tối | Phụ",
   "food": "Tên món",
   "amount": "khẩu phần",
-  "calories": số_calories
+  "calories": số_calories,
+  "protein": "số + g",
+  "fat": "số + g",
+  "carbs": "số + g",
+  "fiber": "số + g",
+  "sugar": "số + g",
+  "sodium": "số + mg"
 }
+Mọi bữa ăn trong newPlan đều PHẢI có đủ 10 trường trên. Không được bỏ sót bất kỳ trường nào.
 
 PHẢN HỒI BẮT BUỘC
 Trả về JSON hợp lệ với các trường sau:
@@ -189,7 +197,7 @@ Trả về JSON hợp lệ với các trường sau:
 }
 
 QUY TẮC CHO TỪNG TRƯỜNG:
-- reply: giải thích ngắn gọn, tự nhiên, thân thiện.
+- reply: giải thích ngắn gọn, tự nhiên, thân thiện. Khi update_plan, nêu rõ: món đã ghi nhận, tổng calo ngày hôm đó, và cách điều chỉnh các bữa/ngày còn lại.
 - action:
   - "update_plan" khi đủ thông tin để cập nhật thực đơn
   - "analyze_only" khi chỉ phân tích calo / kiến thức
@@ -201,33 +209,52 @@ QUY TẮC CHO TỪNG TRƯỜNG:
   - chỉ điền khi cần hỏi lại
   - ví dụ: "Bạn muốn đổi vào ngày nào và bữa nào? (Sáng / Trưa / Tối / Phụ)"
 - newPlan:
-  - nếu action = update_plan thì trả về thực đơn 7 ngày đã cập nhật
+  - nếu action = update_plan thì trả về thực đơn 7 ngày đã cập nhật ĐẦY ĐỦ
   - nếu action = analyze_only hoặc ask_clarify thì phải giữ nguyên thực đơn cũ
 
 NHIỆM VỤ CỤ THỂ
 
 A. Nếu người dùng báo đã ăn gì ngoài kế hoạch và đủ thông tin ngày/bữa:
-- Ước lượng calo món đã ăn.
-- So sánh với calo mục tiêu.
+- Ước lượng CHÍNH XÁC calo + đầy đủ macro (protein, fat, carbs, fiber, sugar, sodium) của món đã ăn thực tế.
 - Cập nhật đúng vào ngày và bữa tương ứng.
-- Nếu vượt mục tiêu thì bù trừ hợp lý cho các bữa còn lại trong ngày, rồi điều chỉnh nhẹ các ngày sau.
+- Tính tổng calo ngày đó sau khi cập nhật bữa này.
+- TÁI CÂN BẰNG CÁC BỮA CÒN LẠI TRONG NGÀY ĐÓ:
+  + Nếu bữa vừa ăn VƯỢT calo kế hoạch → giảm bớt các bữa còn lại trong ngày, ưu tiên món nhẹ dễ tiêu, ít dầu mỡ (cháo trắng, rau luộc, canh rau, trái cây, sữa chua không đường).
+  + Nếu bữa vừa ăn ÍT hơn kế hoạch → tăng nhẹ bữa phụ hoặc bữa tiếp theo bằng món giàu protein (trứng luộc, ức gà, đậu hũ, cá hấp).
+  + Đảm bảo TỔNG CALO CẢ NGÀY vẫn gần mục tiêu ${profile.target_calories || "1500-1800"} kcal (dao động ±150 kcal là chấp nhận được).
+- TÁI CẤU TRÚC CÁC NGÀY SAU (từ ngày tiếp theo đến hết day 7):
+  + Nếu ngày hiện tại DƯ calo (>150 kcal so với mục tiêu) → điều chỉnh 1-2 ngày sau thanh đạm hơn: ưu tiên rau xanh, protein nạc (ức gà luộc, cá hấp, tôm, đậu hũ), giảm tinh bột, tránh chiên xào.
+  + Nếu ngày hiện tại THIẾU calo (<150 kcal so với mục tiêu) → giữ nguyên hoặc tăng nhẹ bữa phụ các ngày sau bằng món bổ dưỡng.
+  + Thay đổi phải TỰ NHIÊN, KHÔNG CẮT GIẢM ĐỘT NGỘT, đảm bảo đủ dinh dưỡng cho mục tiêu ${profile.goal || "sức khỏe"}.
+  + Ưu tiên đa dạng món Việt: phở, bún, cơm, cháo, bánh mì, gỏi, canh... tránh lặp lại quá 2 lần/tuần với cùng 1 món.
+- Mỗi bữa trong newPlan PHẢI có đủ 10 trường: meal, food, amount, calories, protein, fat, carbs, fiber, sugar, sodium.
 
 B. Nếu người dùng chỉ nói món ăn mà không có ngày/bữa:
-- Chỉ phân tích calo, protein, và tác động chung.
+- Phân tích đầy đủ: calo, protein, fat, carbs, fiber, sugar, sodium và nhận xét tác động đến mục tiêu ${profile.goal || "sức khỏe"}.
+- Gợi ý điều chỉnh nếu cần (ví dụ: ăn kèm rau, giảm dầu...).
 - Không thay đổi thực đơn.
 
 C. Nếu người dùng muốn đổi thực đơn nhưng thiếu ngày hoặc thiếu bữa:
-- Hỏi lại rõ ràng.
+- Hỏi lại rõ ràng ngày và bữa cụ thể.
 - Không thay đổi thực đơn.
 
 D. Nếu người dùng muốn đổi món cụ thể và đã nói rõ ngày/bữa:
-- Cập nhật món đó.
-- Tính lại calories.
-- Tái cấu trúc từ thời điểm đó trở đi đến hết day 7 nếu cần.
+- Cập nhật món đó với đầy đủ 10 trường dinh dưỡng.
+- TÁI CÂN BẰNG các bữa còn lại trong ngày đó để tổng calo ngày gần mục tiêu ${profile.target_calories || "1500-1800"} kcal.
+- Tái cấu trúc từ ngày tiếp theo đến hết day 7 nếu tổng ngày lệch nhiều, ưu tiên món Việt đa dạng, không lặp lại.
 
 CHỈ TRẢ VỀ JSON, KHÔNG THÊM BẤT KỲ VĂN BẢN NÀO KHÁC.
 isQueryOnly = ${isQueryOnly ? "true" : "false"}
 `;
+
+  if (isDeadlinePassed) {
+    prompt += `
+\n[LƯU Ý QUAN TRỌNG]: Người dùng đã VƯỢT QUÁ THỜI HẠN (deadline) của lộ trình hiện tại. 
+Bạn tuyệt đối KHÔNG ĐƯỢC cập nhật thực đơn (action luôn là "analyze_only").
+Hãy gửi lời chúc mừng chân thành vì họ đã hoàn thành chặng đường, tư vấn lượng calo bình thường, và khuyên họ vào mục LỘ TRÌNH (Plan) để cập nhật lại chỉ số cơ thể nhằm bắt đầu chu kỳ mới.`;
+  }
+
+  return prompt;
 };
 
 const buildNutritionPrompt = () => {
@@ -308,13 +335,13 @@ export default async function handler(req, res) {
     const mealDataRaw = normalizeText(getFirst(fields.mealData));
     const mealTime = normalizeText(getFirst(fields.mealTime));
     const mealDayMode = normalizeText(getFirst(fields.mealDayMode));
-    
+
     const mealDayText =
-    normalizeText(getFirst(fields.mealDayText)) ||
-    normalizeText(getFirst(fields.mealDayValue));
+      normalizeText(getFirst(fields.mealDayText)) ||
+      normalizeText(getFirst(fields.mealDayValue));
     const pendingMealData = safeJsonParse(mealDataRaw);
-    console.log("0: " + mealTime)
-    console.log("2: " + mealDayText)
+    console.log("0: " + mealTime);
+    console.log("2: " + mealDayText);
 
     if (!message && !imageFile) {
       return res.status(400).json({ error: "Thiếu dữ liệu: Gửi tin nhắn hoặc ảnh." });
@@ -333,19 +360,28 @@ export default async function handler(req, res) {
     let history = normalizeHistory(profile.chat_history || []);
     let currentPlan = Array.isArray(profile.weekly_plan) ? profile.weekly_plan : [];
     const now = new Date();
+    let isDeadlinePassed = false;
+    if (profile.deadline) {
+      const deadlineDate = new Date(profile.deadline);
+      deadlineDate.setHours(23, 59, 59, 999);
+      isDeadlinePassed = now > deadlineDate;
+    }
+
+    const effectiveIsQueryOnly = isQueryOnly || isDeadlinePassed;
     const formatDate = (dateInput) => {
-      const date = new Date(dateInput); 
+      const date = new Date(dateInput);
       const d = String(date.getDate()).padStart(2, "0");
       const m = String(date.getMonth() + 1).padStart(2, "0");
       const y = date.getFullYear();
       return `${d}/${m}/${y}`;
     };
 
-    const todayText = formatDate((mealDayText == "hôm nay" ? now : mealDayText));
+    const todayText = formatDate(mealDayText == "hôm nay" ? now : mealDayText);
     const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
     const dayNames = ["", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
     const currentDayName = dayNames[dayOfWeek];
-    const resolvedDayText = todayText
+    const resolvedDayText = todayText;
+
     // Có ảnh: phân tích ảnh + text
     if (imageFile) {
       let userContent = [];
@@ -415,12 +451,11 @@ export default async function handler(req, res) {
     let finalMessage = message;
 
     const isMealFollowup =
-      followupType === "meal_time_update" &&
-      pendingMealData &&
-      mealTime;
-if (isMealFollowup) {
-  console.log(resolvedDayText)
-  finalMessage = `Bạn đã ăn ${pendingMealData.description || "món ăn"} vào buổi ${mealTime}, ngày ${resolvedDayText}.
+      followupType === "meal_time_update" && pendingMealData && mealTime;
+
+    if (isMealFollowup) {
+      console.log(resolvedDayText);
+      finalMessage = `Bạn đã ăn ${pendingMealData.description || "món ăn"} vào buổi ${mealTime}, ngày ${resolvedDayText}.
 
 Thông tin dinh dưỡng ước tính:
 - Calories: ${pendingMealData.calories || "N/A"} kcal
@@ -433,15 +468,16 @@ Thông tin dinh dưỡng ước tính:
 
 Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp lý nếu cần.
 <deleted> Trả về JSON đúng format coach prompt. <deleted>`;
-}
-    // Chỉ text: đi qua HLV thực đơn
+    }
+
     const coachPrompt = buildCoachPrompt({
       profile,
       currentPlan,
       currentDayName,
       dayOfWeek,
       message: finalMessage,
-      isQueryOnly,
+      isQueryOnly: effectiveIsQueryOnly,
+      isDeadlinePassed,
     });
 
     const coachMessages = [
@@ -482,10 +518,13 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
       result.newPlan.length > 0
     ) {
       currentPlan = result.newPlan;
-    await supabase.from('profiles').update({ 
-        weekly_plan: currentPlan,
-        plan_updated_at: now 
-    }).eq('id', user.id);
+      await supabase
+        .from("profiles")
+        .update({
+          weekly_plan: currentPlan,
+          plan_updated_at: now,
+        })
+        .eq("id", user.id);
     }
 
     const userEntry = { role: "user", content: finalMessage };
@@ -506,6 +545,7 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
       clarifyQuestion,
       newPlan: currentPlan,
       username: profile.username,
+      isDeadlinePassed,
     });
   } catch (err) {
     console.error("❌ Lỗi API:", err);

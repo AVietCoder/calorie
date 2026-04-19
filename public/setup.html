@@ -11,7 +11,7 @@
 <style>
   .content{display:flex;align-items:flex-start;justify-content:center;padding:32px 24px}
   .setup-card{
-    width:100%;max-width:680px;
+    width:100%;max-width:700px;
     background:var(--surface);
     border:1px solid var(--border-soft);
     border-radius:var(--radius-xl);
@@ -107,6 +107,11 @@
 
     <main class="content">
       <div class="setup-card">
+        <div id="extend-banner" class="hidden" style="background:var(--sage-50); padding:16px; border-radius:16px; margin-bottom:20px; border-left:4px solid var(--primary);">
+    <p style="margin:0; font-size:14px; color:var(--primary-deep); font-weight:600;">
+      <i class="fa-solid fa-medal"></i> Chặng đường cũ đã hoàn thành. Hãy cập nhật cân nặng mới và đặt deadline mới nhé!
+    </p>
+  </div>
         <div class="progress-container">
           <div class="progress-step active"></div>
           <div class="progress-step"></div>
@@ -368,6 +373,16 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('mode') === 'extend') {
+      document.getElementById('extend-banner').classList.remove('hidden');
+      
+      const titleObj = document.querySelector('.setup-header h1');
+      if (titleObj) titleObj.innerText = 'Bắt đầu lộ trình mới';
+      
+      const btnObj = document.querySelector('.btn-submit span');
+      if (btnObj) btnObj.innerText = 'Lưu & Khởi tạo thực đơn';
+    }
     const token = localStorage.getItem('calorie_ai_token');
     if (!token) {
       showToast("Vui lòng đăng nhập!", "info");

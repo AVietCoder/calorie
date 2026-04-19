@@ -31,7 +31,10 @@ export default async function handler(req, res) {
             snacking: formData.snacking,
             reason: formData.reason,
             is_setup_completed: true, 
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
+            
+            weekly_plan: [], 
+            plan_updated_at: new Date().toISOString()
         };
 
         const { error } = await supabase

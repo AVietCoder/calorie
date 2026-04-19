@@ -67,7 +67,18 @@
     transition:all .25s;
   }
   .meal-cell:hover{border-color:var(--primary);background:#fff;transform:scale(1.02)}
-
+  .meal-modal-btn
+  {
+    background-color: var(--primary);
+    color: #fff;
+    font-weight: 600;
+    border: 1px solid var(--primary);
+    animation: fadeIn 0.5s ease;
+        border-radius: 24px;
+        padding: 10px;
+    text-align: center;
+    cursor: pointer
+  }
   .ai-reply-text{
     line-height:1.6;color:var(--text-main);
     padding:14px 16px;background:var(--sage-50);
@@ -81,6 +92,22 @@
     .schedule-hero{padding:22px 20px}
     .schedule-hero h1{font-size:20px}
   }
+  /* Hiệu ứng làm mờ và overlay chúc mừng */
+  .relative-wrapper { position: relative; }
+  .blur-content { filter: blur(6px); pointer-events: none; user-select: none; opacity: 0.5; transition: 0.3s; }
+  .expired-overlay {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 10; background: rgba(251, 250, 246, 0.4); border-radius: 12px;
+  }
+  .congrat-card {
+    background: #fff; padding: 32px 24px; border-radius: 24px; text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1); max-width: 380px; border: 1px solid var(--primary);
+    animation: fadeIn 0.5s ease;
+  }
+  .congrat-card i { font-size: 56px; color: #FFD700; margin-bottom: 16px; filter: drop-shadow(0 4px 8px rgba(255,215,0,0.4)); }
+  .congrat-card h3 { color: var(--text-main); font-size: 20px; font-weight: 800; margin-bottom: 8px; display: block; }
+  .congrat-card p { color: var(--text-sub); font-size: 14px; line-height: 1.5; margin-bottom: 24px; }
 </style>
 </head>
 <body>
@@ -241,18 +268,38 @@
         body: JSON.stringify({ isQueryOnly: true })
       });
       const result = await res.json();
-
+      console.log("Kết quả từ HLV AI:", result.isDeadlinePassed);
       if (result.success) {
         responseArea.innerHTML = `
           <div class="ai-reply-text">
             <i class="fa-solid fa-quote-left"></i> ${result.reply}
           </div>`;
-        if (result.newPlan && result.newPlan.length > 0) {
-          if (typeof updateRemainingTimetable === 'function') updateRemainingTimetable(result.newPlan);
-          showToast("Đã cập nhật thực đơn mới từ AI!", "success");
+          
+        if (result.isDeadlinePassed) {
+          console.log("Người dùng đã vượt quá deadline. Hiển thị giao diện chúc mừng và ẩn thực đơn cũ.");
+          const grid = document.querySelector('.timetable-grid');
+          const wrapper = document.getElementById('menu-content-area');
+          
+          grid.classList.add('blur-content');
+          wrapper.classList.add('relative-wrapper');
+          
+          const overlay = document.createElement('div');
+          overlay.className = 'expired-overlay';
+          overlay.innerHTML = `
+            <div class="congrat-card">
+              <i class="fa-solid fa-trophy"></i>
+              <h3>Chúc mừng bạn!</h3>
+              <p>Bạn đã hoàn thành xuất sắc chặng đường dinh dưỡng. Hãy cập nhật lại chỉ số mới để AI thiết kế lộ trình tiếp theo nhé!</p>
+              <button onclick="window.location.href='setup.html?mode=extend'" class="meal-modal-btn primary" style="width:100%">Tiếp tục chặng đường mới</button>
+            </div>
+          `;
+          wrapper.appendChild(overlay);
+        } else {
+          if (result.newPlan && result.newPlan.length > 0) {
+            if (typeof updateRemainingTimetable === 'function') updateRemainingTimetable(result.newPlan);
+            showToast("Đã cập nhật thực đơn mới từ AI!", "success");
+          }
         }
-      } else {
-        showToast(result.message || "Không thể lấy thực đơn", "warning");
       }
     } catch (err) {
       console.error("Lỗi kết nối HLV AI:", err);
