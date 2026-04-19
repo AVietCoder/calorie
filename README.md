@@ -1,182 +1,80 @@
 # Calorie AI
 
-## Giới thiệu
-Calorie AI là ứng dụng web hỗ trợ cá nhân hóa dinh dưỡng cho người dùng Việt Nam. Hệ thống cho phép người dùng tạo hồ sơ sức khỏe, tính toán BMR/TDEE, theo dõi mục tiêu cân nặng, nhận thực đơn 7 ngày từ AI, và trò chuyện với AI Coach để phân tích món ăn bằng văn bản hoặc ảnh.
+## Tổng quan
+Calorie AI là nền tảng hỗ trợ cá nhân hóa dinh dưỡng bằng AI, giúp người dùng theo dõi lượng calorie, xây dựng thực đơn và điều chỉnh kế hoạch ăn uống theo mục tiêu sức khỏe. Ứng dụng hướng đến trải nghiệm thực tế, nơi người dùng có thể nhập thông tin cơ thể, nhận chỉ số dinh dưỡng nền tảng, trò chuyện với AI Coach và cập nhật bữa ăn hằng ngày bằng mô tả hoặc hình ảnh.
 
-Điểm nổi bật của dự án là luồng AI không chỉ trả lời câu hỏi dinh dưỡng, mà còn có thể cập nhật lại thực đơn tuần dựa trên bữa ăn thực tế của người dùng.
+Điểm khác biệt của Calorie AI là kết hợp giữa tư vấn dinh dưỡng cá nhân hóa, phân tích món ăn bằng AI và khả năng tự động điều chỉnh thực đơn theo hành vi ăn uống thực tế của người dùng.
 
-## Tính năng chính
-- Đăng ký, đăng nhập và đăng xuất bằng Supabase Auth.
-- Thiết lập hồ sơ dinh dưỡng gồm giới tính, năm sinh, chiều cao, cân nặng, mục tiêu, deadline, mức vận động, macro ưu tiên, dị ứng và thói quen ăn vặt.
-- Tính toán BMR, TDEE, calories mục tiêu và macro khuyến nghị.
-- Sinh thực đơn 7 ngày theo mục tiêu cá nhân hóa.
-- Chat với AI Coach để hỏi đáp về dinh dưỡng hoặc điều chỉnh kế hoạch ăn uống.
-- Phân tích món ăn từ ảnh JPG/JPEG bằng OpenAI.
-- Lưu lịch sử chat và kế hoạch ăn uống trong Supabase.
-- Hiển thị dashboard trực quan với biểu đồ calo, BMR/TDEE, macro và tiến độ cân nặng.
-- Tự nhận biết khi người dùng đã qua deadline để chúc mừng và yêu cầu khởi tạo chặng mới.
+## Tính năng nổi bật
+- Cá nhân hóa hồ sơ sức khỏe dựa trên giới tính, năm sinh, chiều cao, cân nặng, cân nặng mục tiêu, mức độ vận động, deadline và sở thích ăn uống.
+- Tự động tính BMR, TDEE, calories mục tiêu mỗi ngày và phân bổ macro gồm protein, fat, carbs.
+- Sinh thực đơn 7 ngày phù hợp với mục tiêu như giảm cân, tăng cân, giữ cân hoặc tăng cơ.
+- Hỗ trợ AI Coach để người dùng hỏi đáp về dinh dưỡng, món ăn, khẩu phần và cách điều chỉnh bữa ăn.
+- Phân tích món ăn từ ảnh hoặc mô tả văn bản để ước lượng calories và các thành phần dinh dưỡng.
+- Cho phép xác nhận bữa ăn theo thời điểm thực tế trong ngày, từ đó cập nhật lại thực đơn tuần một cách linh hoạt.
+- Lưu lịch sử tương tác để AI có thể phản hồi theo ngữ cảnh cá nhân thay vì trả lời rời rạc.
+- Hiển thị tiến trình trực quan bằng dashboard với các chỉ số calories, BMR, TDEE, macro và tiến độ cân nặng.
+- Hỗ trợ tái thiết lập chặng mới khi người dùng đã hoàn thành deadline mục tiêu cũ.
 
-## Luồng người dùng
-1. Người dùng vào `index.html`, sau đó đăng ký ở `signup.html` hoặc đăng nhập ở `signin.html`.
-2. Sau khi đăng nhập, người dùng thiết lập hồ sơ tại `setup.html`.
-3. Hệ thống lưu hồ sơ vào bảng `profiles`, đồng thời đánh dấu `is_setup_completed`.
-4. Người dùng xem chỉ số dinh dưỡng tại `diet-details.html`.
-5. Người dùng mở `schedule.html` để lấy thực đơn tuần do AI tạo hoặc cập nhật.
-6. Tại `chat.html`, người dùng gửi ảnh món ăn hoặc nhắn tin để:
-   - phân tích calories và macro,
-   - hỏi đáp về dinh dưỡng,
-   - xác nhận bữa ăn,
-   - cập nhật lại thực đơn 7 ngày.
+## User Flow
+1. Người dùng truy cập hệ thống và tạo tài khoản hoặc đăng nhập.
+2. Người dùng hoàn thiện hồ sơ cá nhân với các thông tin cơ bản về cơ thể, mục tiêu và thói quen ăn uống.
+3. Hệ thống tính toán mức năng lượng nền, nhu cầu calories mỗi ngày và tỷ lệ macro phù hợp.
+4. AI tạo thực đơn 7 ngày đầu tiên dựa trên dữ liệu hồ sơ và mục tiêu sức khỏe.
+5. Người dùng theo dõi các chỉ số dinh dưỡng qua dashboard và lịch thực đơn tuần.
+6. Trong quá trình sử dụng, người dùng có thể gửi ảnh món ăn hoặc mô tả bữa ăn để AI phân tích.
+7. Sau khi nhận diện món ăn, hệ thống ghi nhận bữa ăn theo đúng thời điểm và điều chỉnh thực đơn khi cần.
+8. Khi đạt hoặc vượt qua deadline đặt ra, hệ thống hướng dẫn người dùng cập nhật chỉ số mới để bắt đầu chu kỳ tiếp theo.
 
-## Các màn hình hiện có
-- `public/index.html`: landing page.
-- `public/signin.html`: đăng nhập.
-- `public/signup.html`: đăng ký.
-- `public/setup.html`: thiết lập hồ sơ và mục tiêu.
-- `public/diet-details.html`: dashboard BMR, TDEE, calories và macro.
-- `public/schedule.html`: lịch thực đơn 7 ngày.
-- `public/chat.html`: AI Coach và phân tích món ăn từ ảnh.
-- `public/guide.html`: trang hướng dẫn sử dụng.
+## Giá trị sản phẩm
+- Giúp người dùng hiểu rõ nhu cầu năng lượng của bản thân thay vì ăn theo cảm tính.
+- Biến kế hoạch ăn uống thành một quy trình có thể theo dõi, cập nhật và tối ưu liên tục.
+- Tạo trải nghiệm gần với một “AI Nutrition Coach” thay vì chỉ là công cụ tính calories đơn thuần.
+- Phù hợp với bối cảnh món ăn quen thuộc của người Việt, giúp gợi ý thực tế và dễ áp dụng hơn.
 
-## Kiến trúc hệ thống
+## Công nghệ áp dụng
 
 ### Frontend
 - HTML, CSS, JavaScript thuần.
-- Biểu đồ dùng `Chart.js`.
-- Giao diện dùng `Font Awesome`, `Google Fonts`, `toast.css`, `both.css`.
-- Token đăng nhập được lưu ở `localStorage`.
+- Giao diện responsive, kết hợp biểu đồ trực quan để hiển thị các chỉ số dinh dưỡng và tiến độ.
+- Tăng trải nghiệm người dùng bằng toast notification, biểu đồ động và giao diện chat trực tiếp với AI.
 
 ### Backend
-- Các API đặt trong thư mục `api/` và triển khai theo kiểu serverless trên Vercel.
-- Xác thực người dùng bằng Supabase.
-- Tích hợp OpenAI để:
-  - phân tích ảnh món ăn,
-  - tư vấn dinh dưỡng,
-  - sinh và cập nhật thực đơn tuần.
+- Node.js theo mô hình serverless function.
+- API xử lý đăng nhập, hồ sơ người dùng, lịch sử chat, tính toán dinh dưỡng và cập nhật thực đơn.
+- Kiến trúc phù hợp để triển khai trên Vercel, dễ mở rộng và tối ưu chi phí cho sản phẩm AI.
 
-### Database
-Supabase được dùng cho:
-- Auth.
-- Lưu hồ sơ người dùng trong bảng `profiles`.
-- Lưu `chat_history`.
-- Lưu `weekly_plan`, `plan_updated_at`, `last_detected_meal` và trạng thái `is_setup_completed`.
+### AI
+- Tích hợp OpenAI API để:
+  - phân tích món ăn từ ảnh,
+  - trả lời câu hỏi dinh dưỡng theo ngữ cảnh người dùng,
+  - sinh thực đơn tuần,
+  - điều chỉnh kế hoạch ăn uống khi người dùng ăn lệch so với lộ trình.
+- Áp dụng prompt engineering để AI phản hồi đúng vai trò AI Coach, giữ ngữ cảnh cá nhân hóa và đưa ra kết quả có cấu trúc.
 
-## Các API chính
+### Database và xác thực
+- Supabase dùng cho xác thực tài khoản người dùng.
+- Supabase Database dùng để lưu hồ sơ cá nhân, lịch sử trò chuyện, trạng thái setup và kế hoạch ăn uống.
+- Token xác thực được dùng để bảo vệ các API cần đăng nhập.
 
-| Endpoint | Method | Mô tả |
-|---|---|---|
-| `/api/auth` | `POST` | Đăng ký, đăng nhập, đăng xuất |
-| `/api/setup` | `POST` | Lưu hoặc cập nhật hồ sơ người dùng |
-| `/api/status` | `GET` | Kiểm tra người dùng đã hoàn tất setup chưa |
-| `/api/diet-info` | `GET` | Tính BMR, TDEE, calories mục tiêu và macro |
-| `/api/chat-history` | `GET` | Lấy lịch sử chat của người dùng |
-| `/api/chat` | `POST` | Chat AI, phân tích ảnh món ăn, cập nhật thực đơn |
-| `/api/coach-dynamic` | `POST` | Sinh hoặc làm mới thực đơn 7 ngày |
-| `/api/hello` | `GET` | Endpoint test trong `api/index.js` |
+### Kỹ thuật nổi bật
+- Tính toán dinh dưỡng theo BMR, TDEE và calories mục tiêu.
+- Lưu lịch sử hội thoại để duy trì ngữ cảnh trong các phiên chat với AI.
+- Hỗ trợ workflow đa bước: nhận diện món ăn, hỏi thêm thời điểm ăn, xác nhận bữa ăn, rồi mới cập nhật kế hoạch.
+- Kết hợp giữa dữ liệu định lượng dinh dưỡng và hội thoại AI để tạo trải nghiệm cá nhân hóa sâu hơn.
 
-## Cách AI hoạt động trong dự án
-
-### 1. Phân tích món ăn
-`api/chat.js` nhận:
-- tin nhắn văn bản,
-- ảnh món ăn,
-- hoặc thông tin follow-up sau khi người dùng xác nhận bữa ăn.
-
-Khi có ảnh, hệ thống:
-- gửi ảnh + prompt sang OpenAI,
-- trích xuất calories, protein, fat, carbs, fiber, sugar, sodium,
-- hiển thị kết quả ở sidebar của `chat.html`,
-- hỏi lại người dùng ăn vào bữa nào nếu chưa rõ.
-
-### 2. AI Coach cập nhật thực đơn
-Sau khi người dùng xác nhận bữa ăn, AI sẽ:
-- đối chiếu với `weekly_plan`,
-- quyết định chỉ phân tích hay cập nhật kế hoạch,
-- nếu đủ dữ liệu, trả về `newPlan`,
-- lưu kế hoạch mới vào Supabase.
-
-### 3. Sinh thực đơn tuần
-`api/coach-dynamic.js` sẽ tạo thực đơn 7 ngày nếu:
-- người dùng chưa có plan,
-- plan đã quá 7 ngày,
-- hoặc sang tuần mới cần tái tạo.
-
-## Công thức đang dùng
-Trong `api/diet-info.js`, hệ thống đang dùng:
-- BMR theo công thức Mifflin-St Jeor.
-- TDEE = `BMR x activity_level`.
-- Calories mục tiêu:
-  - giảm cân: trừ theo mức `safe`, `normal`, `fast`,
-  - tăng cân hoặc tăng cơ: cộng thêm calories,
-  - giữ cân: giữ nguyên theo TDEE.
-- Macro mặc định:
-  - protein: 30% calories,
-  - fat: 25% calories,
-  - carbs: 45% calories.
-
-## Cấu trúc thư mục
-
-```text
-THT-D3/
-├── api/
-│   ├── auth.js
-│   ├── chat.js
-│   ├── chat-history.js
-│   ├── coach-dynamic.js
-│   ├── diet-info.js
-│   ├── index.js
-│   ├── setup.js
-│   ├── status.js
-│   └── lib/
-│       ├── auth-middleware.js
-│       └── supabase.js
-├── public/
-│   ├── index.html
-│   ├── signin.html
-│   ├── signup.html
-│   ├── setup.html
-│   ├── diet-details.html
-│   ├── schedule.html
-│   ├── chat.html
-│   ├── guide.html
-│   ├── both.css
-│   ├── style.css
-│   ├── setup.css
-│   ├── toast.css
-│   ├── toast.js
-│   └── logo.png
-├── package.json
-├── package-lock.json
-├── vercel.json
-└── README.md
-```
-
-## Công nghệ đang sử dụng
-- Frontend: HTML, CSS, JavaScript.
-- Backend: Vercel Serverless Functions, Node.js.
-- AI: OpenAI API.
-- Database/Auth: Supabase.
-- Upload file: `formidable`, `multer`.
-- Biểu đồ: `Chart.js` qua CDN.
-
-## Biến môi trường cần có
-Để chạy đúng các API, dự án cần tối thiểu:
-
-```env
-OPENAI_API_KEY=
-SUPABASE_URL=
-SUPABASE_ANON_KEY=
-```
+## Định hướng sử dụng
+Calorie AI phù hợp với người dùng muốn:
+- giảm cân hoặc kiểm soát calories khoa học,
+- tăng cân hoặc tăng cơ có định hướng,
+- xây dựng kế hoạch ăn uống rõ ràng theo tuần,
+- theo dõi tiến độ sức khỏe bằng dữ liệu thay vì cảm giác chủ quan,
+- nhận hỗ trợ dinh dưỡng tức thời từ AI trong quá trình sinh hoạt hằng ngày.
 
 ## Triển khai
-Dự án được thiết kế để triển khai trên Vercel. File `vercel.json` đang rewrite các route `/api/*` về đúng serverless functions trong thư mục `api/`.
+Dự án được thiết kế để triển khai trên Vercel, phù hợp với mô hình web app serverless tích hợp AI và cơ sở dữ liệu đám mây.
 
-## Ghi chú hiện trạng code
-- README cũ mô tả đúng ý tưởng chung, nhưng bản này đã được cập nhật theo implementation thực tế trong mã nguồn.
-- Dự án hiện chưa có script `dev` hoặc `start` hoàn chỉnh trong `package.json`.
-- `mongoose` đang có trong dependencies nhưng chưa thấy được sử dụng trong code hiện tại.
-- Một số file giao diện cũ như `old-setup.html` và `old-diet-details.html` vẫn còn trong `public/`.
-
----
+## Nhóm tác giả
 **Tác giả:** Vũ Trí Việt (Le Hong Phong High School for the Gifted)<br>
 **Đồng tác giả:** Hồng Tú Quỳnh (Tran Dai Nghia High School for the Gifted)<br>
+
