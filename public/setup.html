@@ -376,6 +376,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    showLoader()
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('mode') === 'extend') {
       document.getElementById('extend-banner').classList.remove('hidden');
