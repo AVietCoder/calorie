@@ -33,11 +33,9 @@ export default async function handler(req, res) {
 
         const diffDays = lastUpdated ? (now - lastUpdated) / (1000 * 60 * 60 * 24) : 999;
         const isMonday = now.getDay() === 1;
-        const needsNewPlan = !isDeadlinePassed && (!currentPlan || diffDays >= 7 || (isMonday && diffDays >= 1));
+        const needsNewPlan = !isDeadlinePassed && (currentPlan.length == 0 || diffDays >= 7 || (isMonday && diffDays >= 1));
 
         let aiReply = "";
-
-        // TẠO PLAN MỚI TỰ ĐỘNG (CHỈ KHI CÒN HẠN)
         if (needsNewPlan) {
             const aiPrompt = `
 Bạn là chuyên gia dinh dưỡng và am hiểu ẩm thực Việt Nam. 
