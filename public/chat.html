@@ -208,7 +208,7 @@
         </div>
       </div>
       <div class="other-day-wrap hidden">
-        <input class="other-day-input" type="date" />
+        <input id="meal-date-input" class="other-day-input" type="date" />
       </div>
       <div class="meal-modal-actions">
         <button type="button" class="meal-modal-btn primary btn-confirm-meal">Xác nhận</button>
@@ -553,6 +553,12 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    const dateInput = document.getElementById('meal-date-input');
+    if (dateInput) {
+        const today = new Date().toISOString().split('T')[0];
+                dateInput.setAttribute('max', today);
+                dateInput.value = today;
+    }
     wireMealModalEvents();
     initNavigation();
     const token = localStorage.getItem('calorie_ai_token');
