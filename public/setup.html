@@ -116,7 +116,7 @@
     </p>
   </div>
         <div class="progress-container">
-          <div class="progress-step active"></div>
+          <div id="progress-step-1" class="progress-step active"></div>
           <div class="progress-step"></div>
           <div class="progress-step"></div>
           <div class="progress-step"></div>
@@ -242,7 +242,12 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    if (typeof loadCurrentData === "function") loadCurrentData();
+    if (typeof loadCurrentData === "function") {
+      const token = localStorage.getItem('calorie_ai_token');
+      if (token) {
+        loadCurrentData(token);
+      }
+    }
   });
 
   let currentStep = 0;
@@ -307,7 +312,7 @@
       }
     } catch (error) {
       console.error("Lỗi:", error);
-      alert("Có lỗi xảy ra: " + error.message);
+      showToast("Có lỗi xảy ra: " + error.message, "error");
       btn.innerHTML = originalText;
       btn.disabled = false;
     }
@@ -329,34 +334,29 @@
     const loader = document.getElementById('setup-loader');
     if (loader) loader.remove();
   }
-
-  async function loadCurrentData() {
-    const token = localStorage.getItem('calorie_ai_token');
-    if (!token) return;
-    try {
-      const res = await fetch("/api/chat-history", { method:"GET", headers:{ 'Authorization':`Bearer ${token}` } });
-      const data = await res.json();
-      if (res.ok == false) {
-        showToast("Vui lòng đăng nhập!", "info");
-        setTimeout(() => { window.location.href = "signin.html"; }, 1369);
-        return;
-      }
-    } catch (e) {
-      console.error(e);
-      showToast("Vui lòng đăng nhập!", "info");
-      setTimeout(() => { window.location.href = "signin.html"; }, 1369);
-    }
+async function loadCurrentData(token) {
     showLoader();
     try {
-      const res = await fetch('/api/diet-info', { headers:{ 'Authorization':`Bearer ${token}` } });
+      const res = await fetch('/api/diet-info', { headers: { 'Authorization': `Bearer ${token}` } });
       const result = await res.json();
       if (result.success && result.data && result.data.profile) {
         const p = result.data.profile;
+        console.log("Dữ liệu cũ đã được tải:", p);
+        if (p.deadline) {
+          const deadlineDate = new Date(p.deadline);
+          deadlineDate.setHours(23, 59, 59, 999);
+          const isDeadlinePassed = new Date() > deadlineDate;
+          console.log("Deadline cũ:", deadlineDate, "Đã qua deadline?", isDeadlinePassed);
+          if (!isDeadlinePassed) {
+            document.getElementById('extend-banner').style = "display: none";
+          }
+        }
+
         const fieldMap = {
-          'gender':p.gender, 'birth_year':p.birth_year, 'height':p.height, 'weight':p.weight,
-          'target_weight':p.target_weight, 'deadline':p.deadline, 'speed':p.speed,
-          'activity':p.activity_level, 'cheat_days':p.high_cal_days, 'snacking':p.snacking,
-          'allergies':p.allergies, 'focus_macro':p.focus_macro, 'reason':p.reason, 'streak_goal':p.streak_goal
+          'gender': p.gender, 'birth_year': p.birth_year, 'height': p.height, 'weight': p.weight,
+          'target_weight': p.target_weight, 'deadline': p.deadline, 'speed': p.speed,
+          'activity': p.activity_level, 'cheat_days': p.high_cal_days, 'snacking': p.snacking,
+          'allergies': p.allergies, 'focus_macro': p.focus_macro, 'reason': p.reason, 'streak_goal': p.streak_goal
         };
         const form = document.getElementById("planForm");
         Object.keys(fieldMap).forEach(fieldName => {
@@ -372,9 +372,10 @@
       }
     } catch (err) {
       console.warn("Chưa có dữ liệu cũ để khôi phục:", err);
-    } finally { hideLoader(); }
+    } finally {
+      hideLoader();
+    }
   }
-
   document.addEventListener('DOMContentLoaded', () => {
     showLoader()
     const urlParams = new URLSearchParams(window.location.search);

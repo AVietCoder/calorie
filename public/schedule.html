@@ -270,85 +270,90 @@ function updateRemainingTimetable(newPlan) {
     displayRemain.innerText = remain > 0 ? `Còn lại: ${remain}kg` : `Đã đạt mục tiêu!`;
   }
 
-  async function loadAIMenu() {
-    const token = localStorage.getItem('calorie_ai_token');
-    if (!token) { window.location.href = "signin.html"; return; }
+async function loadAIMenu() {
+  const token = localStorage.getItem('calorie_ai_token');
+  if (!token) { window.location.href = "signin.html"; return; }
 
-    const responseArea = document.getElementById('ai-response-text');
-    const roadmapContainer = document.querySelector('.content');
-    const loader = document.createElement('div');
-    loader.className = 'loading-overlay';
-    loader.id = 'main-loader';
-    loader.innerHTML = '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
-    roadmapContainer.appendChild(loader);
+  // Hiện loader ngay lập tức
+  const responseArea = document.getElementById('ai-response-text');
+  const roadmapContainer = document.querySelector('.content');
+  const loader = document.createElement('div');
+  loader.className = 'loading-overlay';
+  loader.id = 'main-loader';
+  loader.innerHTML = '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+  roadmapContainer.appendChild(loader);
 
-    try {
-      const res = await fetch("/api/chat-history", { method:"GET", headers:{ 'Authorization':`Bearer ${token}` } });
-      const data = await res.json();
-      if (res.ok == false) {
-        showToast("Vui lòng đăng nhập!", "info");
-        setTimeout(() => { window.location.href = "signin.html"; }, 1369);
-        return;
-      }
-    } catch (e) {
-      console.error(e);
+  try {
+    // Gọi song song, không chờ tuần tự
+    const [statusRes, coachRes] = await Promise.all([
+      fetch('/api/status', {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      }),
+      fetch('/api/coach-dynamic', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isQueryOnly: true })
+      })
+    ]);
+
+    // Check auth/login
+    if (!statusRes.ok) {
       showToast("Vui lòng đăng nhập!", "info");
       setTimeout(() => { window.location.href = "signin.html"; }, 1369);
+      return;
     }
-    try {
-      const statusRes = await fetch('/api/status', { method:'GET', headers:{ 'Authorization':`Bearer ${token}` } });
-      const statusData = await statusRes.json();
-      if (!statusData.is_setup_completed) { window.location.href = 'setup.html'; return; }
 
-      const res = await fetch('/api/coach-dynamic', {
-        method:'POST',
-        headers:{ 'Authorization':`Bearer ${token}`, 'Content-Type':'application/json' },
-        body: JSON.stringify({ isQueryOnly: true })
-      });
-      const result = await res.json();
-      console.log("Kết quả từ HLV AI:", result.isDeadlinePassed);
-      if (result.success) {
-        responseArea.innerHTML = `
-          <div class="ai-reply-text">
-            <i class="fa-solid fa-quote-left"></i> ${result.reply}
-          </div>`;
-          
-        if (result.isDeadlinePassed) {
-          console.log("Người dùng đã vượt quá deadline. Hiển thị giao diện chúc mừng và ẩn thực đơn cũ.");
-          const grid = document.querySelector('.timetable-grid');
-          const wrapper = document.getElementById('menu-content-area');
-          
-          grid.classList.add('blur-content');
-          wrapper.classList.add('relative-wrapper');
-          
-          const overlay = document.createElement('div');
-          overlay.className = 'expired-overlay';
-          overlay.innerHTML = `
-            <div class="congrat-card">
-              <i class="fa-solid fa-trophy"></i>
-              <h3>Chúc mừng bạn!</h3>
-              <p>Bạn đã hoàn thành xuất sắc chặng đường dinh dưỡng. Hãy cập nhật lại chỉ số mới để AI thiết kế lộ trình tiếp theo nhé!</p>
-              <button onclick="window.location.href='setup.html?mode=extend'" class="meal-modal-btn primary" style="width:100%">Tiếp tục chặng đường mới</button>
-            </div>
-          `;
-          wrapper.appendChild(overlay);
-        } else {
-          if (result.newPlan && result.newPlan.length > 0) {
-            if (typeof updateRemainingTimetable === 'function') updateRemainingTimetable(result.newPlan);
-            showToast("Đã cập nhật thực đơn mới từ AI!", "success");
-          }
+    const statusData = await statusRes.json();
+    if (!statusData.is_setup_completed) {
+      window.location.href = 'setup.html';
+      return;
+    }
+
+    const result = await coachRes.json();
+    console.log("Kết quả từ HLV AI:", result.isDeadlinePassed);
+
+    if (result.success) {
+      responseArea.innerHTML = `
+        <div class="ai-reply-text">
+          <i class="fa-solid fa-quote-left"></i> ${result.reply}
+        </div>`;
+
+      if (result.isDeadlinePassed) {
+        console.log("Người dùng đã vượt quá deadline. Hiển thị giao diện chúc mừng và ẩn thực đơn cũ.");
+        const grid = document.querySelector('.timetable-grid');
+        const wrapper = document.getElementById('menu-content-area');
+
+        grid.classList.add('blur-content');
+        wrapper.classList.add('relative-wrapper');
+
+        const overlay = document.createElement('div');
+        overlay.className = 'expired-overlay';
+        overlay.innerHTML = `
+          <div class="congrat-card">
+            <i class="fa-solid fa-trophy"></i>
+            <h3>Chúc mừng bạn!</h3>
+            <p>Bạn đã hoàn thành xuất sắc chặng đường dinh dưỡng. Hãy cập nhật lại chỉ số mới để AI thiết kế lộ trình tiếp theo nhé!</p>
+            <button onclick="window.location.href='setup.html?mode=extend'" class="meal-modal-btn primary" style="width:100%">Tiếp tục chặng đường mới</button>
+          </div>
+        `;
+        wrapper.appendChild(overlay);
+      } else {
+        if (result.newPlan && result.newPlan.length > 0) {
+          if (typeof updateRemainingTimetable === 'function') updateRemainingTimetable(result.newPlan);
+          showToast("Đã cập nhật thực đơn mới từ AI!", "success");
         }
       }
-    } catch (err) {
-      console.error("Lỗi kết nối HLV AI:", err);
-      showToast("Lỗi kết nối HLV AI", "error");
-      responseArea.innerHTML = '<p style="color:var(--danger);font-size:13px;text-align:center">Không thể kết nối với HLV AI. Vui lòng thử lại sau.</p>';
-    } finally {
-      const loaderObj = document.getElementById('main-loader');
-      if (loaderObj) setTimeout(() => loaderObj.remove(), 400);
     }
+  } catch (err) {
+    console.error("Lỗi kết nối HLV AI:", err);
+    showToast("Lỗi kết nối HLV AI", "error");
+    responseArea.innerHTML = '<p style="color:var(--danger);font-size:13px;text-align:center">Không thể kết nối với HLV AI. Vui lòng thử lại sau.</p>';
+  } finally {
+    const loaderObj = document.getElementById('main-loader');
+    if (loaderObj) setTimeout(() => loaderObj.remove(), 400);
   }
-
+}
   function handleLogout() {
     localStorage.removeItem('calorie_ai_token');
     showToast("Đang đăng xuất...", "info");
