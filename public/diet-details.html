@@ -140,6 +140,57 @@
     .stats-grid{grid-template-columns:1fr}
     .timetable-grid{grid-template-columns:60px repeat(7,minmax(80px,1fr));overflow-x:auto}
   }
+
+  /* === Disease / Bệnh lý card === */
+  .disease-card{
+    position:relative; overflow:hidden;
+    margin-top:22px; padding:24px 28px;
+    border-radius:var(--radius-lg);
+    background:linear-gradient(135deg, #fff5f0 0%, #fff9f2 60%, #fef3ec 100%);
+    border:1px solid #f4c9a8;
+    box-shadow:0 6px 20px -10px rgba(194,91,74,.35);
+    display:flex; align-items:flex-start; gap:18px;
+  }
+  .disease-card::before{
+    content:""; position:absolute; left:0; top:0; bottom:0; width:5px;
+    background:linear-gradient(180deg,#c25b4a,#d97757);
+  }
+  .disease-card .disease-icon{
+    flex-shrink:0; width:52px; height:52px; border-radius:14px;
+    background:linear-gradient(135deg,#c25b4a,#d97757);
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    font-size:22px; box-shadow:0 8px 18px -8px rgba(194,91,74,.6);
+  }
+  .disease-card .disease-body{flex:1; min-width:0}
+  .disease-card .disease-eyebrow{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:11px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase;
+    color:#c25b4a; margin-bottom:6px;
+  }
+  .disease-card .disease-title{
+    font-size:18px; font-weight:700; color:var(--text-main); margin-bottom:4px;
+  }
+  .disease-card .disease-desc{
+    font-size:13px; color:var(--text-sub); margin-bottom:12px; line-height:1.5;
+  }
+  .disease-tags{display:flex; flex-wrap:wrap; gap:8px}
+  .disease-tag{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:7px 14px; border-radius:999px;
+    background:#fff; border:1px solid #f4c9a8;
+    color:#9b3f30; font-size:13px; font-weight:600;
+    box-shadow:0 2px 6px -3px rgba(194,91,74,.3);
+  }
+  .disease-tag i{color:#c25b4a; font-size:11px}
+  .disease-card.is-empty{
+    background:linear-gradient(135deg,#f3f8f1 0%,#fbfdf9 100%);
+    border-color:#cfe0c8;
+    box-shadow:0 4px 14px -10px rgba(125,155,118,.35);
+  }
+  .disease-card.is-empty::before{background:linear-gradient(180deg,#7d9b76,#a8c0a0)}
+  .disease-card.is-empty .disease-icon{background:linear-gradient(135deg,#7d9b76,#a8c0a0); box-shadow:0 8px 18px -8px rgba(125,155,118,.6)}
+  .disease-card.is-empty .disease-eyebrow{color:#4a6741}
+
 </style>
 </head>
 <body>
@@ -199,6 +250,16 @@
               <div class="stat-icon"><i class="fa-solid fa-calendar-day"></i></div>
               <div class="stat-label">Thời hạn (Deadline)</div>
               <div class="stat-value" id="display-deadline">--/--/--</div>
+            </div>
+          </div>
+
+          <div class="disease-card is-empty" id="disease-card">
+            <div class="disease-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+            <div class="disease-body">
+              <span class="disease-eyebrow"><i class="fa-solid fa-shield-heart"></i> Bệnh lý cần lưu ý</span>
+              <div class="disease-title" id="disease-title">Đang tải thông tin sức khoẻ...</div>
+              <div class="disease-desc" id="disease-desc">Hệ thống sẽ cá nhân hoá thực đơn dựa trên tình trạng sức khoẻ của bạn.</div>
+              <div class="disease-tags" id="disease-tags"></div>
             </div>
           </div>
 
@@ -688,6 +749,35 @@
     }
   }
 
+  function renderDisease(raw){
+    const card = document.getElementById('disease-card');
+    const titleEl = document.getElementById('disease-title');
+    const descEl = document.getElementById('disease-desc');
+    const tagsEl = document.getElementById('disease-tags');
+    if (!card) return;
+
+    let list = [];
+    if (Array.isArray(raw)) list = raw.filter(Boolean).map(x => String(x).trim()).filter(Boolean);
+    else if (typeof raw === 'string') list = raw.split(/[,;\n]/).map(x => x.trim()).filter(Boolean);
+
+    if (list.length === 0){
+      card.classList.add('is-empty');
+      titleEl.textContent = 'Không có bệnh nền';
+      descEl.textContent = 'Bạn chưa khai báo bệnh lý nào. Thực đơn sẽ tối ưu cho mục tiêu cân nặng & năng lượng.';
+      tagsEl.innerHTML = '';
+      return;
+    }
+
+    card.classList.remove('is-empty');
+    titleEl.textContent = list.length === 1 ? 'Lưu ý chế độ ăn cho tình trạng sức khoẻ' : `Bạn đang có ${list.length} tình trạng cần lưu ý`;
+    descEl.textContent = 'Vui lòng chú ý lựa chọn thực phẩm phù hợp. Hệ thống sẽ ưu tiên cảnh báo món ăn không tốt cho các bệnh lý dưới đây.';
+    tagsEl.innerHTML = list.map(name => `<span class="disease-tag"><i class="fa-solid fa-notes-medical"></i>${escapeHtml(name)}</span>`).join('');
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
   async function loadDietData() {
     const token = localStorage.getItem('calorie_ai_token');
     if (!token) {
@@ -750,6 +840,7 @@
       setText('display-weight', `${weight} kg`);
       setText('display-target', `${targetWeight} kg`);
       setText('display-deadline', deadline);
+      renderDisease(d.profile?.disease);
       setHTML('display-bmr', `<i class="fa-solid fa-bolt"></i> BMR: ${bmr}`);
       setHTML('display-tdee', `<i class="fa-solid fa-fire"></i> TDEE: ${tdee}`);
       setText('p-val', `${p}g`);
