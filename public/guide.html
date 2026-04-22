@@ -313,7 +313,7 @@ body.no-auth .side-nav{
   <div id="toast-container"></div>
 
   <aside class="side-nav">
-    <div class="nav-item" id="nav-home"><i class="fa-solid fa-comment"></i><span>AI</span></div>
+    <div class="nav-item" onclick="location.href='chat.html'"id="nav-home"><i class="fa-solid fa-comment"></i><span>AI</span></div>
     <div class="nav-item" onclick="location.href='diet-details.html'"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
     <div class="nav-item" onclick="location.href='schedule.html'"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
     <div class="nav-item" onclick="location.href='setup.html'"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
@@ -557,52 +557,95 @@ body.no-auth .side-nav{
   </div>
   <script src="toast.js"></script>
 
-
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const token = localStorage.getItem('calorie_ai_token');
-
+document.addEventListener('DOMContentLoaded', async () => {
   const sideNav = document.querySelector('.side-nav');
   const headerTools = document.querySelector('.header-tools');
   const logo = document.querySelector('.logo');
 
-  if (!token) {
+  // ===== Hàm set UI =====
+  function applyGuestMode() {
+    document.body.classList.remove('has-auth');
     document.body.classList.add('no-auth');
 
     if (sideNav) sideNav.style.display = 'none';
     if (headerTools) headerTools.style.display = 'none';
-
-    // logo về trang chủ
     if (logo) logo.href = 'index.html';
+  }
 
-  } else {
+  function applyUserMode() {
+    document.body.classList.remove('no-auth');
     document.body.classList.add('has-auth');
 
     if (sideNav) sideNav.style.display = '';
     if (headerTools) headerTools.style.display = '';
-
-    // logo về chat
     if (logo) logo.href = 'chat.html';
   }
-});
 
-  // TOC scroll-spy
+  // ===== Kiểm tra đăng nhập bằng API =====
+  try {
+    const token = localStorage.getItem('calorie_ai_token');
+
+    if (!token) {
+      applyGuestMode();
+    } else {
+      const res = await fetch('/api/status', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        applyUserMode();
+      } else {
+        localStorage.removeItem('calorie_ai_token');
+        applyGuestMode();
+      }
+    }
+  } catch (err) {
+    console.error('Check auth failed:', err);
+    applyGuestMode();
+  }
+
+  // ===== TOC scroll spy =====
   const links = document.querySelectorAll('.toc a');
-  const sections = [...links].map(a => document.querySelector(a.getAttribute('href')));
+  const sections = [...links].map(a =>
+    document.querySelector(a.getAttribute('href'))
+  );
+
   const onScroll = () => {
     const y = window.scrollY + 140;
     let activeIdx = 0;
-    sections.forEach((s, i) => { if (s && s.offsetTop <= y) activeIdx = i; });
-    links.forEach((l, i) => l.classList.toggle('active', i === activeIdx));
+
+    sections.forEach((s, i) => {
+      if (s && s.offsetTop <= y) activeIdx = i;
+    });
+
+    links.forEach((l, i) =>
+      l.classList.toggle('active', i === activeIdx)
+    );
   };
+
   document.addEventListener('scroll', onScroll, { passive: true });
 
-  // Smooth scroll
-  links.forEach(a => a.addEventListener('click', e => {
-    e.preventDefault();
-    const t = document.querySelector(a.getAttribute('href'));
-    if (t) window.scrollTo({ top: t.offsetTop - 90, behavior: 'smooth' });
-  }));
+  // ===== Smooth scroll =====
+  links.forEach(a =>
+    a.addEventListener('click', e => {
+      e.preventDefault();
+
+      const t = document.querySelector(a.getAttribute('href'));
+      if (t) {
+        window.scrollTo({
+          top: t.offsetTop - 90,
+          behavior: 'smooth'
+        });
+      }
+    })
+  );
+});
 </script>
 </body>
 </html>
