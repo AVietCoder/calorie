@@ -120,10 +120,26 @@ Không được dùng số thứ tự tự nhiên của ngày trong tuần.
 Người dùng vừa nhắn: "${message}"
 
 THÔNG TIN NGƯỜI DÙNG
+- Giới tính: ${profile.gender ?? "N/A"}
+- Năm sinh: ${profile.birth_year ?? "N/A"}
+- Chiều cao: ${profile.height ?? "N/A"} cm
 - Cân nặng: ${profile.weight ?? "N/A"}kg
 - Mục tiêu: ${profile.goal ?? "N/A"}
+- Bệnh lý (nếu có): ${profile.disease || "Không có"}
 - Macro ưu tiên: ${profile.focus_macro ?? "N/A"}
 - Calo mục tiêu/ngày: ${profile.target_calories || "1500-1800"} kcal
+- Lý do thực hiện: ${profile.reason || "N/A"}
+
+YÊU CẦU:
+- Ưu tiên các món ăn phổ biến của người Việt Nam.
+- Thực đơn đa dạng giữa các ngày (không lặp lại món quá nhiều).
+- Có sự cân bằng dinh dưỡng phù hợp với mục tiêu (giảm cân / tăng cơ / duy trì).
+- Bao gồm món ăn quen thuộc như: cơm, bún, phở, hủ tiếu, canh, cá, thịt, trứng, đậu, rau xanh, trái cây,...
+- Có thể kết hợp món hiện đại lành mạnh (salad, yến mạch, sữa chua, sinh tố).
+- Tránh các món quá cầu kỳ, khó tìm nguyên liệu hoặc chế biến phức tạp.
+- Mỗi ngày gồm 4 bữa: Sáng, Trưa, Tối, Phụ (bữa phụ có thể là trái cây, sữa chua, hạt,...).
+- Cung cấp lượng calo ước tính cho mỗi bữa và tổng calo/ngày.
+- Tránh các món ảnh hưởng đến bệnh lý (nếu có) và ưu tiên thực phẩm hỗ trợ sức khỏe.
 
 THỰC ĐƠN 7 NGÀY HIỆN TẠI
 ${JSON.stringify(currentPlan)}

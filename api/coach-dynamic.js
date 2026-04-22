@@ -46,6 +46,12 @@ export default async function handler(req, res) {
 Bạn là chuyên gia dinh dưỡng và am hiểu ẩm thực Việt Nam. 
 Người dùng thường ăn các món Việt như: cơm, phở, bún, hủ tiếu, cháo, cá, thịt gà, thịt heo, rau luộc, canh, trái cây, sữa chua... 
 Hãy tạo thực đơn 7 ngày (Thứ 2 đến Chủ Nhật) cho người dùng:
+- Giới tính: ${profile.gender ?? "N/A"}
+- Năm sinh: ${profile.birth_year ?? "N/A"}
+- Chiều cao: ${profile.height ?? "N/A"} cm
+- Bệnh lý (nếu có): ${profile.disease || "Không có"}
+- Calo mục tiêu/ngày: ${profile.target_calories || "1500-1800"} kcal
+- Lý do thực hiện: ${profile.reason || "N/A"}
 - Cân nặng: ${profile.weight}kg, Mục tiêu: ${profile.goal}
 - Macro ưu tiên: ${profile.focus_macro}, Vận động: ${profile.activity_level}
 
@@ -55,6 +61,10 @@ YÊU CẦU:
 - Có sự cân bằng dinh dưỡng phù hợp với mục tiêu (giảm cân / tăng cơ / duy trì).
 - Bao gồm món ăn quen thuộc như: cơm, bún, phở, hủ tiếu, canh, cá, thịt, trứng, đậu, rau xanh, trái cây,...
 - Có thể kết hợp món hiện đại lành mạnh (salad, yến mạch, sữa chua, sinh tố).
+- Tránh các món quá cầu kỳ, khó tìm nguyên liệu hoặc chế biến phức tạp.
+- Mỗi ngày gồm 4 bữa: Sáng, Trưa, Tối, Phụ (bữa phụ có thể là trái cây, sữa chua, hạt,...).
+- Cung cấp lượng calo ước tính cho mỗi bữa và tổng calo/ngày.
+- Tránh các món ảnh hưởng đến bệnh lý (nếu có) và ưu tiên thực phẩm hỗ trợ sức khỏe.
 
 Trả về JSON mảng 7 ngày. Mỗi ngày có 4 bữa: Sáng, Trưa, Tối, Phụ.
 Định dạng:

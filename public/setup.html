@@ -84,13 +84,31 @@
     .form-grid,.goal-options{grid-template-columns:1fr}
     .step h2{font-size:20px}
   }
+  .goal-wide{
+  grid-column:1 / -1;
+  width:100%;
+  justify-content:flex-start;
+  padding:20px 18px;
+}
+
+.goal-wide div{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.goal-wide small{
+  font-size:12px;
+  color:var(--text-sub);
+  font-weight:500;
+}
 </style>
 </head>
 <body>
   <div id="toast-container"></div>
 
   <aside class="side-nav">
-    <div class="nav-item"><i class="fa-solid fa-house"></i><span>HOME</span></div>
+    <div class="nav-item" id="nav-home"><i class="fa-solid fa-comment"></i><span>AI</span></div>
     <div class="nav-item"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
     <div class="nav-item"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
     <div class="nav-item active"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
@@ -157,8 +175,37 @@
               <div class="goal-item" onclick="selectGoal(this, 'maintain')"><i class="fa-solid fa-scale-balanced"></i>Giữ cân</div>
               <div class="goal-item" onclick="selectGoal(this, 'gain')"><i class="fa-solid fa-arrow-trend-up"></i>Tăng cân</div>
               <div class="goal-item" onclick="selectGoal(this, 'muscle')"><i class="fa-solid fa-dumbbell"></i>Tăng cơ</div>
+             <div class="goal-item goal-wide" onclick="selectGoal(this, 'disease')">
+              <i class="fa-solid fa-stethoscope"></i>
+             Cải thiện / hỗ trợ điều trị bệnh
+            </div>
             </div>
             <input type="hidden" name="main_goal" id="main_goal" />
+         <div class="input-group" id="disease-group" style="display:none;">
+  <label>Bệnh / tình trạng sức khỏe</label>
+
+  <select name="disease_select" id="disease">
+    <option value="">-- Chọn bệnh --</option>
+    <option value="Gout">Gout</option>
+    <option value="Tiểu đường">Tiểu đường</option>
+    <option value="Huyết áp cao">Huyết áp cao</option>
+    <option value="Mỡ máu cao">Mỡ máu cao</option>
+    <option value="Gan nhiễm mỡ">Gan nhiễm mỡ</option>
+    <option value="Bệnh dạ dày">Bệnh dạ dày</option>
+    <option value="Bệnh thận">Bệnh thận</option>
+    <option value="Khác">Khác</option>
+  </select>
+
+  <input
+    type="text"
+    id="customDisease"
+    placeholder="Nhập tên bệnh..."
+    style="display:none; margin-top:10px;"
+  />
+
+  <!-- field thật để submit -->
+  <input type="hidden" name="disease" id="finalDisease">
+</div>
             <div class="form-grid" style="margin-top:8px">
               <div class="input-group"><label>Cân nặng mục tiêu</label><input type="number" name="target_weight" placeholder="60" /></div>
               <div class="input-group"><label>Deadline</label><input type="date" name="deadline" /></div>
@@ -214,10 +261,8 @@
                 <option value="low_carb">Ít Tinh bột (Low carb)</option>
               </select>
             </div>
-            <div class="form-grid">
-              <div class="input-group"><label>Lý do bắt đầu?</label><input type="text" name="reason" placeholder="Cải thiện sức khỏe..." /></div>
-              <div class="input-group"><label>Mục tiêu Streak</label><input type="number" name="streak_goal" placeholder="30" /></div>
-            </div>
+            <div class="input-group"><label>Lý do bắt đầu?</label><input type="text" name="reason" placeholder="Cải thiện sức khỏe..." /></div>
+
           </div>
 
           <div class="btn-group">
@@ -231,6 +276,23 @@
 
   <script src="toast.js"></script>
   <script>
+    document.getElementById('disease').addEventListener('change', function () {
+  const custom = document.getElementById('customDisease');
+  const finalDisease = document.getElementById('finalDisease');
+
+  if (this.value === 'Khác') {
+    custom.style.display = 'block';
+    finalDisease.value = '';
+  } else {
+    custom.style.display = 'none';
+    custom.value = '';
+    finalDisease.value = this.value;
+  }
+});
+
+document.getElementById('customDisease').addEventListener('input', function () {
+  document.getElementById('finalDisease').value = this.value.trim();
+});
   /* Backend logic preserved verbatim */
   document.querySelector('.nav-item:nth-child(1)').onclick = () => window.location.href = 'chat.html';
   document.querySelector('.nav-item:nth-child(2)').onclick = () => window.location.href = 'diet-details.html';
@@ -277,11 +339,21 @@
     }
   }
 
-  function selectGoal(el, val) {
-    document.querySelectorAll('.goal-item').forEach(item => item.classList.remove('selected'));
-    el.classList.add('selected');
-    document.getElementById('main_goal').value = val;
+function selectGoal(el, val) {
+  document.querySelectorAll('.goal-item').forEach(item => item.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('main_goal').value = val;
+
+  const diseaseGroup = document.getElementById('disease-group');
+  const diseaseSelect = document.getElementById('disease');
+
+  if (val === 'disease') {
+    diseaseGroup.style.display = 'block';
+  } else {
+    diseaseGroup.style.display = 'none';
+    diseaseSelect.value = '';
   }
+}
 
   function validateForm() { return true; }
 
@@ -294,6 +366,9 @@
     const formData = new FormData(document.getElementById("planForm"));
     const data = Object.fromEntries(formData.entries());
     data.goal = document.getElementById('main_goal').value;
+    data.disease = document.getElementById('main_goal').value === 'disease'
+      ? document.getElementById('disease').value
+      : '';
     const token = localStorage.getItem('calorie_ai_token');
 
     try {
@@ -352,12 +427,13 @@ async function loadCurrentData(token) {
           }
         }
 
-        const fieldMap = {
-          'gender': p.gender, 'birth_year': p.birth_year, 'height': p.height, 'weight': p.weight,
-          'target_weight': p.target_weight, 'deadline': p.deadline, 'speed': p.speed,
-          'activity': p.activity_level, 'cheat_days': p.high_cal_days, 'snacking': p.snacking,
-          'allergies': p.allergies, 'focus_macro': p.focus_macro, 'reason': p.reason, 'streak_goal': p.streak_goal
-        };
+      const fieldMap = {
+        'gender': p.gender, 'birth_year': p.birth_year, 'height': p.height, 'weight': p.weight,
+        'target_weight': p.target_weight, 'deadline': p.deadline, 'speed': p.speed,
+        'activity': p.activity_level, 'cheat_days': p.high_cal_days, 'snacking': p.snacking,
+        'allergies': p.allergies, 'focus_macro': p.focus_macro, 'reason': p.reason,
+        'disease': p.disease
+      };
         const form = document.getElementById("planForm");
         Object.keys(fieldMap).forEach(fieldName => {
           const value = fieldMap[fieldName];

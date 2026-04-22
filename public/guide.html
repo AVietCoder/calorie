@@ -299,12 +299,21 @@
     .guide-hero h1{ font-size: 1.7rem; }
   }
 </style>
+<style>
+body.no-auth{
+  display:block !important;
+}
+
+body.no-auth .side-nav{
+  display:none !important;
+}
+</style>
 </head>
 <body>
   <div id="toast-container"></div>
 
   <aside class="side-nav">
-    <div class="nav-item" onclick="location.href='chat.html'"><i class="fa-solid fa-house"></i><span>HOME</span></div>
+    <div class="nav-item" id="nav-home"><i class="fa-solid fa-comment"></i><span>AI</span></div>
     <div class="nav-item" onclick="location.href='diet-details.html'"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
     <div class="nav-item" onclick="location.href='schedule.html'"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
     <div class="nav-item" onclick="location.href='setup.html'"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
@@ -548,15 +557,35 @@
   </div>
   <script src="toast.js"></script>
 
+
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem('calorie_ai_token');
-    if (!token) {
-      if (typeof showToast === 'function') showToast('Vui lòng đăng nhập!', 'info');
-      setTimeout(() => { window.location.href = 'signin.html'; }, 1369);
-      return;
-    }
-  });
+document.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('calorie_ai_token');
+
+  const sideNav = document.querySelector('.side-nav');
+  const headerTools = document.querySelector('.header-tools');
+  const logo = document.querySelector('.logo');
+
+  if (!token) {
+    document.body.classList.add('no-auth');
+
+    if (sideNav) sideNav.style.display = 'none';
+    if (headerTools) headerTools.style.display = 'none';
+
+    // logo về trang chủ
+    if (logo) logo.href = 'index.html';
+
+  } else {
+    document.body.classList.add('has-auth');
+
+    if (sideNav) sideNav.style.display = '';
+    if (headerTools) headerTools.style.display = '';
+
+    // logo về chat
+    if (logo) logo.href = 'chat.html';
+  }
+});
+
   // TOC scroll-spy
   const links = document.querySelectorAll('.toc a');
   const sections = [...links].map(a => document.querySelector(a.getAttribute('href')));
