@@ -51,55 +51,87 @@
 <footer>
     <p>&copy; 2026 Calorie AI. Phân tích dinh dưỡng thông minh.</p>
 </footer>
-<script src="toast.js"></script>
-<script src="toast.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem('calorie_ai_token');
+<script src="toast.js"></script><script>
+document.addEventListener('DOMContentLoaded', async () => {
     const authZone = document.getElementById('auth-zone');
-    
-    
-    const username = localStorage.getItem('user_id');
+    const token = localStorage.getItem('calorie_ai_token');
 
-    if (token && username) {
-        
+    function renderGuest() {
         authZone.innerHTML = `
-    <div class="user-profile-nav" onclick="handleLogout()" style="cursor: pointer;" title="Nhấn để đăng xuất">
-        <span class="user-name">
-            <i class="fa-solid fa-circle-user"></i> 
-            Đăng xuất
-        </span>
-        <div class="btn-logout">
-            <i class="fa-solid fa-right-from-bracket"></i>
-        </div>
-    </div>
-`;
+            <a href="signin.html" class="nav-link">Đăng nhập</a>
+            <a href="signup.html" class="btn-primary">
+                <i class="fa-solid fa-user-plus"></i> Đăng ký
+            </a>
+        `;
+    }
+
+    function renderUser() {
+        authZone.innerHTML = `
+            <div class="user-profile-nav"
+                 onclick="handleLogout()"
+                 style="cursor:pointer;"
+                 title="Nhấn để đăng xuất">
+                <span class="user-name">
+                    <i class="fa-solid fa-circle-user"></i>
+                    Đăng xuất
+                </span>
+                <div class="btn-logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </div>
+            </div>
+        `;
+    }
+
+    // Không có token = khách
+    if (!token) {
+        renderGuest();
+        return;
+    }
+
+    // Có token -> gọi API status xác thực thật
+    try {
+        const res = await fetch('/api/status', {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            renderUser();
+        } else {
+            localStorage.removeItem('calorie_ai_token');
+            localStorage.removeItem('user_id');
+            renderGuest();
+        }
+    } catch (err) {
+        console.error('Lỗi kiểm tra đăng nhập:', err);
+        renderGuest();
     }
 });
 
 async function handleLogout() {
     const token = localStorage.getItem('calorie_ai_token');
-    
+
     try {
-        
         await fetch('/api/auth', {
             method: 'POST',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` 
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({ action: 'logout' })
         });
     } catch (e) {
-        console.error("Lỗi gọi API logout:", e);
+        console.error('Lỗi gọi API logout:', e);
     } finally {
-        
         localStorage.removeItem('calorie_ai_token');
         localStorage.removeItem('user_id');
-        
+
         showToast("Đã đăng xuất thành công!", "info");
-        
-        
+
         setTimeout(() => {
             window.location.reload();
         }, 1000);

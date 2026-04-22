@@ -556,20 +556,21 @@ body.no-auth .side-nav{
     </main>
   </div>
   <script src="toast.js"></script>
-
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
   const sideNav = document.querySelector('.side-nav');
   const headerTools = document.querySelector('.header-tools');
   const logo = document.querySelector('.logo');
 
-  // ===== Hàm set UI =====
+  // ===== Ẩn mặc định ngay khi load =====
+  if (sideNav) sideNav.style.display = 'none';
+  if (headerTools) headerTools.style.display = 'none';
+
+  // ===== UI mode =====
   function applyGuestMode() {
     document.body.classList.remove('has-auth');
     document.body.classList.add('no-auth');
 
-    if (sideNav) sideNav.style.display = 'none';
-    if (headerTools) headerTools.style.display = 'none';
     if (logo) logo.href = 'index.html';
   }
 
@@ -582,29 +583,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (logo) logo.href = 'chat.html';
   }
 
-  // ===== Kiểm tra đăng nhập bằng API =====
+  // ===== Check auth =====
   try {
     const token = localStorage.getItem('calorie_ai_token');
 
     if (!token) {
       applyGuestMode();
-    } else {
-      const res = await fetch('/api/status', {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        applyUserMode();
-      } else {
-        localStorage.removeItem('calorie_ai_token');
-        applyGuestMode();
-      }
+      return;
     }
+
+    const res = await fetch('/api/status', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      applyUserMode();
+    } else {
+      localStorage.removeItem('calorie_ai_token');
+      applyGuestMode();
+    }
+
   } catch (err) {
     console.error('Check auth failed:', err);
     applyGuestMode();
