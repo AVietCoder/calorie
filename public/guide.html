@@ -308,6 +308,54 @@ body.no-auth .side-nav{
   display:none !important;
 }
 </style>
+<!-- THÊM vào trong <style> của guide.html -->
+<style>
+/* ===== Loader ===== */
+.loading-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(244,247,244,.82);
+  backdrop-filter: blur(4px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  transition: opacity .25s ease;
+}
+
+.typing-indicator{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:22px 26px;
+  border-radius:20px;
+  background:#fff;
+  border:1px solid var(--border-soft);
+  box-shadow: var(--shadow);
+}
+
+.typing-dot{
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background: var(--primary);
+  animation: bounceDot 1s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(2){ animation-delay:.15s; }
+.typing-dot:nth-child(3){ animation-delay:.3s; }
+
+@keyframes bounceDot{
+  0%,80%,100%{
+    transform:translateY(0);
+    opacity:.45;
+  }
+  40%{
+    transform:translateY(-8px);
+    opacity:1;
+  }
+}
+</style>
 </head>
 <body>
   <div id="toast-container"></div>
@@ -556,17 +604,45 @@ body.no-auth .side-nav{
     </main>
   </div>
   <script src="toast.js"></script>
+<!-- THAY TOÀN BỘ <script> cuối guide.html bằng đoạn này -->
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
   const sideNav = document.querySelector('.side-nav');
   const headerTools = document.querySelector('.header-tools');
   const logo = document.querySelector('.logo');
+  const content = document.querySelector('.content');
 
-  // ===== Ẩn mặc định ngay khi load =====
+  // ===== Loader =====
+  let loader = null;
+
+  function showLoader() {
+    loader = document.createElement('div');
+    loader.className = 'loading-overlay';
+    loader.id = 'page-loader';
+    loader.innerHTML = `
+      <div class="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    `;
+    document.body.appendChild(loader);
+  }
+
+  function hideLoader() {
+    const el = document.getElementById('page-loader');
+    if (!el) return;
+
+    el.style.opacity = '0';
+    setTimeout(() => el.remove(), 220);
+  }
+
+  showLoader();
+
+  // ===== Ẩn mặc định trước khi check auth =====
   if (sideNav) sideNav.style.display = 'none';
   if (headerTools) headerTools.style.display = 'none';
 
-  // ===== UI mode =====
   function applyGuestMode() {
     document.body.classList.remove('has-auth');
     document.body.classList.add('no-auth');
@@ -583,34 +659,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (logo) logo.href = 'chat.html';
   }
 
-  // ===== Check auth =====
+  // ===== Check auth bằng API =====
   try {
     const token = localStorage.getItem('calorie_ai_token');
 
     if (!token) {
       applyGuestMode();
-      return;
-    }
-
-    const res = await fetch('/api/status', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-
-    const data = await res.json();
-
-    if (res.ok && data.success) {
-      applyUserMode();
     } else {
-      localStorage.removeItem('calorie_ai_token');
-      applyGuestMode();
-    }
+      const res = await fetch('/api/status', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        applyUserMode();
+      } else {
+        localStorage.removeItem('calorie_ai_token');
+        applyGuestMode();
+      }
+    }
   } catch (err) {
     console.error('Check auth failed:', err);
     applyGuestMode();
+  } finally {
+    hideLoader();
   }
 
   // ===== TOC scroll spy =====
