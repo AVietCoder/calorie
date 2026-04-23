@@ -355,7 +355,119 @@ function selectGoal(el, val) {
   }
 }
 
-  function validateForm() { return true; }
+  function validateForm() {
+    const form = document.getElementById("planForm");
+
+    // ===== Step 1: Chỉ số cơ thể =====
+    if (currentStep === 0) {
+      const gender = form.gender.value;
+      const birthYear = parseInt(form.birth_year.value, 10);
+      const height = parseFloat(form.height.value);
+      const weight = parseFloat(form.weight.value);
+      const currentYear = new Date().getFullYear();
+
+      if (!gender) {
+        showToast("Vui lòng chọn giới tính!", "error");
+        return false;
+      }
+      if (!birthYear || isNaN(birthYear)) {
+        showToast("Vui lòng nhập năm sinh!", "error");
+        form.birth_year.focus();
+        return false;
+      }
+      if (birthYear < 1900 || birthYear > currentYear - 5) {
+        showToast("Năm sinh không hợp lệ!", "error");
+        form.birth_year.focus();
+        return false;
+      }
+      if (!height || isNaN(height)) {
+        showToast("Vui lòng nhập chiều cao!", "error");
+        form.height.focus();
+        return false;
+      }
+      if (height < 80 || height > 250) {
+        showToast("Chiều cao không hợp lệ (80–250cm)!", "error");
+        form.height.focus();
+        return false;
+      }
+      if (!weight || isNaN(weight)) {
+        showToast("Vui lòng nhập cân nặng!", "error");
+        form.weight.focus();
+        return false;
+      }
+      if (weight < 20 || weight > 400) {
+        showToast("Cân nặng không hợp lệ (20–400kg)!", "error");
+        form.weight.focus();
+        return false;
+      }
+    }
+
+    // ===== Step 2: Mục tiêu =====
+    if (currentStep === 1) {
+      const goal = document.getElementById('main_goal').value;
+      const targetWeight = parseFloat(form.target_weight.value);
+      const deadline = form.deadline.value;
+      const speed = form.speed.value;
+
+      if (!goal) {
+        showToast("Vui lòng chọn mục tiêu của bạn!", "error");
+        return false;
+      }
+
+      if (goal === 'disease') {
+        const finalDisease = document.getElementById('finalDisease').value.trim();
+        if (!finalDisease) {
+          showToast("Vui lòng chọn hoặc nhập bệnh / tình trạng sức khỏe!", "error");
+          return false;
+        }
+      }
+
+      if (!targetWeight || isNaN(targetWeight)) {
+        showToast("Vui lòng nhập cân nặng mục tiêu!", "error");
+        form.target_weight.focus();
+        return false;
+      }
+      if (targetWeight < 20 || targetWeight > 400) {
+        showToast("Cân nặng mục tiêu không hợp lệ (20–400kg)!", "error");
+        form.target_weight.focus();
+        return false;
+      }
+
+      if (!deadline) {
+        showToast("Vui lòng chọn deadline!", "error");
+        form.deadline.focus();
+        return false;
+      }
+      const deadlineDate = new Date(deadline);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (deadlineDate <= today) {
+        showToast("Deadline phải là ngày trong tương lai!", "error");
+        form.deadline.focus();
+        return false;
+      }
+
+      if (!speed) {
+        showToast("Vui lòng chọn tốc độ mong muốn!", "error");
+        return false;
+      }
+
+      // Cảnh báo logic giảm/tăng cân
+      const currentWeight = parseFloat(form.weight.value);
+      if (goal === 'lose' && targetWeight >= currentWeight) {
+        showToast("Mục tiêu giảm cân: cân nặng mục tiêu phải nhỏ hơn cân nặng hiện tại!", "error");
+        form.target_weight.focus();
+        return false;
+      }
+      if ((goal === 'gain' || goal === 'muscle') && targetWeight <= currentWeight) {
+        showToast("Mục tiêu tăng cân/cơ: cân nặng mục tiêu phải lớn hơn cân nặng hiện tại!", "error");
+        form.target_weight.focus();
+        return false;
+      }
+    }
+
+    return true;
+  }
 
   async function submitForm() {
     const btn = document.getElementById("nextBtn");
