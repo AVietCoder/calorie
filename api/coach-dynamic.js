@@ -29,6 +29,57 @@ const formatFoodsForPrompt = (foods) => {
     .join("\n");
 };
 
+const normalizeFoodName = (name = "") =>
+  String(name).trim().toLowerCase().replace(/\s+/g, " ");
+
+const parseNumber = (value) => {
+  if (value === null || value === undefined || value === "") return null;
+  const num = Number(String(value).replace(/[^0-9.-]/g, ""));
+  return Number.isFinite(num) ? num : null;
+};
+
+const syncMissingFoodsToDB = async (plan, foodsDB) => {
+  if (!Array.isArray(plan) || plan.length === 0) return;
+
+  const existing = new Set(
+    (foodsDB || []).map((f) => normalizeFoodName(f.description))
+  );
+
+  const seenInPlan = new Set();
+  const missingFoods = [];
+
+  for (const dayEntry of plan) {
+    for (const meal of dayEntry.meals || []) {
+      const foodName = meal.food?.trim();
+      if (!foodName) continue;
+
+      const key = normalizeFoodName(foodName);
+      if (existing.has(key) || seenInPlan.has(key)) continue;
+
+      seenInPlan.add(key);
+      missingFoods.push({
+        description: foodName,
+        calories: parseNumber(meal.calories),
+        protein: parseNumber(meal.protein),
+        fat: parseNumber(meal.fat),
+        carbs: parseNumber(meal.carbs),
+        fiber: parseNumber(meal.fiber),
+        sugar: parseNumber(meal.sugar),
+        sodium: parseNumber(meal.sodium),
+      });
+    }
+  }
+
+  if (missingFoods.length === 0) return;
+
+  const { error } = await supabase.from("foods").insert(missingFoods);
+
+  if (error) {
+    console.error("❌ Lỗi insert foods mới:", error.message);
+    throw error;
+  }
+};
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
@@ -138,13 +189,11 @@ Chỉ trả về JSON hợp lệ, không giải thích, không markdown.`;
       });
 
       let raw = completion.choices[0].message.content.trim();
-      // response_format json_object có thể bọc trong key bất kỳ
       const parsed = JSON.parse(raw);
-      // Tìm mảng 7 ngày trong parsed (có thể là parsed trực tiếp hoặc parsed.plan / parsed.days)
       currentPlan = Array.isArray(parsed)
         ? parsed
         : (parsed.plan || parsed.days || parsed.menu || Object.values(parsed).find(Array.isArray) || []);
-
+    await syncMissingFoodsToDB(currentPlan, foodsDB);
       aiReply = "Chào tuần mới! HLV AI đã thiết kế xong lộ trình 7 ngày cho bạn.";
 
       await supabase.from('profiles')
