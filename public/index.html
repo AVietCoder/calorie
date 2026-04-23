@@ -9,6 +9,46 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="toast.css">
     <link rel="icon" href="logo.png" type="image/png">
+    <style>
+        /* NAV loading indicator */
+.nav-loading{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:10px 14px;
+    border-radius:999px;
+    background:rgba(88,166,119,0.08);
+    min-width:62px;
+    justify-content:center;
+}
+
+.nav-loading span{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#58A677;
+    animation:navTyping 1.2s infinite ease-in-out;
+}
+
+.nav-loading span:nth-child(2){
+    animation-delay:0.15s;
+}
+
+.nav-loading span:nth-child(3){
+    animation-delay:0.3s;
+}
+
+@keyframes navTyping{
+    0%, 80%, 100%{
+        transform:scale(0.7);
+        opacity:.45;
+    }
+    40%{
+        transform:scale(1.2);
+        opacity:1;
+    }
+}
+    </style>
 </head>
 <body>
 <div id="toast-container"></div>
@@ -56,18 +96,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     const authZone = document.getElementById('auth-zone');
     const token = localStorage.getItem('calorie_ai_token');
 
+    // Luôn hiện loading trước
+    authZone.innerHTML = `
+        <div class="nav-loading" id="navLoading">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    `;
+
     function renderGuest() {
         authZone.innerHTML = `
-            <a href="signin.html" class="nav-link">Đăng nhập</a>
-            <a href="signup.html" class="btn-primary">
+            <a href="signin.html" class="nav-link nav-item">Đăng nhập</a>
+            <a href="signup.html" class="btn-primary nav-item">
                 <i class="fa-solid fa-user-plus"></i> Đăng ký
             </a>
         `;
+        animateItems();
     }
 
     function renderUser() {
         authZone.innerHTML = `
-            <div class="user-profile-nav"
+            <div class="user-profile-nav nav-item"
                  onclick="handleLogout()"
                  style="cursor:pointer;"
                  title="Nhấn để đăng xuất">
@@ -80,15 +130,47 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
             </div>
         `;
+        animateItems();
     }
 
-    // Không có token = khách
+    function animateItems() {
+        const items = authZone.querySelectorAll('.nav-item');
+
+        items.forEach(el => {
+            el.style.opacity = "0";
+            el.style.transform = "translateY(-6px)";
+        });
+
+        requestAnimationFrame(() => {
+            items.forEach(el => {
+                el.style.transition = "all .35s ease";
+                el.style.opacity = "1";
+                el.style.transform = "translateY(0)";
+            });
+        });
+    }
+
+    function finish(type) {
+        const loading = document.getElementById('navLoading');
+
+        if (loading) {
+            loading.style.opacity = "0";
+            loading.style.transform = "translateY(-4px)";
+            loading.style.transition = "all .25s ease";
+        }
+
+        setTimeout(() => {
+            if (type === 'user') renderUser();
+            else renderGuest();
+        }, 250);
+    }
+
+    // Không token vẫn giữ loading 1 chút rồi mới hiện
     if (!token) {
-        renderGuest();
+        setTimeout(() => finish('guest'), 500);
         return;
     }
 
-    // Có token -> gọi API status xác thực thật
     try {
         const res = await fetch('/api/status', {
             method: 'GET',
@@ -100,15 +182,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         const data = await res.json();
 
         if (res.ok && data.success) {
-            renderUser();
+            finish('user');
         } else {
             localStorage.removeItem('calorie_ai_token');
             localStorage.removeItem('user_id');
-            renderGuest();
+            finish('guest');
         }
+
     } catch (err) {
-        console.error('Lỗi kiểm tra đăng nhập:', err);
-        renderGuest();
+        console.error(err);
+        finish('guest');
     }
 });
 

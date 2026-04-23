@@ -442,11 +442,44 @@ async function loadCurrentData(token) {
           if (form[fieldName] && value !== undefined && value !== null) form[fieldName].value = value;
         });
         if (p.goal) {
-          document.getElementById('main_goal').value = p.goal;
-          document.querySelectorAll('.goal-item').forEach(item => {
-            if (item.getAttribute('onclick').includes(`'${p.goal}'`)) item.classList.add('selected');
-          });
-        }
+  document.getElementById('main_goal').value = p.goal;
+
+  document.querySelectorAll('.goal-item').forEach(item => {
+    item.classList.remove('selected');
+
+    if (item.getAttribute('onclick').includes(`'${p.goal}'`)) {
+      item.classList.add('selected');
+    }
+  });
+
+  // Nếu goal là disease -> hiện khung bệnh
+  if (p.goal === 'disease') {
+    const diseaseGroup = document.getElementById('disease-group');
+    const diseaseSelect = document.getElementById('disease');
+    const customDisease = document.getElementById('customDisease');
+    const finalDisease = document.getElementById('finalDisease');
+
+    diseaseGroup.style.display = 'block';
+
+    const options = Array.from(diseaseSelect.options).map(opt => opt.value);
+    const diseaseValue = (p.disease || '').trim();
+
+    // Nếu bệnh nằm trong option có sẵn
+    if (options.includes(diseaseValue)) {
+      diseaseSelect.value = diseaseValue;
+      customDisease.style.display = 'none';
+      customDisease.value = '';
+      finalDisease.value = diseaseValue;
+    } 
+    // Nếu là bệnh khác
+    else if (diseaseValue) {
+      diseaseSelect.value = 'Khác';
+      customDisease.style.display = 'block';
+      customDisease.value = diseaseValue;
+      finalDisease.value = diseaseValue;
+    }
+  }
+}
       }
     } catch (err) {
       console.warn("Chưa có dữ liệu cũ để khôi phục:", err);
