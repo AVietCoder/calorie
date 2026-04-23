@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="toast.css" />
 <link rel="stylesheet" href="both.css" />
-    <link rel="icon" href="logo.png" type="image/png">
+<link rel="icon" href="logo.png" type="image/png">
 
 <style>
   .schedule-hero{
@@ -66,20 +66,14 @@
     background:var(--surface-2);border:1px solid var(--border-soft);
     font-size:12px;line-height:1.4;color:var(--text-main);
     display:flex;align-items:center;justify-content:center;text-align:center;
-    transition:all .25s;
+    transition:all .25s;cursor:pointer;
   }
   .meal-cell:hover{border-color:var(--primary);background:#fff;transform:scale(1.02)}
-  .meal-modal-btn
-  {
-    background-color: var(--primary);
-    color: #fff;
-    font-weight: 600;
-    border: 1px solid var(--primary);
-    animation: fadeIn 0.5s ease;
-        border-radius: 24px;
-        padding: 10px;
-    text-align: center;
-    cursor: pointer
+  .meal-cell.has-data:hover{box-shadow:0 4px 16px rgba(125,155,118,0.2)}
+  .meal-modal-btn{
+    background-color:var(--primary);color:#fff;font-weight:600;
+    border:1px solid var(--primary);animation:fadeIn 0.5s ease;
+    border-radius:24px;padding:10px;text-align:center;cursor:pointer;
   }
   .ai-reply-text{
     line-height:1.6;color:var(--text-main);
@@ -89,38 +83,243 @@
   }
   .ai-reply-text i{color:var(--primary);opacity:.5;margin-right:6px}
 
+  /* ── MEAL DETAIL MODAL ───────────────────────────────────────────── */
+  .meal-modal-overlay{
+    position:fixed;inset:0;z-index:1000;
+    background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);
+    display:flex;align-items:center;justify-content:center;
+    padding:16px;opacity:0;pointer-events:none;
+    transition:opacity .25s ease;
+  }
+  .meal-modal-overlay.open{opacity:1;pointer-events:all}
+  .meal-modal{
+    background:#fff;border-radius:24px;
+    width:100%;max-width:440px;max-height:90vh;overflow-y:auto;
+    box-shadow:0 32px 64px rgba(0,0,0,0.18);
+    transform:translateY(24px) scale(0.97);
+    transition:transform .28s cubic-bezier(.34,1.56,.64,1);
+    border:1px solid var(--border-soft);
+  }
+  .meal-modal-overlay.open .meal-modal{transform:translateY(0) scale(1)}
+  .meal-modal-header{
+    padding:24px 24px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  }
+  .meal-modal-title{flex:1}
+  .meal-modal-title h2{margin:0;font-size:20px;font-weight:800;color:var(--text-main);line-height:1.3}
+  .meal-modal-title .meal-badge{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+    background:var(--sage-50);color:var(--primary-deep);
+    padding:3px 10px;border-radius:20px;margin-top:6px;
+    border:1px solid var(--border-soft);
+  }
+  .meal-modal-close{
+    width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;
+    background:var(--surface-2);color:var(--text-sub);font-size:14px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    transition:.2s;margin-top:2px;
+  }
+  .meal-modal-close:hover{background:var(--border-soft);color:var(--text-main)}
+
+  .meal-modal-body{padding:20px 24px 24px}
+
+  /* Calo highlight */
+  .kcal-highlight{
+    display:flex;align-items:center;justify-content:center;
+    gap:8px;padding:16px;border-radius:16px;
+    background:linear-gradient(135deg,var(--sage-50),#fff);
+    border:1.5px solid var(--primary);margin-bottom:20px;
+  }
+  .kcal-highlight .kcal-num{font-size:36px;font-weight:800;color:var(--primary-deep);line-height:1}
+  .kcal-highlight .kcal-unit{font-size:13px;color:var(--text-sub);font-weight:500;margin-top:4px}
+  .kcal-highlight .kcal-icon{font-size:28px;opacity:.7}
+
+  /* Biểu đồ macro dạng stacked bar */
+  .macro-chart-wrap{margin-bottom:20px}
+  .macro-chart-label{font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px;letter-spacing:.5px;text-transform:uppercase}
+  .macro-bar-track{
+    height:14px;border-radius:7px;overflow:hidden;
+    background:var(--surface-2);display:flex;
+  }
+  .macro-bar-seg{height:100%;transition:width .6s cubic-bezier(.4,0,.2,1)}
+  .seg-protein{background:#5b9cf6}
+  .seg-fat    {background:#f5a623}
+  .seg-carbs  {background:#7dc976}
+  .macro-legend{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap}
+  .macro-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-main)}
+  .macro-legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+  /* Bảng dinh dưỡng chi tiết */
+  .nutrition-table{width:100%;border-collapse:collapse;margin-bottom:20px}
+  .nutrition-table tr{border-bottom:1px solid var(--border-soft)}
+  .nutrition-table tr:last-child{border-bottom:none}
+  .nutrition-table td{padding:9px 4px;font-size:13px}
+  .nutrition-table td:first-child{color:var(--text-sub);font-weight:500;display:flex;align-items:center;gap:8px}
+  .nutrition-table td:last-child{text-align:right;font-weight:700;color:var(--text-main)}
+  .nutrition-icon{
+    width:24px;height:24px;border-radius:7px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;flex-shrink:0;
+  }
+
+  /* Action buttons */
+  .meal-modal-actions{display:flex;gap:10px}
+  .meal-modal-actions button{
+    flex:1;padding:12px 8px;border-radius:14px;border:none;
+    font-size:13px;font-weight:700;cursor:pointer;transition:.2s;
+    display:flex;align-items:center;justify-content:center;gap:7px;
+  }
+  .btn-find{background:var(--primary);color:#fff}
+  .btn-find:hover{opacity:.88;transform:translateY(-1px)}
+  .btn-chat{background:var(--sage-50);color:var(--primary-deep);border:1px solid var(--border-soft)}
+  .btn-chat:hover{background:#fff;border-color:var(--primary)}
+
   @media (max-width:720px){
     .timetable-grid{grid-template-columns:60px repeat(7,minmax(80px,1fr));overflow-x:auto}
     .schedule-hero{padding:22px 20px}
     .schedule-hero h1{font-size:20px}
+    .meal-modal{max-height:85vh}
   }
-  /* Hiệu ứng làm mờ và overlay chúc mừng */
-  .relative-wrapper { position: relative; }
-  .blur-content { filter: blur(6px); pointer-events: none; user-select: none; opacity: 0.5; transition: 0.3s; }
-  .expired-overlay {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 10; background: rgba(251, 250, 246, 0.4); border-radius: 12px;
+
+  /* Expired overlay */
+  .relative-wrapper{position:relative}
+  .blur-content{filter:blur(6px);pointer-events:none;user-select:none;opacity:0.5;transition:.3s}
+  .expired-overlay{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    z-index:10;background:rgba(251,250,246,0.4);border-radius:12px;
   }
-  .congrat-card {
-    background: #fff; padding: 32px 24px; border-radius: 24px; text-align: center;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1); max-width: 380px; border: 1px solid var(--primary);
-    animation: fadeIn 0.5s ease;
+  .congrat-card{
+    background:#fff;padding:32px 24px;border-radius:24px;text-align:center;
+    box-shadow:0 20px 40px rgba(0,0,0,0.1);max-width:380px;border:1px solid var(--primary);
+    animation:fadeIn 0.5s ease;
   }
-  .congrat-card i { font-size: 56px; color: #FFD700; margin-bottom: 16px; filter: drop-shadow(0 4px 8px rgba(255,215,0,0.4)); }
-  .congrat-card h3 { color: var(--text-main); font-size: 20px; font-weight: 800; margin-bottom: 8px; display: block; }
-  .congrat-card p { color: var(--text-sub); font-size: 14px; line-height: 1.5; margin-bottom: 24px; }
+  .congrat-card i{font-size:56px;color:#FFD700;margin-bottom:16px;filter:drop-shadow(0 4px 8px rgba(255,215,0,0.4))}
+  .congrat-card h3{color:var(--text-main);font-size:20px;font-weight:800;margin-bottom:8px;display:block}
+  .congrat-card p{color:var(--text-sub);font-size:14px;line-height:1.5;margin-bottom:24px}
+
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
   <div id="toast-container"></div>
+
+  <!-- ── MEAL DETAIL MODAL ──────────────────────────────────────────────────── -->
+  <div class="meal-modal-overlay" id="meal-modal-overlay" onclick="closeMealModal(event)">
+    <div class="meal-modal" id="meal-modal">
+      <div class="meal-modal-header">
+        <div class="meal-modal-title">
+          <h2 id="modal-food-name">Tên món</h2>
+          <div class="meal-badge" id="modal-meal-badge">
+            <i class="fa-solid fa-utensils"></i>
+            <span id="modal-meal-time">Sáng</span>
+          </div>
+        </div>
+        <button class="meal-modal-close" onclick="closeMealModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="meal-modal-body">
+
+        <!-- Calo lớn -->
+        <div class="kcal-highlight">
+          <div class="kcal-icon">🔥</div>
+          <div>
+            <div class="kcal-num" id="modal-calories">—</div>
+            <div class="kcal-unit">kcal · <span id="modal-amount" style="color:var(--primary-deep)">—</span></div>
+          </div>
+        </div>
+
+        <!-- Biểu đồ stacked bar macro -->
+        <div class="macro-chart-wrap" id="macro-chart-wrap">
+          <div class="macro-chart-label">Cơ cấu dinh dưỡng</div>
+          <div class="macro-bar-track">
+            <div class="macro-bar-seg seg-protein" id="bar-protein" style="width:0%"></div>
+            <div class="macro-bar-seg seg-fat"     id="bar-fat"     style="width:0%"></div>
+            <div class="macro-bar-seg seg-carbs"   id="bar-carbs"   style="width:0%"></div>
+          </div>
+          <div class="macro-legend">
+            <div class="macro-legend-item">
+              <div class="macro-legend-dot" style="background:#5b9cf6"></div>
+              Protein: <strong id="legend-protein">—</strong>
+            </div>
+            <div class="macro-legend-item">
+              <div class="macro-legend-dot" style="background:#f5a623"></div>
+              Chất béo: <strong id="legend-fat">—</strong>
+            </div>
+            <div class="macro-legend-item">
+              <div class="macro-legend-dot" style="background:#7dc976"></div>
+              Carbs: <strong id="legend-carbs">—</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bảng chi tiết -->
+        <table class="nutrition-table" id="nutrition-detail-table">
+          <tr>
+            <td>
+              <div class="nutrition-icon" style="background:#edf4ff;color:#5b9cf6"><i class="fa-solid fa-dumbbell"></i></div>
+              Protein
+            </td>
+            <td id="detail-protein">—</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="nutrition-icon" style="background:#fff8ed;color:#f5a623"><i class="fa-solid fa-droplet"></i></div>
+              Chất béo
+            </td>
+            <td id="detail-fat">—</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="nutrition-icon" style="background:#f0faee;color:#7dc976"><i class="fa-solid fa-wheat-awn"></i></div>
+              Carbohydrate
+            </td>
+            <td id="detail-carbs">—</td>
+          </tr>
+          <tr id="row-fiber">
+            <td>
+              <div class="nutrition-icon" style="background:#f5f0ff;color:#9b7edb"><i class="fa-solid fa-seedling"></i></div>
+              Chất xơ
+            </td>
+            <td id="detail-fiber">—</td>
+          </tr>
+          <tr id="row-sugar">
+            <td>
+              <div class="nutrition-icon" style="background:#fff0f3;color:#e07ca0"><i class="fa-solid fa-candy-cane"></i></div>
+              Đường
+            </td>
+            <td id="detail-sugar">—</td>
+          </tr>
+          <tr id="row-sodium">
+            <td>
+              <div class="nutrition-icon" style="background:#f0f4ff;color:#7090d0"><i class="fa-solid fa-flask"></i></div>
+              Natri
+            </td>
+            <td id="detail-sodium">—</td>
+          </tr>
+        </table>
+
+        <!-- Action buttons -->
+        <div class="meal-modal-actions">
+          <button class="btn-find" id="modal-btn-find" onclick="searchFoodNearby('')">
+            <i class="fa-solid fa-location-dot"></i> Tìm quán gần đây
+          </button>
+          <button class="btn-chat" onclick="goToChat()">
+            <i class="fa-solid fa-comments"></i> Hỏi HLV AI
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <!-- ── END MODAL ─────────────────────────────────────────────────────────── -->
 
   <aside class="side-nav">
     <div class="nav-item" id="nav-home"><i class="fa-solid fa-comment"></i><span>AI</span></div>
     <div class="nav-item" id="nav-diet"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
     <div class="nav-item active" id="nav-plan"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
     <div class="nav-item" id="nav-profile"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
-      <div class="nav-item" onclick="location.href='guide.html'"><i class="fa-solid fa-circle-question"></i><span>GUIDE</span></div>
+    <div class="nav-item" onclick="location.href='guide.html'"><i class="fa-solid fa-circle-question"></i><span>GUIDE</span></div>
   </aside>
 
   <div class="main-wrapper">
@@ -162,7 +361,8 @@
             <div class="timetable-grid">
               <div class="time-header">Bữa</div>
               <div class="day-header">T2</div><div class="day-header">T3</div><div class="day-header">T4</div>
-              <div class="day-header">T5</div><div class="day-header">T6</div><div class="day-header">T7</div><div class="day-header">CN</div>
+              <div class="day-header">T5</div><div class="day-header">T6</div><div class="day-header">T7</div>
+              <div class="day-header">CN</div>
 
               <div class="time-label">Sáng</div>
               <div class="meal-cell" id="d1-morning">-</div><div class="meal-cell" id="d2-morning">-</div>
@@ -196,164 +396,261 @@
 
   <script src="toast.js"></script>
   <script>
-  /* Backend logic preserved verbatim */
-  function scrollToBottom() {
-    const history = document.getElementById('chat-history');
-    if (history) history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
-  }
-function searchFoodNearby(food) {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      function(pos) {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        const query = encodeURIComponent(food + " gần đây");
-        window.open(`https://www.google.com/maps/search/${query}/@${lat},${lng},15z`, "_blank");
-      },
-      function() {
-        window.open(`https://www.google.com/search?q=${encodeURIComponent(food + " gần đây")}`, "_blank");
-      }
-    );
-  } else {
-    window.open(`https://www.google.com/search?q=${encodeURIComponent(food + " gần đây")}`, "_blank");
-  }
-}
+  /* ── MODAL LOGIC ──────────────────────────────────────────────────────────── */
+  let _currentModalFood = "";
 
-function updateRemainingTimetable(newPlan) {
-  if (!newPlan) return;
-  const mealIdMap = { "Sáng": "morning", "Trưa": "lunch", "Tối": "evening", "Phụ": "snack" };
-  newPlan.forEach(item => {
-    const cellId = `d${item.day}-${mealIdMap[item.meal]}`;
-    const cell = document.getElementById(cellId);
-    if (cell) {
+  function parseNum(val) {
+    if (val == null || val === "" || val === "N/A") return null;
+    const n = parseFloat(String(val).replace(/[^0-9.]/g, ""));
+    return isNaN(n) ? null : n;
+  }
+
+  function openMealModal(item) {
+    _currentModalFood = item.food || "";
+
+    // Header
+    document.getElementById("modal-food-name").textContent = item.food || "—";
+    document.getElementById("modal-meal-time").textContent = item.meal || "—";
+
+    // Calo
+    document.getElementById("modal-calories").textContent =
+      item.calories != null ? item.calories : "—";
+    document.getElementById("modal-amount").textContent = item.amount || "—";
+
+    // Macro numbers
+    const p = parseNum(item.protein);
+    const f = parseNum(item.fat);
+    const c = parseNum(item.carbs);
+
+    document.getElementById("legend-protein").textContent = item.protein || "—";
+    document.getElementById("legend-fat").textContent     = item.fat     || "—";
+    document.getElementById("legend-carbs").textContent   = item.carbs   || "—";
+    document.getElementById("detail-protein").textContent = item.protein || "—";
+    document.getElementById("detail-fat").textContent     = item.fat     || "—";
+    document.getElementById("detail-carbs").textContent   = item.carbs   || "—";
+
+    // Optional rows
+    const showRow = (id, val) => {
+      const row = document.getElementById(id);
+      if (row) row.style.display = val ? "" : "none";
+    };
+    document.getElementById("detail-fiber").textContent  = item.fiber  || "—";
+    document.getElementById("detail-sugar").textContent  = item.sugar  || "—";
+    document.getElementById("detail-sodium").textContent = item.sodium || "—";
+    showRow("row-fiber",  item.fiber);
+    showRow("row-sugar",  item.sugar);
+    showRow("row-sodium", item.sodium);
+
+    // Stacked bar — tính theo kcal tương đương
+    const chartWrap = document.getElementById("macro-chart-wrap");
+    if (p != null && f != null && c != null) {
+      const pKcal = p * 4, fKcal = f * 9, cKcal = c * 4;
+      const total = pKcal + fKcal + cKcal || 1;
+      // Nhỏ delay để CSS transition chạy sau khi modal mở
+      setTimeout(() => {
+        document.getElementById("bar-protein").style.width = (pKcal / total * 100).toFixed(1) + "%";
+        document.getElementById("bar-fat").style.width     = (fKcal / total * 100).toFixed(1) + "%";
+        document.getElementById("bar-carbs").style.width   = (cKcal / total * 100).toFixed(1) + "%";
+      }, 80);
+      chartWrap.style.display = "";
+    } else {
+      // Reset bar nếu không có data
+      ["bar-protein","bar-fat","bar-carbs"].forEach(id => {
+        document.getElementById(id).style.width = "0%";
+      });
+      chartWrap.style.display = p == null && f == null && c == null ? "none" : "";
+    }
+
+    // Button tìm quán
+    document.getElementById("modal-btn-find").onclick = () => searchFoodNearby(item.food || "");
+
+    // Mở modal
+    document.getElementById("meal-modal-overlay").classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeMealModal(e) {
+    if (e && e.target !== document.getElementById("meal-modal-overlay")) return;
+    document.getElementById("meal-modal-overlay").classList.remove("open");
+    document.body.style.overflow = "";
+    // Reset bar width
+    setTimeout(() => {
+      ["bar-protein","bar-fat","bar-carbs"].forEach(id => {
+        document.getElementById(id).style.width = "0%";
+      });
+    }, 260);
+  }
+
+  function goToChat() {
+    if (_currentModalFood) {
+      sessionStorage.setItem("chatPrefill", `Cho tôi biết thêm về món ${_currentModalFood}`);
+    }
+    window.location.href = "chat.html";
+  }
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") closeMealModal();
+  });
+
+  /* ── TIMETABLE ──────────────────────────────────────────────────────────── */
+  function searchFoodNearby(food) {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          const { latitude: lat, longitude: lng } = pos.coords;
+          const q = encodeURIComponent(food + " gần đây");
+          window.open(`https://www.google.com/maps/search/${q}/@${lat},${lng},15z`, "_blank");
+        },
+        () => window.open(`https://www.google.com/search?q=${encodeURIComponent(food + " gần đây")}`, "_blank")
+      );
+    } else {
+      window.open(`https://www.google.com/search?q=${encodeURIComponent(food + " gần đây")}`, "_blank");
+    }
+  }
+
+  function updateRemainingTimetable(newPlan) {
+    if (!newPlan) return;
+    const mealIdMap = { "Sáng": "morning", "Trưa": "lunch", "Tối": "evening", "Phụ": "snack" };
+
+    newPlan.forEach(item => {
+      const cellId = `d${item.day}-${mealIdMap[item.meal]}`;
+      const cell = document.getElementById(cellId);
+      if (!cell) return;
+
+      // Lưu data vào cell để dùng khi click
+      cell._mealData = item;
+      cell.classList.add("has-data");
+
       cell.style.border = "1.5px solid var(--primary-green)";
       cell.style.background = "linear-gradient(180deg, #ffffff, var(--sage-50))";
-      cell.style.position = "relative"; // quan trọng để icon định vị đúng chỗ
+      cell.style.position = "relative";
+      cell.style.cursor = "pointer";
+
       cell.innerHTML = `
-        <div style="display:flex;flex-direction:column;gap:3px;width:100%">
+        <div style="display:flex;flex-direction:column;gap:3px;width:100%;pointer-events:none">
           <div style="font-weight:700;color:var(--primary-deep);font-size:12px;line-height:1.3">${item.food}</div>
           <div style="font-size:10px;color:var(--text-sub)">${item.amount}</div>
           <div style="margin-top:2px;font-weight:800;color:var(--primary);font-size:11px">${item.calories} kcal</div>
         </div>
         <button
-          onclick="event.stopPropagation(); searchFoodNearby('${item.food.replace(/'/g, "\\'")}')"
-          title="Tìm quán ${item.food} gần đây"
+          title="Tìm quán ${item.food.replace(/'/g, "\\'")} gần đây"
+          data-search="${item.food.replace(/"/g, '&quot;')}"
           style="
-            position:absolute; bottom:6px; right:6px;
-            width:22px; height:22px; border-radius:50%;
-            background:var(--primary); color:#fff;
-            border:none; cursor:pointer;
-            display:flex; align-items:center; justify-content:center;
-            font-size:10px; opacity:0.75;
-            transition:opacity .2s, transform .2s;
+            position:absolute;bottom:6px;right:6px;
+            width:22px;height:22px;border-radius:50%;
+            background:var(--primary);color:#fff;
+            border:none;cursor:pointer;
+            display:flex;align-items:center;justify-content:center;
+            font-size:10px;opacity:0.75;
+            transition:opacity .2s,transform .2s;
             box-shadow:0 2px 6px rgba(125,155,118,0.45);
           "
           onmouseover="this.style.opacity='1';this.style.transform='scale(1.15)'"
           onmouseout="this.style.opacity='0.75';this.style.transform='scale(1)'"
         ><i class="fa-solid fa-location-dot" style="font-size:9px;pointer-events:none"></i></button>
       `;
-    }
-  });
-}
+
+      // Click cell → mở modal
+      cell.onclick = function(e) {
+        const btn = e.target.closest('button[data-search]');
+        if (btn) {
+          e.stopPropagation();
+          searchFoodNearby(btn.getAttribute("data-search"));
+          return;
+        }
+        openMealModal(this._mealData);
+      };
+    });
+  }
 
   function updateProgress(startWeight, currentWeight, targetWeight) {
     const displayPercent = document.getElementById('display-percent');
-    const displayStart = document.getElementById('display-start');
-    const displayRemain = document.getElementById('display-remain');
+    const displayStart   = document.getElementById('display-start');
+    const displayRemain  = document.getElementById('display-remain');
     if (!displayPercent || !startWeight) return;
     const totalChangeNeeded = Math.abs(startWeight - targetWeight);
     const achieved = Math.abs(startWeight - currentWeight);
     const percent = totalChangeNeeded === 0 ? 100 : Math.min(100, Math.round((achieved / totalChangeNeeded) * 100));
     displayPercent.innerText = `${percent}%`;
-    displayStart.innerText = `Bắt đầu: ${startWeight}kg`;
+    displayStart.innerText   = `Bắt đầu: ${startWeight}kg`;
     const remain = (currentWeight - targetWeight).toFixed(1);
-    displayRemain.innerText = remain > 0 ? `Còn lại: ${remain}kg` : `Đã đạt mục tiêu!`;
+    displayRemain.innerText  = remain > 0 ? `Còn lại: ${remain}kg` : `Đã đạt mục tiêu!`;
   }
 
-async function loadAIMenu() {
-  const token = localStorage.getItem('calorie_ai_token');
-  if (!token) { window.location.href = "signin.html"; return; }
+  /* ── LOAD ──────────────────────────────────────────────────────────────── */
+  async function loadAIMenu() {
+    const token = localStorage.getItem('calorie_ai_token');
+    if (!token) { window.location.href = "signin.html"; return; }
 
-  // Hiện loader ngay lập tức
-  const responseArea = document.getElementById('ai-response-text');
-  const roadmapContainer = document.querySelector('.content');
-  const loader = document.createElement('div');
-  loader.className = 'loading-overlay';
-  loader.id = 'main-loader';
-  loader.innerHTML = '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
-  roadmapContainer.appendChild(loader);
+    const responseArea = document.getElementById('ai-response-text');
+    const roadmapContainer = document.querySelector('.content');
+    const loader = document.createElement('div');
+    loader.className = 'loading-overlay';
+    loader.id = 'main-loader';
+    loader.innerHTML = '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+    roadmapContainer.appendChild(loader);
 
-  try {
-    // Gọi song song, không chờ tuần tự
-    const [statusRes, coachRes] = await Promise.all([
-      fetch('/api/status', {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}` }
-      }),
-      fetch('/api/coach-dynamic', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isQueryOnly: true })
-      })
-    ]);
+    try {
+      const [statusRes, coachRes] = await Promise.all([
+        fetch('/api/status', { method: 'GET', headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/coach-dynamic', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isQueryOnly: true })
+        })
+      ]);
 
-    // Check auth/login
-    if (!statusRes.ok) {
-      showToast("Vui lòng đăng nhập!", "info");
-      setTimeout(() => { window.location.href = "signin.html"; }, 1369);
-      return;
-    }
+      if (!statusRes.ok) {
+        showToast("Vui lòng đăng nhập!", "info");
+        setTimeout(() => { window.location.href = "signin.html"; }, 1369);
+        return;
+      }
 
-    const statusData = await statusRes.json();
-    if (!statusData.is_setup_completed) {
-      window.location.href = 'setup.html';
-      return;
-    }
+      const statusData = await statusRes.json();
+      if (!statusData.is_setup_completed) { window.location.href = 'setup.html'; return; }
 
-    const result = await coachRes.json();
-    console.log("Kết quả từ HLV AI:", result.isDeadlinePassed);
+      const result = await coachRes.json();
+      console.log("Kết quả từ HLV AI:", result.isDeadlinePassed);
 
-    if (result.success) {
-      responseArea.innerHTML = `
-        <div class="ai-reply-text">
-          <i class="fa-solid fa-quote-left"></i> ${result.reply}
-        </div>`;
+      if (result.success) {
+        responseArea.innerHTML = `
+          <div class="ai-reply-text">
+            <i class="fa-solid fa-quote-left"></i> ${result.reply}
+          </div>`;
 
-      if (result.isDeadlinePassed) {
-        console.log("Người dùng đã vượt quá deadline. Hiển thị giao diện chúc mừng và ẩn thực đơn cũ.");
-        const grid = document.querySelector('.timetable-grid');
-        const wrapper = document.getElementById('menu-content-area');
-
-        grid.classList.add('blur-content');
-        wrapper.classList.add('relative-wrapper');
-
-        const overlay = document.createElement('div');
-        overlay.className = 'expired-overlay';
-        overlay.innerHTML = `
-          <div class="congrat-card">
-            <i class="fa-solid fa-trophy"></i>
-            <h3>Chúc mừng bạn!</h3>
-            <p>Bạn đã hoàn thành xuất sắc chặng đường dinh dưỡng. Hãy cập nhật lại chỉ số mới để AI thiết kế lộ trình tiếp theo nhé!</p>
-            <button onclick="window.location.href='setup.html?mode=extend'" class="meal-modal-btn primary" style="width:100%">Tiếp tục chặng đường mới</button>
-          </div>
-        `;
-        wrapper.appendChild(overlay);
-      } else {
-        if (result.newPlan && result.newPlan.length > 0) {
-          if (typeof updateRemainingTimetable === 'function') updateRemainingTimetable(result.newPlan);
-          showToast("Đã cập nhật thực đơn mới từ AI!", "success");
+        if (result.isDeadlinePassed) {
+          const grid    = document.querySelector('.timetable-grid');
+          const wrapper = document.getElementById('menu-content-area');
+          grid.classList.add('blur-content');
+          wrapper.classList.add('relative-wrapper');
+          const overlay = document.createElement('div');
+          overlay.className = 'expired-overlay';
+          overlay.innerHTML = `
+            <div class="congrat-card">
+              <i class="fa-solid fa-trophy"></i>
+              <h3>Chúc mừng bạn!</h3>
+              <p>Bạn đã hoàn thành xuất sắc chặng đường dinh dưỡng. Hãy cập nhật lại chỉ số mới để AI thiết kế lộ trình tiếp theo nhé!</p>
+              <button onclick="window.location.href='setup.html?mode=extend'" class="meal-modal-btn primary" style="width:100%">Tiếp tục chặng đường mới</button>
+            </div>
+          `;
+          wrapper.appendChild(overlay);
+        } else {
+          if (result.newPlan && result.newPlan.length > 0) {
+            updateRemainingTimetable(result.newPlan);
+            showToast("Đã cập nhật thực đơn mới từ AI!", "success");
+          }
         }
       }
+    } catch (err) {
+      console.error("Lỗi kết nối HLV AI:", err);
+      showToast("Lỗi kết nối HLV AI", "error");
+      responseArea.innerHTML = '<p style="color:var(--danger);font-size:13px;text-align:center">Không thể kết nối với HLV AI. Vui lòng thử lại sau.</p>';
+    } finally {
+      const loaderObj = document.getElementById('main-loader');
+      if (loaderObj) setTimeout(() => loaderObj.remove(), 400);
     }
-  } catch (err) {
-    console.error("Lỗi kết nối HLV AI:", err);
-    showToast("Lỗi kết nối HLV AI", "error");
-    responseArea.innerHTML = '<p style="color:var(--danger);font-size:13px;text-align:center">Không thể kết nối với HLV AI. Vui lòng thử lại sau.</p>';
-  } finally {
-    const loaderObj = document.getElementById('main-loader');
-    if (loaderObj) setTimeout(() => loaderObj.remove(), 400);
   }
-}
+
   function handleLogout() {
     localStorage.removeItem('calorie_ai_token');
     showToast("Đang đăng xuất...", "info");
@@ -361,8 +658,8 @@ async function loadAIMenu() {
   }
 
   window.onload = loadAIMenu;
-  document.getElementById('nav-home').onclick = () => window.location.href = 'chat.html';
-  document.getElementById('nav-diet').onclick = () => window.location.href = 'diet-details.html';
+  document.getElementById('nav-home').onclick    = () => window.location.href = 'chat.html';
+  document.getElementById('nav-diet').onclick    = () => window.location.href = 'diet-details.html';
   document.getElementById('nav-profile').onclick = () => window.location.href = 'setup.html';
   </script>
 </body>

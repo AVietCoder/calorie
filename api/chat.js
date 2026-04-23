@@ -48,7 +48,6 @@ const safeJsonParse = (text) => {
 const extractDataBlock = (text = "") => {
   const match = String(text).match(/<data>([\s\S]*?)<\/data>/i);
   if (!match) return null;
-
   try {
     return JSON.parse(match[1]);
   } catch {
@@ -57,7 +56,6 @@ const extractDataBlock = (text = "") => {
 };
 
 const MEAL_TIME_REGEX = /\b(sáng|trưa|chiều|tối|bữa phụ|bua phu|ăn lúc|lúc nào|mấy giờ)\b/i;
-
 const FOLLOW_UP_MEAL_TIME_QUESTION =
   "Bạn có thể cho tôi biết bạn ăn vào sáng, trưa, tối hay bữa phụ không?";
 
@@ -68,19 +66,126 @@ const shouldAskMealTime = (message = "") => {
 const appendMealTimeFollowUp = (reply, message) => {
   const text = String(reply || "").trim();
   if (!text) return FOLLOW_UP_MEAL_TIME_QUESTION;
-
   if (!shouldAskMealTime(message)) return text;
-
   const lower = text.toLowerCase();
   const alreadyAsked =
     lower.includes("sáng, trưa, tối hay bữa phụ") ||
     lower.includes("bạn có thể cho tôi biết bạn ăn vào") ||
     lower.includes("bữa phụ không") ||
     lower.includes("ăn vào lúc nào");
-
   if (alreadyAsked) return text;
-
   return `${text}\n\n${FOLLOW_UP_MEAL_TIME_QUESTION}`;
+};
+
+// ─── Helper: normalize một bữa ăn thành record foods ──────────────────────────
+const normalizeFoodRecord = (meal) => {
+  const parseNum = (val) => {
+    if (val == null) return null;
+    const n = parseFloat(String(val).replace(/[^0-9.]/g, ""));
+    return isNaN(n) ? null : n;
+  };
+
+  return {
+    calories: parseNum(meal.calories),
+    protein: meal.protein != null ? String(meal.protein) : null,
+    fat: meal.fat != null ? String(meal.fat) : null,
+    carbs: meal.carbs != null ? String(meal.carbs) : null,
+    fiber: meal.fiber != null ? String(meal.fiber) : null,
+    sugar: meal.sugar != null ? String(meal.sugar) : null,
+    sodium: meal.sodium != null ? String(meal.sodium) : null,
+    description: String(meal.description || meal.food || "Không rõ").trim(),
+  };
+};
+
+// ─── Lưu 1 món ăn vào bảng foods ─────────────────────────────────────────────
+const saveFoodRecord = async (meal) => {
+  try {
+    const record = normalizeFoodRecord(meal);
+    if (!record.description || record.calories == null) return;
+
+    // Tránh trùng lặp: kiểm tra xem đã có description này chưa
+    const { data: existing } = await supabase
+      .from("foods")
+      .select("id")
+      .eq("description", record.description)
+      .maybeSingle();
+
+    if (existing) {
+      // Cập nhật nếu đã tồn tại
+      await supabase
+        .from("foods")
+        .update({ ...record, updated_at: new Date().toISOString() })
+        .eq("id", existing.id);
+    } else {
+      // Thêm mới
+const { data, error } = await supabase
+  .from("foods")
+  .insert(record)
+  .select(); // để trả về row vừa insert
+
+if (error) {
+  console.log("Thêm thất bại:", error.message);
+} else {
+  console.log("Thêm thành công:", data);
+}
+    }
+  } catch (err) {
+    console.error("❌ Lỗi lưu foods:", err.message);
+  }
+};
+
+// ─── Lưu toàn bộ thực đơn 7 ngày vào bảng foods ─────────────────────────────
+const savePlanToFoods = async (plan) => {
+  if (!Array.isArray(plan)) return;
+  const promises = [];
+  for (const day of plan) {
+    const meals = Array.isArray(day.meals) ? day.meals : [];
+    for (const meal of meals) {
+      if (meal && (meal.food || meal.description)) {
+        promises.push(saveFoodRecord(meal));
+      }
+    }
+  }
+  await Promise.all(promises);
+};
+
+// ─── Fetch toàn bộ kho món ăn từ bảng foods ──────────────────────────────────
+const fetchFoodsDB = async () => {
+  try {
+    const { data, error } = await supabase
+      .from("foods")
+      .select("description, calories, protein, fat, carbs, fiber, sugar, sodium")
+      .order("description", { ascending: true });
+    if (error || !data) return [];
+    return data;
+  } catch (err) {
+    console.error("❌ Lỗi fetch foods:", err.message);
+    return [];
+  }
+};
+
+// ─── Format danh sách foods thành chuỗi compact để inject vào prompt ─────────
+// Mỗi món 1 dòng: "Tên món | cal | P | F | C | Fi | Su | Na"
+const formatFoodsForPrompt = (foods) => {
+  if (!Array.isArray(foods) || foods.length === 0) return "(Chưa có dữ liệu)";
+  return foods
+    .map(
+      (f) =>
+        `- ${f.description} | ${f.calories ?? "?"}kcal | P:${f.protein ?? "?"} | F:${f.fat ?? "?"} | C:${f.carbs ?? "?"} | Fi:${f.fiber ?? "?"} | Su:${f.sugar ?? "?"} | Na:${f.sodium ?? "?"}`
+    )
+    .join("\n");
+};
+
+// ─── Tìm món khớp trong foods DB (so sánh tên gần đúng) ──────────────────────
+const findFoodInDB = (foods, name = "") => {
+  if (!Array.isArray(foods) || !name) return null;
+  const needle = name.toLowerCase().trim();
+  return (
+    foods.find((f) => f.description?.toLowerCase().trim() === needle) ||
+    foods.find((f) => f.description?.toLowerCase().includes(needle)) ||
+    foods.find((f) => needle.includes(f.description?.toLowerCase().trim())) ||
+    null
+  );
 };
 
 const buildCoachPrompt = ({
@@ -91,6 +196,7 @@ const buildCoachPrompt = ({
   message,
   isQueryOnly,
   isDeadlinePassed,
+  foodsDB,
 }) => {
   let prompt = `
 Bạn là HLV Dinh dưỡng AI thông minh, thân thiện và am hiểu ẩm thực Việt Nam.
@@ -143,6 +249,21 @@ YÊU CẦU:
 
 THỰC ĐƠN 7 NGÀY HIỆN TẠI
 ${JSON.stringify(currentPlan)}
+
+--------------------------------
+
+KHO MÓN ĂN CÓ SẴN (FOODS DATABASE)
+Đây là danh sách các món ăn đã được lưu trong hệ thống với thông tin dinh dưỡng đã xác minh.
+Format mỗi dòng: Tên món | kcal | Protein | Fat | Carbs | Fiber | Sugar | Sodium
+
+${formatFoodsForPrompt(foodsDB)}
+
+QUY TẮC SỬ DỤNG FOODS DATABASE:
+1. Khi xây dựng hoặc cập nhật thực đơn (newPlan), BẮT BUỘC ưu tiên chọn món từ danh sách trên.
+2. Nếu món người dùng yêu cầu CÓ trong danh sách → dùng CHÍNH XÁC thông tin dinh dưỡng từ đó, không tự ước tính lại.
+3. Nếu món KHÔNG có trong danh sách → tự ước tính như bình thường, nhưng vẫn ưu tiên chọn các món trong danh sách để lấp các bữa còn lại.
+4. Khi trả lời phân tích (analyze_only), nếu tên món người dùng nhắc đến khớp với một món trong danh sách → dùng số liệu từ database để trả lời, ghi rõ "(theo dữ liệu đã lưu)".
+5. Không lặp lại cùng 1 món quá 2 lần trong 7 ngày khi xếp lịch từ database.
 
 --------------------------------
 
@@ -273,11 +394,26 @@ Hãy gửi lời chúc mừng chân thành vì họ đã hoàn thành chặng đ
   return prompt;
 };
 
-const buildNutritionPrompt = () => {
+const buildNutritionPrompt = (foodsDB = []) => {
+  const foodsSection =
+    foodsDB.length > 0
+      ? `
+KHO MÓN ĂN ĐÃ LƯU (FOODS DATABASE)
+Danh sách các món có thông tin dinh dưỡng đã xác minh:
+${formatFoodsForPrompt(foodsDB)}
+
+QUY TẮC SỬ DỤNG:
+- Nếu tên món người dùng nhắc đến (hoặc món nhận diện được trong ảnh) khớp với một mục trong danh sách trên → ưu tiên dùng số liệu từ database, KHÔNG tự ước tính lại.
+- Điền đúng các con số từ database vào thẻ <data>.
+- Trong phần nhận xét, ghi "(theo dữ liệu đã lưu)" để người dùng biết số liệu đáng tin cậy.
+- Nếu không khớp món nào → ước tính như bình thường.
+`
+      : "";
+
   return `
 Bạn là chuyên gia dinh dưỡng AI.
 Nhiệm vụ: Phân tích thực phẩm từ hình ảnh hoặc văn bản.
-
+${foodsSection}
 QUY TẮC KIỂM TRA ẢNH:
 - CHỈ KHI người dùng gửi hình ảnh: Nếu hình ảnh KHÔNG liên quan đến thực phẩm/đồ uống, bạn BẮT BUỘC phải trả về nội dung lỗi nằm trong thẻ <error>...</error>.
 - Ví dụ: <error>Xin lỗi, tôi thấy đây là một chiếc xe hơi. Tôi chỉ có thể phân tích thực phẩm.</error>
@@ -363,11 +499,10 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Thiếu dữ liệu: Gửi tin nhắn hoặc ảnh." });
     }
 
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
+    const [{ data: profile, error: profileError }, foodsDB] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", user.id).single(),
+      fetchFoodsDB(),
+    ]);
 
     if (profileError || !profile) {
       return res.status(404).json({ error: "Người dùng không tồn tại" });
@@ -398,7 +533,7 @@ export default async function handler(req, res) {
     const currentDayName = dayNames[dayOfWeek];
     const resolvedDayText = todayText;
 
-    // Có ảnh: phân tích ảnh + text
+    // ─── Có ảnh: phân tích ảnh + text ───────────────────────────────────────
     if (imageFile) {
       let userContent = [];
 
@@ -419,7 +554,7 @@ export default async function handler(req, res) {
       const messages = [
         {
           role: "system",
-          content: buildNutritionPrompt(),
+          content: buildNutritionPrompt(foodsDB),
         },
         ...history.slice(-10),
         {
@@ -437,7 +572,32 @@ export default async function handler(req, res) {
       let aiReply = completion.choices[0]?.message?.content || "";
       aiReply = appendMealTimeFollowUp(aiReply, message);
 
-      const nutritionData = extractDataBlock(aiReply);
+      let nutritionData = extractDataBlock(aiReply);
+
+      if (nutritionData && nutritionData.description) {
+        // Kiểm tra xem món này đã có trong foodsDB chưa (dùng data đã fetch sẵn)
+        const existingFood = findFoodInDB(foodsDB, nutritionData.description);
+
+        if (existingFood) {
+          // ── Món đã có trong DB: lấy data từ DB, KHÔNG lưu lại ───────────────
+          // Ghi đè các trường dinh dưỡng bằng giá trị đã xác minh từ DB
+          nutritionData = {
+            ...nutritionData,
+            calories: existingFood.calories ?? nutritionData.calories,
+            protein: existingFood.protein ?? nutritionData.protein,
+            fat: existingFood.fat ?? nutritionData.fat,
+            carbs: existingFood.carbs ?? nutritionData.carbs,
+            fiber: existingFood.fiber ?? nutritionData.fiber,
+            sugar: existingFood.sugar ?? nutritionData.sugar,
+            sodium: existingFood.sodium ?? nutritionData.sodium,
+          };
+          console.log(`✅ Món "${nutritionData.description}" lấy từ DB sẵn có.`);
+        } else {
+          // ── Món mới chưa có trong DB: lưu vào bảng foods ────────────────────
+          await saveFoodRecord(nutritionData);
+          console.log(`➕ Món "${nutritionData.description}" mới, đã lưu vào DB.`);
+        }
+      }
 
       const userEntry = {
         role: "user",
@@ -463,7 +623,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // Follow-up từ popup: người dùng đã chọn buổi/ngày sau khi phân tích ảnh
+    // ─── Follow-up từ popup: người dùng đã chọn buổi/ngày sau khi phân tích ảnh
     let finalMessage = message;
 
     const isMealFollowup =
@@ -494,6 +654,7 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
       message: finalMessage,
       isQueryOnly: effectiveIsQueryOnly,
       isDeadlinePassed,
+      foodsDB,
     });
 
     const coachMessages = [
@@ -528,12 +689,15 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
       aiReply = appendMealTimeFollowUp(aiReply, finalMessage);
     }
 
+    // ─── [MỚI] Lưu toàn bộ thực đơn mới vào bảng foods khi update_plan ──────
     if (
       action === "update_plan" &&
       Array.isArray(result.newPlan) &&
       result.newPlan.length > 0
     ) {
       currentPlan = result.newPlan;
+
+      // Lưu vào profiles
       await supabase
         .from("profiles")
         .update({
@@ -541,6 +705,11 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
           plan_updated_at: now,
         })
         .eq("id", user.id);
+
+      // Lưu từng bữa ăn trong plan vào bảng foods (bất đồng bộ, không block response)
+      savePlanToFoods(currentPlan).catch((err) =>
+        console.error("❌ Lỗi savePlanToFoods:", err.message)
+      );
     }
 
     const userEntry = { role: "user", content: finalMessage };

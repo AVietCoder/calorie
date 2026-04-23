@@ -462,11 +462,7 @@
     reader.onload = function(e) {
       const base64Data = e.target.result;
       document.getElementById('display-food-img').src = base64Data;
-      if (sessionPhotos.includes(base64Data)) {
-        input.value = 'Bạn hãy phân tích món ăn gần nhất tui vừa mới hỏi bạn ấy';
-      } else {
-        input.value = 'Phân tích hình ảnh này';
-      }
+      input.value = 'Phân tích hình ảnh này';
     };
     reader.readAsDataURL(file);
   }
