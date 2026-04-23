@@ -199,6 +199,54 @@
   .congrat-card p{color:var(--text-sub);font-size:14px;line-height:1.5;margin-bottom:24px}
 
   @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  /* Style cho checkbox và input mới */
+.meal-status-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 12px;
+    background: var(--surface-2);
+    border-radius: 12px;
+}
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+}
+.checkbox-wrapper input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+}
+.alt-food-input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-soft);
+    font-size: 13px;
+    display: none; /* Ẩn mặc định */
+}
+.save-plan-footer {
+    display: none; /* Chỉ hiện khi có thay đổi */
+}
+.btn-save-all {
+    background: var(--primary-deep);
+    color: #fff;
+    padding: 14px 32px;
+    border-radius: 30px;
+    border: none;
+    font-weight: 700;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    cursor: pointer;
+    display: block;
+    gap: 8px;
+    width: 100%;
+    text-align: center;
+}
 </style>
 </head>
 <body>
@@ -219,6 +267,19 @@
       </div>
 
       <div class="meal-modal-body">
+        <div class="meal-status-container">
+            <label class="checkbox-wrapper">
+                <input type="checkbox" id="confirm-meal-check" onchange="toggleAltInput()">
+                <span>Tôi sẽ ăn món này</span>
+            </label>
+            <input type="text" id="alt-food-name" class="alt-food-input" placeholder="Bạn muốn ăn món gì khác?">
+                <div class="save-plan-footer" id="save-footer">
+            <button class="btn-save-all" onclick="submitPlanChanges()">
+                <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
+            </button>
+        </div>
+          </div>
+
 
         <!-- Calo lớn -->
         <div class="kcal-highlight">
@@ -334,6 +395,7 @@
     </header>
 
     <main class="content" id="main-content">
+
       <div class="schedule-hero">
         <div class="schedule-hero-text">
           <div class="schedule-hero-icon"><i class="fa-solid fa-calendar-week"></i></div>
@@ -398,6 +460,29 @@
   <script>
   /* ── MODAL LOGIC ──────────────────────────────────────────────────────────── */
   let _currentModalFood = "";
+  let _currentMealCtx = null;        // { day, meal } của modal đang mở
+  let tempPlan = [];                 // Bản sao FLAT của plan hiện tại (mỗi item = 1 bữa)
+  const modifiedMap = new Map();     // key = `${day}-${meal}` → object món đã đổi
+
+  /**
+   * Logic checkbox:
+   * - Tick "Tôi sẽ ăn món này" → ẨN ô input + ẨN nút lưu (giữ nguyên món, không gửi gì).
+   * - Bỏ tick → HIỆN ô input. Chỉ HIỆN nút lưu khi user nhập tên món khác (không rỗng).
+   */
+  function toggleAltInput() {
+    const check = document.getElementById("confirm-meal-check");
+    const altInput = document.getElementById("alt-food-name");
+    const saveFooter = document.getElementById("save-footer");
+    if (!check || !altInput || !saveFooter) return;
+
+    if (check.checked) {
+      altInput.style.display = "none";
+      saveFooter.style.display = "none";
+    } else {
+      altInput.style.display = "block";
+      saveFooter.style.display = altInput.value.trim() !== "" ? "block" : "none";
+    }
+  }
 
   function parseNum(val) {
     if (val == null || val === "" || val === "N/A") return null;
@@ -405,19 +490,101 @@
     return isNaN(n) ? null : n;
   }
 
+  /** Khi user gõ món thay thế → cập nhật vào modifiedMap */
+  function saveLocalChange() {
+    if (!_currentMealCtx) return;
+    const check = document.getElementById("confirm-meal-check");
+    const altInput = document.getElementById("alt-food-name");
+    const altFood = altInput.value.trim();
+    const key = `${_currentMealCtx.day}-${_currentMealCtx.meal}`;
+
+    if (!check.checked && altFood) {
+      modifiedMap.set(key, {
+        day: _currentMealCtx.day,
+        meal: _currentMealCtx.meal,
+        food: altFood,
+      });
+    } else {
+      modifiedMap.delete(key);
+    }
+  }
+
+  /** Hiện loader full-screen che toàn bộ UI. Không thể đóng cho đến khi reload. */
+  function showSavingOverlay(text = "Đang cập nhật thực đơn...") {
+    let ov = document.getElementById("saving-overlay");
+    if (ov) { ov.querySelector(".saving-text").textContent = text; return; }
+    ov = document.createElement("div");
+    ov.id = "saving-overlay";
+    ov.style.cssText = `
+      position:fixed;inset:0;z-index:9999;
+      background:rgba(251,250,246,0.96);backdrop-filter:blur(6px);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+      animation:fadeIn .25s ease;
+    `;
+    ov.innerHTML = `
+      <div class="typing-indicator" style="display:flex;gap:6px">
+        <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+      </div>
+      <div class="saving-text" style="font-size:14px;font-weight:600;color:var(--primary-deep)">${text}</div>
+      <div style="font-size:12px;color:var(--text-sub)">Vui lòng không đóng trang…</div>
+    `;
+    document.body.appendChild(ov);
+    document.body.style.overflow = "hidden";
+  }
+
+  async function submitPlanChanges() {
+    const modifiedMeals = Array.from(modifiedMap.values());
+    if (modifiedMeals.length === 0) {
+      showToast("Bạn chưa thay đổi món nào", "info");
+      return;
+    }
+
+    const token = localStorage.getItem('calorie_ai_token');
+    // 1. Đóng modal + che toàn bộ UI ngay lập tức
+    document.getElementById("meal-modal-overlay")?.classList.remove("open");
+    showSavingOverlay("AI đang cân đối lại thực đơn...");
+
+    try {
+      const res = await fetch('/api/coach-dynamic', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: "update_plan",
+          modifiedMeals,
+        })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        showToast("Đã lưu thực đơn mới!", "success");
+        modifiedMap.clear();
+        // Giữ overlay → reload (overlay biến mất khi page mới load xong)
+        showSavingOverlay("Đang tải lại lộ trình mới...");
+        location.reload();
+      } else {
+        document.getElementById("saving-overlay")?.remove();
+        document.body.style.overflow = "";
+        console.error("Update plan failed:", data);
+        showToast(`Lỗi (${data.stage || 'unknown'}): ${data.error || 'Không rõ'}`, "error");
+      }
+    } catch (err) {
+      document.getElementById("saving-overlay")?.remove();
+      document.body.style.overflow = "";
+      console.error("Network error:", err);
+      showToast("Lỗi kết nối khi lưu", "error");
+    }
+  }
+
   function openMealModal(item) {
     _currentModalFood = item.food || "";
+    _currentMealCtx = { day: item.day, meal: item.meal };
 
-    // Header
+    // 1. Header / calo / amount
     document.getElementById("modal-food-name").textContent = item.food || "—";
     document.getElementById("modal-meal-time").textContent = item.meal || "—";
-
-    // Calo
-    document.getElementById("modal-calories").textContent =
-      item.calories != null ? item.calories : "—";
+    document.getElementById("modal-calories").textContent = item.calories != null ? item.calories : "—";
     document.getElementById("modal-amount").textContent = item.amount || "—";
 
-    // Macro numbers
     const p = parseNum(item.protein);
     const f = parseNum(item.fat);
     const c = parseNum(item.carbs);
@@ -429,7 +596,7 @@
     document.getElementById("detail-fat").textContent     = item.fat     || "—";
     document.getElementById("detail-carbs").textContent   = item.carbs   || "—";
 
-    // Optional rows
+    // 2. Optional rows
     const showRow = (id, val) => {
       const row = document.getElementById(id);
       if (row) row.style.display = val ? "" : "none";
@@ -441,12 +608,11 @@
     showRow("row-sugar",  item.sugar);
     showRow("row-sodium", item.sodium);
 
-    // Stacked bar — tính theo kcal tương đương
+    // 3. Macro chart
     const chartWrap = document.getElementById("macro-chart-wrap");
     if (p != null && f != null && c != null) {
       const pKcal = p * 4, fKcal = f * 9, cKcal = c * 4;
       const total = pKcal + fKcal + cKcal || 1;
-      // Nhỏ delay để CSS transition chạy sau khi modal mở
       setTimeout(() => {
         document.getElementById("bar-protein").style.width = (pKcal / total * 100).toFixed(1) + "%";
         document.getElementById("bar-fat").style.width     = (fKcal / total * 100).toFixed(1) + "%";
@@ -454,21 +620,43 @@
       }, 80);
       chartWrap.style.display = "";
     } else {
-      // Reset bar nếu không có data
       ["bar-protein","bar-fat","bar-carbs"].forEach(id => {
         document.getElementById(id).style.width = "0%";
       });
-      chartWrap.style.display = p == null && f == null && c == null ? "none" : "";
+      chartWrap.style.display = "none";
     }
 
-    // Button tìm quán
+    // 4. Ticket box (Confirm / Edit)
+    const check = document.getElementById("confirm-meal-check");
+    const altInput = document.getElementById("alt-food-name");
+    const key = `${item.day}-${item.meal}`;
+    const pendingMod = modifiedMap.get(key);
+
+    // Mặc định: tick "Tôi sẽ ăn món này" (ẩn input + nút lưu)
+    // Nếu user đã từng thay món → bỏ tick + điền lại tên món đã đổi
+    check.checked = !pendingMod;
+    altInput.value = pendingMod ? pendingMod.food : "";
+    toggleAltInput();
+
     document.getElementById("modal-btn-find").onclick = () => searchFoodNearby(item.food || "");
 
-    // Mở modal
+    check.onchange = () => {
+      // Khi tick lại "sẽ ăn món này" → xoá thay đổi đã pending
+      if (check.checked) {
+        modifiedMap.delete(key);
+        altInput.value = "";
+      }
+      toggleAltInput();
+      saveLocalChange();
+    };
+    altInput.oninput = () => {
+      toggleAltInput();
+      saveLocalChange();
+    };
+
     document.getElementById("meal-modal-overlay").classList.add("open");
     document.body.style.overflow = "hidden";
   }
-
   function closeMealModal(e) {
     if (e && e.target !== document.getElementById("meal-modal-overlay")) return;
     document.getElementById("meal-modal-overlay").classList.remove("open");
@@ -636,10 +824,16 @@
           wrapper.appendChild(overlay);
         } else {
           if (result.newPlan && result.newPlan.length > 0) {
+            tempPlan = result.newPlan;            // ✅ Khởi tạo tempPlan từ data backend
+            modifiedMap.clear();                  // Reset các thay đổi pending
             updateRemainingTimetable(result.newPlan);
             showToast("Đã cập nhật thực đơn mới từ AI!", "success");
           }
         }
+      } else {
+        // Backend trả lỗi có cấu trúc → log để debug
+        console.error("Coach API error:", result);
+        showToast(`Lỗi (${result.stage || 'unknown'}): ${result.error || 'Không rõ'}`, "error");
       }
     } catch (err) {
       console.error("Lỗi kết nối HLV AI:", err);
@@ -648,6 +842,9 @@
     } finally {
       const loaderObj = document.getElementById('main-loader');
       if (loaderObj) setTimeout(() => loaderObj.remove(), 400);
+      // Hiện UI sau khi đã có data (tránh flash khi reload)
+      const mainEl = document.getElementById('main-content');
+      if (mainEl) mainEl.style.visibility = "visible";
     }
   }
 

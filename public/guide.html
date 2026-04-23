@@ -54,7 +54,10 @@
 
   /* Hero */
   .guide-hero{
-    background: var(--gradient-hero);
+    /* background: var(--gradient-hero); */
+    background: radial-gradient(800px 400px at 100% 0%, rgba(88,166,119,0.18), transparent 60%),
+                   radial-gradient(700px 400px at 0% 100%,rgba(184,151,90,0.10) , transparent 60%),
+                   linear-gradient(135deg,#ffffff 0%, var(--bg-color) 100%);
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     padding: 40px 44px;
@@ -78,7 +81,7 @@
   .guide-hero p{
     color: var(--text-sub);
     font-size: 1.05rem;
-    max-width: 720px;
+    /* max-width: 720px; */
     margin: 0;
   }
   .hero-meta{
@@ -371,23 +374,19 @@ body.no-auth .side-nav{
         <!-- Main -->
         <div>
           <!-- HERO -->
-          <div class="guide-hero">
-            <span class="eyebrow"><i class="fa-solid fa-sparkles"></i> Hướng dẫn sử dụng</span>
-            <h1>Làm chủ Calorie AI trong 5 phút</h1>
-            <p>Tài liệu nhanh giúp bạn hiểu từng tính năng — từ thiết lập hồ sơ, theo dõi chỉ số dinh dưỡng đến trò chuyện với HLV AI và lên lịch ăn uống cả tuần.</p>
+          <div class="guide-hero" id="intro">
+            <span class="eyebrow"><i class="fa-solid fa-book-open"></i> Giới thiệu</span>
+            <h1>Calorie AI là gì?</h1>
+            <p>Calorie AI là trợ lý dinh dưỡng AI hỗ trợ người dùng, đặc biệt là người có bệnh nền, theo dõi và kiểm soát chế độ ăn uống hằng ngày nhằm góp phần hỗ trợ quá trình cải thiện và điều trị bệnh thông qua dinh dưỡng.
+
+Người dùng chỉ cần nhập thông tin cơ thể và mục tiêu, hệ thống sẽ tự động phân tích, tính toán dinh dưỡng và gợi ý thực đơn phù hợp theo từng tình trạng sức khỏe.</p>
+            
             <div class="hero-meta">
               <span class="chip"><i class="fa-solid fa-clock"></i> Đọc trong 5 phút</span>
               <span class="chip"><i class="fa-solid fa-leaf"></i> Phù hợp người mới</span>
               <span class="chip"><i class="fa-solid fa-shield-halved"></i> Cập nhật liên tục</span>
             </div>
-          </div>
-
-          <!-- INTRO -->
-          <section class="guide-section" id="intro">
-            <h2><span class="num">1</span> Calorie AI là gì?</h2>
-            <p class="lead">Calorie AI là trợ lý dinh dưỡng cá nhân hoá. Bạn nhập chỉ số cơ thể & mục tiêu, hệ thống sẽ tính BMR/TDEE, phân bổ macro, theo dõi tiến độ và đề xuất thực đơn — tất cả trong một giao diện duy nhất.</p>
-
-            <div class="feature-list">
+             <div class="feature-list">
               <div class="feature-row">
                 <i class="fa-solid fa-bolt"></i>
                 <div><strong>Tính toán tự động</strong><span>BMR, TDEE, mục tiêu calo & macro theo công thức chuẩn.</span></div>
@@ -405,40 +404,41 @@ body.no-auth .side-nav{
                 <div><strong>Tiến độ trực quan</strong><span>Biểu đồ cân nặng, calo và macro theo thời gian thực.</span></div>
               </div>
             </div>
-          </section>
+          </div>
+
 
           <!-- START -->
           <section class="guide-section" id="start">
-            <h2><span class="num">2</span> Bắt đầu trong 4 bước</h2>
+            <h2><span class="num">1</span> Bắt đầu trong 4 bước</h2>
             <p class="lead">Quy trình từ lúc đăng ký đến khi nhận thực đơn cá nhân hoá.</p>
 
             <div class="step-grid">
               <div class="step-card">
                 <div class="step-icon"><i class="fa-solid fa-user-plus"></i></div>
                 <h4>1. Đăng ký tài khoản</h4>
-                <p>Tạo tài khoản bằng email, sau đó đăng nhập để bắt đầu thiết lập.</p>
+                <p>Tạo tài khoản để bắt đầu lưu dữ liệu dinh dưỡng cá nhân.</p>
               </div>
               <div class="step-card">
                 <div class="step-icon"><i class="fa-solid fa-clipboard-list"></i></div>
                 <h4>2. Khai báo hồ sơ</h4>
-                <p>Nhập chiều cao, cân nặng, độ tuổi, mức vận động & mục tiêu của bạn.</p>
+                <p>Nhập thông tin cơ thể, mức vận động, mục tiêu (giảm cân / tăng cơ / duy trì) hoặc tình trạng sức khỏe.</p>
               </div>
               <div class="step-card">
                 <div class="step-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
                 <h4>3. Nhận đề xuất</h4>
-                <p>AI tính BMR/TDEE, đề xuất calo mục tiêu và tỉ lệ Protein/Carbs/Fat.</p>
+                <p>Hệ thống tự động tính BMR, TDEE và xây dựng chế độ ăn phù hợp với thể trạng.</p>
               </div>
               <div class="step-card">
                 <div class="step-icon"><i class="fa-solid fa-utensils"></i></div>
                 <h4>4. Theo dõi mỗi ngày</h4>
-                <p>Ghi nhận bữa ăn qua chat, xem biểu đồ và điều chỉnh kế hoạch.</p>
+                <p>Ghi nhận bữa ăn hằng ngày qua chat, theo dõi lượng calo và macro đã nạp, đồng thời kiểm soát tiến độ so với mục tiêu. Thực đơn được tự động điều chỉnh linh hoạt dựa trên dữ liệu ăn uống thực tế của người dùng.</p>
               </div>
             </div>
           </section>
 
           <!-- SETUP -->
           <section class="guide-section" id="setup">
-            <h2><span class="num">3</span> Thiết lập hồ sơ (Setup)</h2>
+            <h2><span class="num">2</span> Thiết lập hồ sơ (Setup)</h2>
             <p class="lead">Trang <strong>setup.html</strong> chia làm 4 bước — biểu tượng tiến độ ở trên cùng cho biết bạn đang ở đâu.</p>
 
             <h3>Các trường thông tin</h3>
@@ -456,7 +456,7 @@ body.no-auth .side-nav{
 
           <!-- DASHBOARD -->
           <section class="guide-section" id="dashboard">
-            <h2><span class="num">4</span> Dashboard Diet</h2>
+            <h2><span class="num">3</span> Dashboard Diet</h2>
             <p class="lead">Trang <strong>diet-details.html</strong> tổng hợp toàn bộ chỉ số quan trọng dưới dạng biểu đồ trực quan.</p>
 
             <div class="feature-list">
@@ -485,7 +485,7 @@ body.no-auth .side-nav{
 
           <!-- CHAT -->
           <section class="guide-section" id="chat">
-            <h2><span class="num">5</span> Trò chuyện với HLV AI</h2>
+            <h2><span class="num">4</span> Trò chuyện với HLV AI</h2>
             <p class="lead">Trang <strong>chat.html</strong> là nơi bạn ghi nhận bữa ăn và nhận tư vấn theo ngữ cảnh.</p>
 
             <h3>Bạn có thể hỏi gì?</h3>
@@ -503,7 +503,7 @@ body.no-auth .side-nav{
 
           <!-- PLAN -->
           <section class="guide-section" id="plan">
-            <h2><span class="num">6</span> Lịch ăn 7 ngày</h2>
+            <h2><span class="num">5</span> Lịch ăn 7 ngày</h2>
             <p class="lead">Trang <strong>schedule.html</strong> hiển thị thực đơn dạng bảng theo ngày × bữa.</p>
 
             <ul>
@@ -515,7 +515,7 @@ body.no-auth .side-nav{
 
           <!-- TIPS -->
           <section class="guide-section" id="tips">
-            <h2><span class="num">7</span> Mẹo dùng hiệu quả</h2>
+            <h2><span class="num">6</span> Mẹo dùng hiệu quả</h2>
             <div class="page-cards">
               <a class="page-card" href="diet-details.html">
                 <div class="pc-head">
@@ -554,7 +554,7 @@ body.no-auth .side-nav{
 
           <!-- FAQ -->
           <section class="guide-section faq" id="faq">
-            <h2><span class="num">8</span> Câu hỏi thường gặp</h2>
+            <h2><span class="num">7</span> Câu hỏi thường gặp</h2>
             <details open>
               <summary><i class="fa-solid fa-circle-question"></i> Dữ liệu của tôi có được bảo mật?<i class="fa-solid fa-chevron-down chev"></i></summary>
               <p>Toàn bộ dữ liệu cá nhân được lưu trên tài khoản riêng và chỉ bạn truy cập được sau khi đăng nhập.</p>
