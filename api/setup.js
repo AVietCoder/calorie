@@ -60,7 +60,7 @@ export default async function handler(req, res) {
         return res.status(200).json({
             success: true,
             message: 'Cập nhật lộ trình thành công!',
-            isDeadlinePassed: false // vừa set deadline mới → luôn false
+            isDeadlinePassed: false 
         });
 
     } catch (error) {

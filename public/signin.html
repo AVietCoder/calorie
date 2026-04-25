@@ -7,38 +7,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-        <link rel="stylesheet" href="toast.css">
+    <link rel="stylesheet" href="toast.css">
     <link rel="icon" href="logo.png" type="image/png">
-
-    <style>
-        /* Hiệu ứng xoay cho icon loading */
-.fa-spinner {
-    animation: spin 1s linear infinite;
-    margin-right: 8px;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* Style cho nút khi bị disable */
-.btn-auth:disabled {
-    background: #95a5a6;
-    cursor: not-allowed;
-    transform: none;
-}
-        .auth-container { max-width: 400px; margin: 100px auto; padding: 40px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .auth-header { text-align: center; margin-bottom: 30px; }
-        .auth-form { display: flex; flex-direction: column; gap: 20px; }
-        .input-group { display: flex; flex-direction: column; gap: 8px; }
-        .input-group label { font-weight: 600; font-size: 0.9rem; color: #444; }
-        .input-group input { padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-family: inherit; }
-        .btn-auth { background: #2ecc71; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.3s; }
-        .btn-auth:hover { background: #27ae60; transform: translateY(-2px); }
-        .auth-footer { text-align: center; margin-top: 20px; font-size: 0.9rem; color: #666; }
-        .auth-footer a { color: #2ecc71; text-decoration: none; font-weight: 600; }
-    </style>
+    <link rel="stylesheet" href="signin.css">
 </head>
 <body>
 <div id="toast-container"></div>
@@ -70,51 +41,6 @@
     </div>
 </div>
 <script src="toast.js"></script>
-
-<script>
-document.getElementById('loginForm').onsubmit = async (e) => {
-    e.preventDefault();
-    
-    const loginBtn = e.target.querySelector('.btn-auth');
-    const originalBtnText = loginBtn.innerHTML; 
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-
-    loginBtn.disabled = true;
-    loginBtn.innerHTML = '<i class="fas fa-spinner"></i> Đang xác thực...';
-
-    try {
-        const response = await fetch('/api/auth', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'login',
-                email: username + "@gmail.com",
-                password: password
-            })
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            showToast("Đăng nhập thành công!", "success");
-            localStorage.setItem('calorie_ai_token', result.token); 
-            localStorage.setItem('user_id', result.user.id);
-            
-            setTimeout(() => {
-                window.location.href = "guide.html";
-            }, 800);
-        } else {
-            showToast(result.error, "error");
-            loginBtn.disabled = false;
-            loginBtn.innerHTML = originalBtnText;
-        }
-    } catch (err) {
-        showToast("Lỗi kết nối hệ thống.", "error");
-        loginBtn.disabled = false;
-        loginBtn.innerHTML = originalBtnText;
-    }
-};</script>
-
+<script src="signin.js"></script>
 </body>
 </html>

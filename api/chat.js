@@ -77,7 +77,6 @@ const appendMealTimeFollowUp = (reply, message) => {
   return `${text}\n\n${FOLLOW_UP_MEAL_TIME_QUESTION}`;
 };
 
-// ─── Helper: normalize một bữa ăn thành record foods ──────────────────────────
 const normalizeFoodRecord = (meal) => {
   const parseNum = (val) => {
     if (val == null) return null;
@@ -97,13 +96,11 @@ const normalizeFoodRecord = (meal) => {
   };
 };
 
-// ─── Lưu 1 món ăn vào bảng foods ─────────────────────────────────────────────
 const saveFoodRecord = async (meal) => {
   try {
     const record = normalizeFoodRecord(meal);
     if (!record.description || record.calories == null) return;
 
-    // Tránh trùng lặp: kiểm tra xem đã có description này chưa
     const { data: existing } = await supabase
       .from("foods")
       .select("id")
@@ -111,18 +108,15 @@ const saveFoodRecord = async (meal) => {
       .maybeSingle();
 
     if (existing) {
-      // Cập nhật nếu đã tồn tại
       await supabase
         .from("foods")
         .update({ ...record, updated_at: new Date().toISOString() })
         .eq("id", existing.id);
     } else {
-      // Thêm mới
 const { data, error } = await supabase
   .from("foods")
   .insert(record)
-  .select(); // để trả về row vừa insert
-
+  .select();
 if (error) {
   console.log("Thêm thất bại:", error.message);
 } else {
@@ -134,7 +128,6 @@ if (error) {
   }
 };
 
-// ─── Lưu toàn bộ thực đơn 7 ngày vào bảng foods ─────────────────────────────
 const savePlanToFoods = async (plan) => {
   if (!Array.isArray(plan)) return;
   const promises = [];
@@ -149,7 +142,6 @@ const savePlanToFoods = async (plan) => {
   await Promise.all(promises);
 };
 
-// ─── Fetch toàn bộ kho món ăn từ bảng foods ──────────────────────────────────
 const fetchFoodsDB = async () => {
   try {
     const { data, error } = await supabase
@@ -164,8 +156,7 @@ const fetchFoodsDB = async () => {
   }
 };
 
-// ─── Format danh sách foods thành chuỗi compact để inject vào prompt ─────────
-// Mỗi món 1 dòng: "Tên món | cal | P | F | C | Fi | Su | Na"
+
 const formatFoodsForPrompt = (foods) => {
   if (!Array.isArray(foods) || foods.length === 0) return "(Chưa có dữ liệu)";
   return foods
@@ -176,7 +167,6 @@ const formatFoodsForPrompt = (foods) => {
     .join("\n");
 };
 
-// ─── Tìm món khớp trong foods DB (so sánh tên gần đúng) ──────────────────────
 const findFoodInDB = (foods, name = "") => {
   if (!Array.isArray(foods) || !name) return null;
   const needle = name.toLowerCase().trim();
@@ -533,7 +523,6 @@ export default async function handler(req, res) {
     const currentDayName = dayNames[dayOfWeek];
     const resolvedDayText = todayText;
 
-    // ─── Có ảnh: phân tích ảnh + text ───────────────────────────────────────
     if (imageFile) {
       let userContent = [];
 
@@ -623,7 +612,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // ─── Follow-up từ popup: người dùng đã chọn buổi/ngày sau khi phân tích ảnh
     let finalMessage = message;
 
     const isMealFollowup =

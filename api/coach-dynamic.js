@@ -1,10 +1,8 @@
-// api/coach-dynamic.js
 import OpenAI from "openai";
 import { supabase } from "./lib/supabase.js";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// ⚠️ "gpt-4.1" không tồn tại. Dùng "gpt-4o" hoặc "gpt-4-turbo".
 const MODEL = "gpt-4o";
 const DEBUG =
   process.env.DEBUG_COACH === "1" || process.env.NODE_ENV !== "production";
