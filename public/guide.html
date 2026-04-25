@@ -349,7 +349,7 @@ body.no-auth .side-nav{
     <header class="header">
       <a href="chat.html" class="logo"><i class="fa-solid fa-leaf"></i> Calorie AI</a>
       <div class="header-tools">
-        <div class="user-profile-nav" onclick="location.href='diet-details.html'" title="Quay lại Dashboard">
+        <div class="user-profile-nav" id="siu" onclick="location.href='diet-details.html'" title="Quay lại Dashboard">
           <span class="user-name"><i class="fa-solid fa-arrow-left"></i> <strong>Về Dashboard</strong></span>
         </div>
       </div>
@@ -612,15 +612,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   showLoader();
-
-  // ===== Ẩn mặc định trước khi check auth =====
-  if (sideNav) sideNav.style.display = 'none';
-  if (headerTools) headerTools.style.display = 'none';
-
   function applyGuestMode() {
     document.body.classList.remove('has-auth');
     document.body.classList.add('no-auth');
-
+    const siu = document.getElementById('siu');
+    siu.onclick = () => {
+      location.href='index.html';
+    };
     if (logo) logo.href = 'index.html';
   }
 
