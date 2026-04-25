@@ -99,7 +99,13 @@
     transform:translateY(24px) scale(0.97);
     transition:transform .28s cubic-bezier(.34,1.56,.64,1);
     border:1px solid var(--border-soft);
-  }
+    scrollbar-width: none; 
+      -ms-overflow-style: none; 
+    }
+
+    .meal-modal::-webkit-scrollbar {
+      display: none;       
+    }
   .meal-modal-overlay.open .meal-modal{transform:translateY(0) scale(1)}
   .meal-modal-header{
     padding:24px 24px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;

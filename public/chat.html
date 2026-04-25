@@ -52,7 +52,14 @@
   .send-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
 
   /* Sidebar info */
-  .info-sidebar{display:flex;flex-direction:column;gap:18px;overflow-y:auto;min-height:0;padding-right:4px}
+  .info-sidebar{
+    display:flex;flex-direction:column;gap:18px;overflow-y:auto;min-height:0;padding-right:4px;
+        scrollbar-width: none; 
+      -ms-overflow-style: none; 
+  }
+      .info-sidebar::-webkit-scrollbar {
+      display: none;       
+    }
   .food-img-container{
     background:var(--gradient-primary);
     padding:6px;border-radius:20px;margin-bottom:18px;
