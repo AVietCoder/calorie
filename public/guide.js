@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   showLoader();
   function applyGuestMode() {
+    document.getElementById("login-note").style.display = "block";
     document.body.classList.remove('has-auth');
     document.body.classList.add('no-auth');
     const siu = document.getElementById('siu');
