@@ -7,6 +7,7 @@
   let selectedMealTime = "";
   let selectedDayMode = "today";
   const sessionPhotos = [];
+  let pastedImageFile = null;
 
   function handleLogout() {
     localStorage.removeItem('calorie_ai_token');
@@ -228,6 +229,84 @@
     }
   }
 
+  function handlePastedImage(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    // Chuyển file sang jpeg nếu cần (để tương thích với backend chỉ nhận jpg)
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const base64Data = e.target.result;
+      // Hiển thị preview ảnh lên sidebar
+      document.getElementById('display-food-img').src = base64Data;
+
+      // Tạo File object từ blob để dùng như file upload bình thường
+      const mime = file.type || 'image/jpeg';
+      const ext = mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpeg';
+      // Convert sang jpeg để backend không bị lỗi
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(function(blob) {
+          pastedImageFile = new File([blob], 'pasted-image.jpg', { type: 'image/jpeg' });
+          // Hiển thị preview trong input area
+          showPastePreview(base64Data);
+          // Tự động điền placeholder text nếu input trống
+          const input = document.getElementById('user-input');
+          if (input && !input.value.trim()) {
+            input.value = 'Phân tích hình ảnh này';
+          }
+          if (typeof showToast === 'function') showToast('Đã dán ảnh! Nhấn Gửi để phân tích.', 'info');
+        }, 'image/jpeg', 0.92);
+      };
+      img.src = base64Data;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function showPastePreview(base64Data) {
+    // Xoá preview cũ nếu có
+    const oldPreview = document.getElementById('paste-preview-container');
+    if (oldPreview) oldPreview.remove();
+
+    const inputWrapper = document.querySelector('.input-wrapper');
+    if (!inputWrapper) return;
+
+    const previewContainer = document.createElement('div');
+    previewContainer.id = 'paste-preview-container';
+    previewContainer.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg-card,#f5f5f5);border-radius:10px;margin-bottom:6px;';
+
+    const thumb = document.createElement('img');
+    thumb.src = base64Data;
+    thumb.style.cssText = 'width:48px;height:48px;object-fit:cover;border-radius:6px;border:1.5px solid var(--border,#ddd);';
+
+    const label = document.createElement('span');
+    label.style.cssText = 'font-size:13px;color:var(--text-sub,#888);flex:1;';
+    label.textContent = 'Ảnh vừa dán (Ctrl+V)';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.title = 'Xoá ảnh';
+    removeBtn.style.cssText = 'background:none;border:none;cursor:pointer;color:#e74c3c;font-size:16px;padding:2px 6px;';
+    removeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+    removeBtn.onclick = function() {
+      previewContainer.remove();
+      pastedImageFile = null;
+      document.getElementById('display-food-img').src = 'https://i.pinimg.com/736x/9d/51/c3/9d51c32cccb77dcf89cc2fb11aa20a17.jpg';
+      const input = document.getElementById('user-input');
+      if (input && input.value === 'Phân tích hình ảnh này') input.value = '';
+    };
+
+    previewContainer.appendChild(thumb);
+    previewContainer.appendChild(label);
+    previewContainer.appendChild(removeBtn);
+
+    // Chèn preview phía trên input-wrapper
+    inputWrapper.parentNode.insertBefore(previewContainer, inputWrapper);
+  }
+
   async function handleFileSelect() {
     const file = document.getElementById('file-upload')?.files?.[0];
     const input = document.getElementById('user-input');
@@ -257,10 +336,11 @@
     const input = document.getElementById('user-input');
     const fileInput = document.getElementById('file-upload');
     const text = input ? input.value.trim() : '';
-    const file = fileInput?.files?.[0];
+    // Ưu tiên file từ input, nếu không có thì dùng ảnh paste
+    const file = fileInput?.files?.[0] || pastedImageFile;
     flag = false;
     if (!text && !file) return;
-    if (file && !file.name.toLowerCase().endsWith('.jpg') && !file.name.toLowerCase().endsWith('.jpeg')) {
+    if (file && fileInput?.files?.[0] && !file.name.toLowerCase().endsWith('.jpg') && !file.name.toLowerCase().endsWith('.jpeg')) {
       if (typeof showToast === 'function') showToast('Chỉ được gửi ảnh JPG!', 'error');
       return;
     }
@@ -318,6 +398,9 @@
       toggleInputState(false);
       if (input) input.value = '';
       if (fileInput) fileInput.value = '';
+      // Xoá paste preview và reset pastedImageFile sau khi gửi
+      document.getElementById('paste-preview-container')?.remove();
+      pastedImageFile = null;
     }
   }
 
@@ -345,4 +428,20 @@
     loadChatHistory();
     const input = document.getElementById('user-input');
     if (input) input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+
+    // Lắng nghe sự kiện paste ảnh (Ctrl+V) trên toàn trang
+    document.addEventListener('paste', function(e) {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) {
+            e.preventDefault();
+            handlePastedImage(file);
+          }
+          break;
+        }
+      }
+    });
   });
