@@ -15,7 +15,6 @@
 document.getElementById('customDisease').addEventListener('input', function () {
   document.getElementById('finalDisease').value = this.value.trim();
 });
-  /* Backend logic preserved verbatim */
   document.querySelector('.nav-item:nth-child(1)').onclick = () => window.location.href = 'chat.html';
   document.querySelector('.nav-item:nth-child(2)').onclick = () => window.location.href = 'diet-details.html';
   document.querySelector('.nav-item:nth-child(3)').onclick = () => window.location.href = 'schedule.html';
