@@ -39,7 +39,7 @@ document.getElementById('customDisease').addEventListener('input', function () {
   const progressSteps = document.getElementsByClassName("progress-step");
 
   function nextPrev(n) {
-    if (n == 1) return false;
+    if (n == 1 && !validateForm()) return false;
     steps[currentStep].classList.remove("active");
     currentStep = currentStep + n;
     if (currentStep >= steps.length) { submitForm(); return false; }
@@ -97,7 +97,7 @@ function selectGoal(el, val) {
         return showError("Năm sinh không hợp lệ.", form.birth_year);
       }
       if (!height || height < 80 || height > 250) {
-        return showError("Chiều cao phải nằm trong khoảng 80 - 250 cm.", form.height);
+        return showError("Chiều cao phải nằm trong khoảng 8 - 250 cm.", form.height);
       }
       if (!weight || weight < 20 || weight > 300) {
         return showError("Cân nặng phải nằm trong khoảng 20 - 300 kg.", form.weight);
