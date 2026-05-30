@@ -39,7 +39,7 @@ document.getElementById('customDisease').addEventListener('input', function () {
   const progressSteps = document.getElementsByClassName("progress-step");
 
   function nextPrev(n) {
-    if (n == 1 && !validateForm()) return false;
+    if (n == 1) return false;
     steps[currentStep].classList.remove("active");
     currentStep = currentStep + n;
     if (currentStep >= steps.length) { submitForm(); return false; }
@@ -77,7 +77,70 @@ function selectGoal(el, val) {
   }
 }
 
-  function validateForm() {}
+  function validateForm() {
+    const form = document.getElementById("planForm");
+    const activeStep = steps[currentStep];
+    const showError = (message, field) => {
+      showToast(message, "error");
+      if (field) field.focus();
+      return false;
+    };
+
+    if (activeStep.id === "step1") {
+      const birthYear = Number(form.birth_year.value);
+      const height = Number(form.height.value);
+      const weight = Number(form.weight.value);
+      const currentYear = new Date().getFullYear();
+
+      if (!birthYear) return showError("Vui lòng nhập năm sinh.", form.birth_year);
+      if (birthYear < 1900 || birthYear > currentYear) {
+        return showError("Năm sinh không hợp lệ.", form.birth_year);
+      }
+      if (!height || height < 80 || height > 250) {
+        return showError("Chiều cao phải nằm trong khoảng 80 - 250 cm.", form.height);
+      }
+      if (!weight || weight < 20 || weight > 300) {
+        return showError("Cân nặng phải nằm trong khoảng 20 - 300 kg.", form.weight);
+      }
+    }
+
+    if (activeStep.id === "step2") {
+      const goal = document.getElementById("main_goal").value;
+      const targetWeight = Number(form.target_weight.value);
+      const deadline = form.deadline.value;
+
+      if (!goal) return showError("Vui lòng chọn mục tiêu.");
+
+      if (goal === "disease") {
+        const diseaseSelect = document.getElementById("disease");
+        const finalDisease = document.getElementById("finalDisease");
+        const customDisease = document.getElementById("customDisease");
+
+        if (!diseaseSelect.value) return showError("Vui lòng chọn bệnh / tình trạng sức khỏe.", diseaseSelect);
+        if (diseaseSelect.value === "Khác" && !customDisease.value.trim()) {
+          return showError("Vui lòng nhập tên bệnh.", customDisease);
+        }
+        if (!finalDisease.value.trim()) return showError("Vui lòng nhập bệnh / tình trạng sức khỏe.", diseaseSelect);
+      }
+
+      if (!targetWeight || targetWeight < 20 || targetWeight > 300) {
+        return showError("Cân nặng mục tiêu phải nằm trong khoảng 20 - 300 kg.", form.target_weight);
+      }
+      if (!deadline) return showError("Vui lòng chọn deadline.", form.deadline);
+
+      const deadlineDate = new Date(deadline);
+      deadlineDate.setHours(23, 59, 59, 999);
+      if (deadlineDate <= new Date()) {
+        return showError("Deadline phải là ngày trong tương lai.", form.deadline);
+      }
+    }
+
+    if (activeStep.id === "step3" && !form.activity.value) {
+      return showError("Vui lòng chọn tần suất vận động.", form.activity);
+    }
+
+    return true;
+  }
 
   async function submitForm() {
     const btn = document.getElementById("nextBtn");
