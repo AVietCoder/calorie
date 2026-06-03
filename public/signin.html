@@ -19,28 +19,29 @@
         <a href="index.html" class="logo" style="margin-bottom: 10px; font-size: 1.5rem;text-decoration: none;">
             <i class="fa-solid fa-leaf" style="color: #2ecc71;"></i> <span style="font-weight: 700; color: #333;">Calorie AI</span>
         </a>
-        <h2>Chào mừng trở lại</h2>
-        <p style="color: #666;">Tiếp tục theo dõi sức khỏe của bạn</p>
+        <h2 data-i18n="auth.signin_title">Chào mừng trở lại</h2>
+        <p style="color: #666;" data-i18n="auth.signin_sub">Tiếp tục theo dõi sức khỏe của bạn</p>
     </div>
 
     <form class="auth-form" id="loginForm">
         <div class="input-group">
-            <label>Tên đăng nhập</label>
-            <input type="text" id="username" placeholder="Nhập username" required>
+            <label data-i18n="auth.username">Tên đăng nhập</label>
+            <input type="text" id="username" placeholder="Nhập username" data-i18n-ph="auth.username_ph_signin" required>
         </div>
         <div class="input-group">
-            <label>Mật khẩu</label>
+            <label data-i18n="auth.password">Mật khẩu</label>
             <input type="password" id="password" placeholder="••••••••" required>
         </div>
 
-        <button type="submit" class="btn-auth">Đăng nhập</button>
+        <button type="submit" class="btn-auth" data-i18n="auth.signin_btn">Đăng nhập</button>
     </form>
 
     <div class="auth-footer">
-        Chưa có tài khoản? <a href="signup.html">Đăng ký ngay</a>
+        <span data-i18n="auth.no_account">Chưa có tài khoản?</span> <a href="signup.html" data-i18n="auth.signup_now">Đăng ký ngay</a>
     </div>
 </div>
 <script src="toast.js"></script>
+<script src="i18n.js"></script>
 <script src="signin.js"></script>
 </body>
 </html>

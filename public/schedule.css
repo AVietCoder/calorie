@@ -687,3 +687,93 @@
     width: 100%;
     text-align: center;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+ * HÔM NAY ĐÃ NẠP + MÓN THÊM (Yêu cầu #4, #5, #6)
+ * ═══════════════════════════════════════════════════════════════ */
+.today-intake-card{margin-bottom:18px;}
+.ti-head{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;}
+.ti-head h3{margin:0;font-size:16px;color:var(--primary-deep);display:flex;align-items:center;gap:8px;}
+.ti-head p{margin:3px 0 0;font-size:12.5px;color:var(--text-sub);}
+
+/* Vòng tròn năng lượng */
+.ti-ring{position:relative;width:118px;height:118px;flex-shrink:0;}
+.ti-ring svg{width:118px;height:118px;transform:rotate(-90deg);}
+.ti-ring-bg{fill:none;stroke:var(--sage-100);stroke-width:10;}
+.ti-ring-fg{fill:none;stroke:var(--primary);stroke-width:10;stroke-linecap:round;
+  stroke-dasharray:326.7;stroke-dashoffset:326.7;transition:stroke-dashoffset .6s ease, stroke .3s;}
+.ti-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ti-ring-num{font-size:24px;font-weight:800;color:var(--primary-deep);line-height:1;}
+.ti-ring-sub{font-size:11px;color:var(--text-sub);margin-top:3px;}
+
+.ti-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0 4px;}
+.ti-chip{background:var(--surface-2);border:1px solid var(--border-soft);border-radius:14px;padding:11px 12px;
+  display:flex;flex-direction:column;gap:3px;}
+.ti-chip span{font-size:11px;color:var(--text-sub);text-transform:uppercase;letter-spacing:.5px;font-weight:600;}
+.ti-chip b{font-size:15px;color:var(--primary-deep);font-weight:800;}
+.ti-chip#ti-chip-remain b{color:var(--gold);}
+.ti-chip#ti-chip-remain.over b{color:var(--danger);}
+
+.ti-macros{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px;}
+@media (max-width:640px){.ti-macros{grid-template-columns:1fr;} .ti-summary{grid-template-columns:1fr;}}
+.ti-macro-top{display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--text-main);margin-bottom:5px;}
+.ti-macro-top span:last-child{color:var(--text-sub);font-weight:700;}
+.ti-macro-bar{height:8px;border-radius:999px;background:var(--sage-100);overflow:hidden;}
+.ti-macro-fill{height:100%;border-radius:999px;width:0;transition:width .5s ease;}
+.ti-macro-fill.p{background:#5b9cf6;}
+.ti-macro-fill.f{background:#f5a623;}
+.ti-macro-fill.c{background:#7dc976;}
+
+.ti-empty{margin-top:14px;font-size:13px;color:var(--text-dim);background:var(--sage-50);
+  border:1px dashed var(--border);border-radius:12px;padding:12px 14px;text-align:center;}
+
+/* Khối thêm món */
+.extra-block{margin-top:16px;border-top:1px solid var(--border-soft);padding-top:16px;}
+.extra-toggle{display:inline-flex;align-items:center;gap:8px;border:1.5px dashed var(--primary);
+  background:transparent;color:var(--primary-deep);font-family:inherit;font-weight:700;font-size:13.5px;
+  padding:10px 16px;border-radius:12px;cursor:pointer;transition:all .2s;}
+.extra-toggle:hover{background:var(--sage-50);}
+.extra-toggle.open{background:var(--sage-50);border-style:solid;}
+.extra-form{margin-top:14px;background:var(--surface-2);border:1px solid var(--border-soft);border-radius:16px;padding:16px;}
+.extra-desc{margin:0 0 12px;font-size:12.5px;color:var(--text-sub);}
+.extra-row{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+.extra-row.extra-macros .extra-field{flex:1;min-width:90px;}
+.extra-field{display:flex;flex-direction:column;gap:5px;}
+.extra-field.grow{flex:1;min-width:160px;}
+.extra-field label{font-size:12px;font-weight:600;color:var(--text-sub);}
+.extra-field input{padding:10px 12px;border-radius:10px;border:1px solid var(--border-soft);
+  font-family:inherit;font-size:14px;background:#fff;color:var(--text-main);}
+.extra-field input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--sage-100);}
+.extra-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.btn-extra-ai,.btn-extra-add{display:inline-flex;align-items:center;gap:8px;border:none;border-radius:11px;
+  padding:11px 16px;font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer;transition:transform .15s,box-shadow .2s;}
+.btn-extra-ai{background:var(--sage-50);color:var(--primary-deep);border:1px solid var(--primary);}
+.btn-extra-ai:hover{background:var(--sage-100);}
+.btn-extra-add{color:#fff;background:var(--gradient-primary);box-shadow:0 6px 16px -6px rgba(88,166,119,.6);}
+.btn-extra-add:hover{transform:translateY(-1px);}
+.btn-extra-ai:disabled{opacity:.6;cursor:default;}
+
+.extra-list-wrap{margin-top:16px;}
+.extra-list-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-sub);margin-bottom:8px;}
+.extra-list{display:flex;flex-direction:column;gap:8px;}
+.extra-item{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--border-soft);
+  border-radius:12px;padding:10px 13px;}
+.extra-item-main{flex:1;min-width:0;}
+.extra-item-name{font-weight:700;font-size:13.5px;color:var(--text-main);}
+.extra-item-macro{font-size:11px;color:var(--text-sub);margin-top:2px;}
+.extra-item-kcal{font-weight:800;color:var(--primary);font-size:13px;white-space:nowrap;}
+.extra-item-del{border:none;background:transparent;color:var(--danger);cursor:pointer;font-size:15px;padding:2px 4px;}
+
+/* Tô sáng cột hôm nay + ô tick "Đã ăn" */
+.day-header.today-col{color:#fff;background:var(--primary);border-radius:8px;}
+.meal-cell.today-cell{box-shadow:0 0 0 2px var(--primary) inset;}
+.cell-inner.is-eaten>div:first-child{text-decoration:line-through;opacity:.7;}
+.eaten-check{position:absolute;top:5px;left:5px;display:inline-flex;align-items:center;gap:4px;
+  background:rgba(255,255,255,.92);border:1px solid var(--border);border-radius:999px;
+  padding:2px 7px 2px 5px;cursor:pointer;font-size:9px;font-weight:700;color:var(--text-sub);
+  letter-spacing:.3px;transition:all .2s;z-index:2;}
+.eaten-check input{position:absolute;opacity:0;width:0;height:0;}
+.eaten-check i{font-size:8px;width:11px;height:11px;border-radius:50%;border:1.5px solid var(--text-dim);
+  display:flex;align-items:center;justify-content:center;color:transparent;transition:all .2s;}
+.eaten-check.on{background:var(--primary);color:#fff;border-color:var(--primary);}
+.eaten-check.on i{background:#fff;border-color:#fff;color:var(--primary);}

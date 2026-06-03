@@ -377,6 +377,99 @@ const callAIForPlan = async ({ systemPrompt, userPayload, traceId }) => {
 };
 
 /* =========================================================
+ * 5b. DINH DƯỠNG CHÍNH XÁC CHO TỪNG MÓN
+ *     (FIX: khi đổi món -> tính lại dinh dưỡng món đó cho chính xác)
+ * ========================================================= */
+const fmtG = (v) => (v == null || !Number.isFinite(Number(v)) ? null : `${Math.round(Number(v))}g`);
+const fmtMg = (v) => (v == null || !Number.isFinite(Number(v)) ? null : `${Math.round(Number(v))}mg`);
+
+/** Tìm món trong FOODS DB theo tên đã chuẩn hóa -> dinh dưỡng chính xác từ DB. */
+const findFoodInDB = (food, foodsDB) => {
+  const key = normalizeFoodName(food);
+  if (!key) return null;
+  let hit = (foodsDB || []).find((f) => normalizeFoodName(f.description) === key);
+  if (!hit && key.length >= 4) {
+    // match gần đúng (chứa nhau) — chỉ khi đủ dài để tránh nhầm lẫn
+    hit = (foodsDB || []).find((f) => {
+      const d = normalizeFoodName(f.description);
+      return d && (d.includes(key) || key.includes(d));
+    });
+  }
+  if (!hit) return null;
+  return {
+    food: hit.description,
+    amount: "1 phần",
+    calories: hit.calories != null ? Math.round(Number(hit.calories)) : null,
+    protein: fmtG(hit.protein),
+    fat: fmtG(hit.fat),
+    carbs: fmtG(hit.carbs),
+    fiber: fmtG(hit.fiber),
+    sugar: fmtG(hit.sugar),
+    sodium: fmtMg(hit.sodium),
+    source: "db",
+  };
+};
+
+/** Hỏi AI ước tính dinh dưỡng cho ĐÚNG 1 món (không đụng tới các bữa khác). */
+const estimateOneFoodAI = async ({ food, mealLabel, traceId }) => {
+  const sys = `Bạn là chuyên gia dinh dưỡng ẩm thực Việt Nam.
+Ước tính dinh dưỡng cho ĐÚNG MỘT món ăn theo khẩu phần 1 người Việt thông thường.
+${mealLabel ? `Bữa: ${mealLabel}.` : ""}
+Món: "${food}".
+
+Trả về DUY NHẤT một JSON object đúng các trường sau:
+{ "food": "<tên món>", "amount": "<khẩu phần, vd: 1 bát (400ml)>",
+  "calories": <number>, "protein": "<g>", "fat": "<g>", "carbs": "<g>",
+  "fiber": "<g>", "sugar": "<g>", "sodium": "<mg>" }
+Chỉ trả JSON hợp lệ, không markdown, không giải thích.`;
+
+  const completion = await openai.chat.completions.create({
+    model: MODEL,
+    messages: [{ role: "system", content: sys }],
+    response_format: { type: "json_object" },
+  });
+  const raw = completion.choices?.[0]?.message?.content ?? "";
+  log.info(`${traceId} | estimateOneFood`, { food, preview: raw.slice(0, 160) });
+  const obj = safeParseAIJson(raw);
+  const asStr = (v) => (v == null ? null : String(v));
+  return {
+    food: obj.food || food,
+    amount: obj.amount || "1 phần",
+    calories: parseNumber(obj.calories),
+    protein: asStr(obj.protein),
+    fat: asStr(obj.fat),
+    carbs: asStr(obj.carbs),
+    fiber: asStr(obj.fiber),
+    sugar: asStr(obj.sugar),
+    sodium: asStr(obj.sodium),
+    source: "ai",
+  };
+};
+
+/** Resolve dinh dưỡng chính xác cho 1 món: ưu tiên DB, không có thì để AI ước tính. */
+const resolveMealNutrition = async ({ food, mealLabel, foodsDB, traceId }) => {
+  const dbHit = findFoodInDB(food, foodsDB);
+  if (dbHit) return dbHit;
+  try {
+    return await estimateOneFoodAI({ food, mealLabel, traceId });
+  } catch (e) {
+    log.warn(`${traceId} | resolveMealNutrition`, e.message);
+    return {
+      food,
+      amount: "1 phần",
+      calories: null,
+      protein: null,
+      fat: null,
+      carbs: null,
+      fiber: null,
+      sugar: null,
+      sodium: null,
+      source: "fallback",
+    };
+  }
+};
+
+/* =========================================================
  * 6. MAIN HANDLER
  * ========================================================= */
 export default async function handler(req, res) {
@@ -478,17 +571,34 @@ export default async function handler(req, res) {
         );
       }
 
-      // Áp các thay đổi lên plan hiện tại → gửi cho AI cùng anchors
-      const merged = applyModificationsToPlan(currentGrouped, modifiedMeals);
-      const flatForAI = flattenPlan(merged);
+      // ✅ FIX: với MỖI món vừa đổi, tính lại dinh dưỡng CHÍNH XÁC cho riêng món đó
+      //         (tra FOODS DB trước, không có thì để AI ước tính đúng 1 món).
+      //         Không tái sinh cả tuần -> các bữa khác giữ nguyên, nhanh & chính xác.
+      const resolvedMeals = [];
+      for (const mod of modifiedMeals) {
+        const nut = await resolveMealNutrition({
+          food: mod.food,
+          mealLabel: mod.meal,
+          foodsDB,
+          traceId,
+        });
+        resolvedMeals.push({
+          day: Number(mod.day),
+          meal: mod.meal,
+          food: nut.food || mod.food,
+          amount: nut.amount || mod.amount || "1 phần",
+          calories: nut.calories,
+          protein: nut.protein,
+          fat: nut.fat,
+          carbs: nut.carbs,
+          fiber: nut.fiber,
+          sugar: nut.sugar,
+          sodium: nut.sodium,
+        });
+      }
 
-      const newFlatPlan = await callAIForPlan({
-        systemPrompt: buildRebalancePrompt(profile, modifiedMeals, foodsDB),
-        userPayload: flatForAI,
-        traceId,
-      });
-
-      const grouped = groupPlanByDay(newFlatPlan);
+      // Ghép dinh dưỡng đã tính vào plan gốc (chỉ thay đúng những bữa đã đổi)
+      const grouped = applyModificationsToPlan(currentGrouped, resolvedMeals);
       const inserted = await syncMissingFoodsToDB(grouped, foodsDB);
 
       const { error: updateErr } = await supabase
@@ -506,16 +616,40 @@ export default async function handler(req, res) {
         });
       }
 
-      log.info(`${traceId} | DONE update_plan`, { ms: Date.now() - startedAt });
+      log.info(`${traceId} | DONE update_plan`, {
+        ms: Date.now() - startedAt,
+        changed: resolvedMeals.length,
+      });
 
       return res.status(200).json({
         success: true,
         newPlan: flattenPlan(grouped),
-        message: "AI đã cân đối lại thực đơn!",
+        updatedMeals: resolvedMeals,
+        message: "Đã cập nhật & tính lại dinh dưỡng các món bạn đổi!",
         diagnostics: DEBUG
           ? { traceId, ms: Date.now() - startedAt, foodsInserted: inserted }
           : undefined,
       });
+    }
+
+    /* =========================================================
+     * FLOW A2: ESTIMATE FOOD — ước tính dinh dưỡng 1 món lẻ
+     * Dùng cho "Thêm món ăn ngoài thực đơn" (snack, trái cây...).
+     * Body: { action: "estimate_food", food: "...", meal?: "..." }
+     * ========================================================= */
+    if (action === "estimate_food") {
+      const food = (req.body.food || "").trim();
+      if (!food) {
+        return sendError(res, 400, "validate_food", "Thiếu tên món để ước tính", { traceId });
+      }
+      const foodsDB = await fetchFoodsDB();
+      const nut = await resolveMealNutrition({
+        food,
+        mealLabel: req.body.meal || "",
+        foodsDB,
+        traceId,
+      });
+      return res.status(200).json({ success: true, food: nut });
     }
 
     /* =========================================================

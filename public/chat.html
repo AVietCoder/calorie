@@ -16,19 +16,19 @@
   <div id="toast-container"></div>
 
   <aside class="side-nav">
-    <div class="nav-item active" id="nav-home"><i class="fa-solid fa-comment"></i><span>AI</span></div>
-    <div class="nav-item" id="nav-diet"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
-    <div class="nav-item" id="nav-plan"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
-    <div class="nav-item" id="nav-profile"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
-    <div class="nav-item" onclick="location.href='guide.html'"><i class="fa-solid fa-circle-question"></i><span>GUIDE</span></div>
+    <div class="nav-item active" id="nav-home"><i class="fa-solid fa-comment"></i><span data-i18n="nav.ai">AI</span></div>
+    <div class="nav-item" id="nav-diet"><i class="fa-solid fa-fire-flame-curved"></i><span data-i18n="nav.diet">DIET</span></div>
+    <div class="nav-item" id="nav-plan"><i class="fa-solid fa-calendar-days"></i><span data-i18n="nav.plan">PLAN</span></div>
+    <div class="nav-item" id="nav-profile"><i class="fa-solid fa-user"></i><span data-i18n="nav.profile">PROFILE</span></div>
+    <div class="nav-item" onclick="location.href='guide.html'"><i class="fa-solid fa-circle-question"></i><span data-i18n="nav.guide">GUIDE</span></div>
   </aside>
 
   <div class="main-wrapper">
     <header class="header">
       <a href="index.html" class="logo"><i class="fa-solid fa-leaf"></i> Calorie AI</a>
       <div id="auth-zone" class="header-tools">
-        <div class="user-profile-nav" onclick="handleLogout()" title="Nhấn để đăng xuất">
-          <span class="user-name"><i class="fa-solid fa-circle-user"></i> <strong>Đăng xuất</strong></span>
+        <div class="user-profile-nav" onclick="handleLogout()" data-i18n-title="common.logout_hint" title="Nhấn để đăng xuất">
+          <span class="user-name"><i class="fa-solid fa-circle-user"></i> <strong data-i18n="common.logout">Đăng xuất</strong></span>
           <div class="btn-logout-icon"><i class="fa-solid fa-right-from-bracket"></i></div>
         </div>
       </div>
@@ -37,16 +37,16 @@
     <main class="content">
       <section class="chat-section">
         <div class="chat-window" id="chat-window">
-          <div class="card">Chào bạn! Hãy gửi tin nhắn hoặc ảnh món ăn, tôi sẽ phân tích giúp bạn.</div>
+          <div class="card" data-i18n="chat.greeting">Chào bạn! Hãy gửi tin nhắn hoặc ảnh món ăn, tôi sẽ phân tích giúp bạn.</div>
         </div>
 
         <div class="input-wrapper">
-          <div class="input-tools" onclick="document.getElementById('file-upload').click()" title="Tải ảnh món ăn">
+          <div class="input-tools" onclick="document.getElementById('file-upload').click()" data-i18n-title="chat.upload_hint" title="Tải ảnh món ăn">
             <i class="fa-solid fa-circle-plus"></i>
             <input type="file" id="file-upload" accept=".jpg,.jpeg" style="display:none" onchange="handleFileSelect()" />
           </div>
-          <input id="user-input" type="text" placeholder="Hỏi tôi liên quan về dinh dưỡng..." class="chat-input" />
-          <button class="send-btn" onclick="sendMessage()" title="Gửi"><i class="fa-solid fa-paper-plane"></i></button>
+          <input id="user-input" type="text" data-i18n-ph="chat.placeholder" placeholder="Hỏi tôi liên quan về dinh dưỡng..." class="chat-input" />
+          <button class="send-btn" onclick="sendMessage()" data-i18n-title="chat.send" title="Gửi"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
       </section>
 
@@ -57,19 +57,19 @@
           </div>
 
           <div class="calories-box">
-            <div class="title"><i class="fa-solid fa-utensils"></i> Tổng năng lượng</div>
-            <div class="value"><span id="val-calories">0</span> <span style="font-size:14px;font-weight:500;color:var(--text-sub)">kcal</span></div>
+            <div class="title"><i class="fa-solid fa-utensils"></i> <span data-i18n="chat.total_energy">Tổng năng lượng</span></div>
+            <div class="value"><span id="val-calories">0</span> <span style="font-size:14px;font-weight:500;color:var(--text-sub)" data-i18n="common.kcal">kcal</span></div>
           </div>
 
-          <div id="val-desc" class="desc-text">Thông tin sẽ cập nhật sau khi phân tích.</div>
+          <div id="val-desc" class="desc-text" data-i18n="chat.info_update">Thông tin sẽ cập nhật sau khi phân tích.</div>
 
           <div class="stats-grid-mini">
-            <div class="stat-item-mini"><span>Protein</span><b id="val-protein">--</b></div>
-            <div class="stat-item-mini"><span>Chất béo</span><b id="val-fat">--</b></div>
-            <div class="stat-item-mini"><span>Carbs</span><b id="val-carbs">--</b></div>
-            <div class="stat-item-mini"><span>Chất xơ</span><b id="val-fiber">--</b></div>
-            <div class="stat-item-mini"><span>Đường</span><b id="val-sugar">--</b></div>
-            <div class="stat-item-mini"><span>Natri</span><b id="val-sodium">--</b></div>
+            <div class="stat-item-mini"><span data-i18n="chat.protein">Protein</span><b id="val-protein">--</b></div>
+            <div class="stat-item-mini"><span data-i18n="chat.fat">Chất béo</span><b id="val-fat">--</b></div>
+            <div class="stat-item-mini"><span data-i18n="chat.carbs">Carbs</span><b id="val-carbs">--</b></div>
+            <div class="stat-item-mini"><span data-i18n="chat.fiber">Chất xơ</span><b id="val-fiber">--</b></div>
+            <div class="stat-item-mini"><span data-i18n="chat.sugar">Đường</span><b id="val-sugar">--</b></div>
+            <div class="stat-item-mini"><span data-i18n="chat.sodium">Natri</span><b id="val-sodium">--</b></div>
           </div>
         </div>
       </aside>
@@ -106,6 +106,8 @@
   </template>
 
   <script src="toast.js"></script>
+  <script src="i18n.js"></script>
   <script src="chat.js"></script>
+  <script src="reminders.js"></script>
 </body>
 </html>

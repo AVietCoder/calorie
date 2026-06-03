@@ -16,19 +16,19 @@
   <div id="toast-container"></div>
 
   <aside class="side-nav">
-    <div class="nav-item" id="nav-home"><i class="fa-solid fa-comment"></i><span>AI</span></div>
-    <div class="nav-item active" id="nav-diet"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
-    <div class="nav-item" id="nav-plan"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
-    <div class="nav-item" id="nav-profile"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
-    <div class="nav-item" onclick="location.href='guide.html'"><i class="fa-solid fa-circle-question"></i><span>GUIDE</span></div>
+    <div class="nav-item" id="nav-home"><i class="fa-solid fa-comment"></i><span data-i18n="nav.ai">AI</span></div>
+    <div class="nav-item active" id="nav-diet"><i class="fa-solid fa-fire-flame-curved"></i><span data-i18n="nav.diet">DIET</span></div>
+    <div class="nav-item" id="nav-plan"><i class="fa-solid fa-calendar-days"></i><span data-i18n="nav.plan">PLAN</span></div>
+    <div class="nav-item" id="nav-profile"><i class="fa-solid fa-user"></i><span data-i18n="nav.profile">PROFILE</span></div>
+    <div class="nav-item" onclick="location.href='guide.html'"><i class="fa-solid fa-circle-question"></i><span data-i18n="nav.guide">GUIDE</span></div>
   </aside>
 
   <div class="main-wrapper">
     <header class="header">
       <a href="index.html" class="logo"><i class="fa-solid fa-leaf"></i> Calorie AI</a>
       <div id="auth-zone" class="header-tools">
-        <div class="user-profile-nav" onclick="handleLogout()" title="Nhấn để đăng xuất">
-          <span class="user-name"><i class="fa-solid fa-circle-user"></i> <strong>Đăng xuất</strong></span>
+        <div class="user-profile-nav" onclick="handleLogout()" data-i18n-title="common.logout_hint" title="Nhấn để đăng xuất">
+          <span class="user-name"><i class="fa-solid fa-circle-user"></i> <strong data-i18n="common.logout">Đăng xuất</strong></span>
           <div class="btn-logout-icon"><i class="fa-solid fa-right-from-bracket"></i></div>
         </div>
       </div>
@@ -41,8 +41,8 @@
           <div class="hero">
             <div class="hero-grid">
               <div>
-                <span class="hero-eyebrow"><i class="fa-solid fa-sparkles"></i> Lộ trình hôm nay</span>
-                <div style="font-size:13px;color:var(--text-sub);margin-bottom:6px;font-weight:500">Mục tiêu nạp mỗi ngày</div>
+                <span class="hero-eyebrow"><i class="fa-solid fa-sparkles"></i> <span data-i18n="diet.today_route">Lộ trình hôm nay</span></span>
+                <div style="font-size:13px;color:var(--text-sub);margin-bottom:6px;font-weight:500" data-i18n="diet.daily_target">Mục tiêu nạp mỗi ngày</div>
                 <div class="target-value" id="display-calories">-- <span class="target-unit">kcal</span></div>
                 <div class="hero-meta">
                   <span class="chip" id="display-bmr"><i class="fa-solid fa-bolt"></i> BMR: --</span>
@@ -57,17 +57,17 @@
           <div class="stats-grid">
             <div class="stat-box">
               <div class="stat-icon"><i class="fa-solid fa-weight-scale"></i></div>
-              <div class="stat-label">Cân nặng hiện tại</div>
+              <div class="stat-label" data-i18n="diet.weight_now">Cân nặng hiện tại</div>
               <div class="stat-value" id="display-weight">-- kg</div>
             </div>
             <div class="stat-box">
               <div class="stat-icon"><i class="fa-solid fa-bullseye"></i></div>
-              <div class="stat-label">Mục tiêu hướng đến</div>
+              <div class="stat-label" data-i18n="diet.target_to">Mục tiêu hướng đến</div>
               <div class="stat-value" id="display-target">-- kg</div>
             </div>
             <div class="stat-box">
               <div class="stat-icon"><i class="fa-solid fa-calendar-day"></i></div>
-              <div class="stat-label">Thời hạn (Deadline)</div>
+              <div class="stat-label" data-i18n="diet.deadline">Thời hạn (Deadline)</div>
               <div class="stat-value" id="display-deadline">--/--/--</div>
             </div>
           </div>
@@ -83,13 +83,13 @@
           </div>
 
           <div class="section-title">
-            <h2>Phân tích dinh dưỡng</h2>
-            <p>Tỉ lệ macro & tiến độ cân nặng theo lộ trình</p>
+            <h2 data-i18n="diet.nutri_title">Phân tích dinh dưỡng</h2>
+            <p data-i18n="diet.nutri_sub">Tỉ lệ macro & tiến độ cân nặng theo lộ trình</p>
           </div>
 
           <div class="grid-2">
             <div class="card">
-              <h3><i class="fa-solid fa-chart-pie"></i> Tỉ lệ Macro đề xuất</h3>
+              <h3><i class="fa-solid fa-chart-pie"></i> <span data-i18n="diet.macro_ratio">Tỉ lệ Macro đề xuất</span></h3>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center">
                 <div class="macro-donut-wrap">
                   <canvas id="macroChart"></canvas>
@@ -116,14 +116,14 @@
             </div>
 
             <div class="card">
-              <h3><i class="fa-solid fa-route"></i> Tiến độ cân nặng</h3>
+              <h3><i class="fa-solid fa-route"></i> <span data-i18n="diet.weight_progress">Tiến độ cân nặng</span></h3>
               <div class="chart-wrap"><canvas id="weightChart"></canvas></div>
             </div>
           </div>
 
           <div class="grid-charts">
             <div class="card">
-              <h3><i class="fa-solid fa-chart-column"></i> Calo theo từng ngày trong tuần</h3>
+              <h3><i class="fa-solid fa-chart-column"></i> <span data-i18n="diet.cal_per_day">Calo theo từng ngày trong tuần</span></h3>
               <div class="chart-wrap"><canvas id="weeklyChart"></canvas></div>
             </div>
             <div class="card">
@@ -140,6 +140,8 @@
   </div>
 
   <script src="toast.js"></script>
+  <script src="i18n.js"></script>
   <script src="diet-details.js"></script>
+  <script src="reminders.js"></script>
 </body>
 </html>

@@ -14,11 +14,12 @@ authZone.innerHTML = `
 
 function renderGuest() {
     authZone.innerHTML = `
-        <a href="signin.html" class="nav-link nav-item">Đăng nhập</a>
+        <a href="signin.html" class="nav-link nav-item" data-i18n="land.signin">Đăng nhập</a>
         <a href="signup.html" class="btn-primary nav-item">
-            <i class="fa-solid fa-user-plus"></i> Đăng ký
+            <i class="fa-solid fa-user-plus"></i> <span data-i18n="land.signup">Đăng ký</span>
         </a>
     `;
+    if (window.i18n) window.i18n.applyTranslations(authZone);
     animateItems();
 }
 
@@ -27,16 +28,18 @@ function renderUser() {
         <div class="user-profile-nav nav-item"
                 onclick="handleLogout()"
                 style="cursor:pointer;"
+                data-i18n-title="common.logout_hint"
                 title="Nhấn để đăng xuất">
             <span class="user-name">
                 <i class="fa-solid fa-circle-user"></i>
-                Đăng xuất
+                <span data-i18n="common.logout">Đăng xuất</span>
             </span>
             <div class="btn-logout">
                 <i class="fa-solid fa-right-from-bracket"></i>
             </div>
         </div>
     `;
+    if (window.i18n) window.i18n.applyTranslations(authZone);
     animateItems();
 }
 

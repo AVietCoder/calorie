@@ -18,19 +18,19 @@
   <div id="toast-container"></div>
 
   <aside class="side-nav">
-    <div class="nav-item" id="nav-home"><i class="fa-solid fa-comment"></i><span>AI</span></div>
-    <div class="nav-item"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
-    <div class="nav-item"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
-    <div class="nav-item active"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
-    <div class="nav-item" onclick="location.href='guide.html'"><i class="fa-solid fa-circle-question"></i><span>GUIDE</span></div>
+    <div class="nav-item" id="nav-home"><i class="fa-solid fa-comment"></i><span data-i18n="nav.ai">AI</span></div>
+    <div class="nav-item"><i class="fa-solid fa-fire-flame-curved"></i><span data-i18n="nav.diet">DIET</span></div>
+    <div class="nav-item"><i class="fa-solid fa-calendar-days"></i><span data-i18n="nav.plan">PLAN</span></div>
+    <div class="nav-item active"><i class="fa-solid fa-user"></i><span data-i18n="nav.profile">PROFILE</span></div>
+    <div class="nav-item" onclick="location.href='guide.html'"><i class="fa-solid fa-circle-question"></i><span data-i18n="nav.guide">GUIDE</span></div>
   </aside>
 
   <div class="main-wrapper">
     <header class="header">
       <a href="index.html" class="logo"><i class="fa-solid fa-leaf"></i> Calorie AI</a>
       <div class="header-tools">
-        <div class="user-profile-nav" onclick="handleLogout()">
-          <span class="user-name"><i class="fa-solid fa-circle-user"></i> <strong>Đăng xuất</strong></span>
+        <div class="user-profile-nav" onclick="handleLogout()" data-i18n-title="common.logout_hint">
+          <span class="user-name"><i class="fa-solid fa-circle-user"></i> <strong data-i18n="common.logout">Đăng xuất</strong></span>
           <div class="btn-logout-icon"><i class="fa-solid fa-right-from-bracket"></i></div>
         </div>
       </div>
@@ -40,7 +40,7 @@
       <div class="setup-card">
         <div id="extend-banner" class="hidden" style="background:var(--sage-50); padding:16px; border-radius:16px; margin-bottom:20px; border-left:4px solid var(--primary);">
     <p style="margin:0; font-size:14px; color:var(--primary-deep); font-weight:600;">
-      <i class="fa-solid fa-medal"></i> Chặng đường cũ đã hoàn thành. Hãy cập nhật cân nặng mới và đặt deadline mới nhé!
+      <i class="fa-solid fa-medal"></i> <span data-i18n="setup.extend_banner">Chặng đường cũ đã hoàn thành. Hãy cập nhật cân nặng mới và đặt deadline mới nhé!</span>
     </p>
   </div>
         <div class="progress-container">
@@ -52,50 +52,50 @@
 
         <form id="planForm">
           <div class="step active" id="step1">
-            <h2>Chỉ số cơ thể</h2>
-            <p>Để tính toán BMR và TDEE chính xác cho bạn.</p>
+            <h2 data-i18n="setup.body_title">Chỉ số cơ thể</h2>
+            <p data-i18n="setup.body_desc">Để tính toán BMR và TDEE chính xác cho bạn.</p>
             <div class="form-grid">
               <div class="input-group">
-                <label>Giới tính</label>
+                <label data-i18n="setup.gender">Giới tính</label>
                 <select name="gender">
-                  <option value="male">Nam</option>
-                  <option value="female">Nữ</option>
+                  <option value="male" data-i18n="setup.male">Nam</option>
+                  <option value="female" data-i18n="setup.female">Nữ</option>
                 </select>
               </div>
               <div class="input-group">
-                <label>Năm sinh</label>
+                <label data-i18n="setup.birth">Năm sinh</label>
                 <input type="number" name="birth_year" placeholder="2000" />
               </div>
               <div class="input-group">
-                <label>Chiều cao (cm)</label>
+                <label data-i18n="setup.height">Chiều cao (cm)</label>
                 <input type="number" name="height" placeholder="170" />
               </div>
               <div class="input-group">
-                <label>Cân nặng (kg)</label>
+                <label data-i18n="setup.weight">Cân nặng (kg)</label>
                 <input type="number" name="weight" placeholder="65" />
               </div>
             </div>
           </div>
 
           <div class="step" id="step2">
-            <h2>Mục tiêu của bạn</h2>
-            <p>Bạn muốn đạt được điều gì?</p>
+            <h2 data-i18n="setup.goal_title">Mục tiêu của bạn</h2>
+            <p data-i18n="setup.goal_desc">Bạn có thể chọn nhiều mục tiêu cùng lúc.</p>
             <div class="goal-options">
-              <div class="goal-item" onclick="selectGoal(this, 'lose')"><i class="fa-solid fa-arrow-trend-down"></i>Giảm cân</div>
-              <div class="goal-item" onclick="selectGoal(this, 'maintain')"><i class="fa-solid fa-scale-balanced"></i>Giữ cân</div>
-              <div class="goal-item" onclick="selectGoal(this, 'gain')"><i class="fa-solid fa-arrow-trend-up"></i>Tăng cân</div>
-              <div class="goal-item" onclick="selectGoal(this, 'muscle')"><i class="fa-solid fa-dumbbell"></i>Tăng cơ</div>
-             <div class="goal-item goal-wide" onclick="selectGoal(this, 'disease')">
+              <div class="goal-item" onclick="toggleGoal(this, 'lose')"><i class="fa-solid fa-arrow-trend-down"></i><span data-i18n="setup.goal_lose">Giảm cân</span></div>
+              <div class="goal-item" onclick="toggleGoal(this, 'maintain')"><i class="fa-solid fa-scale-balanced"></i><span data-i18n="setup.goal_maintain">Giữ cân</span></div>
+              <div class="goal-item" onclick="toggleGoal(this, 'gain')"><i class="fa-solid fa-arrow-trend-up"></i><span data-i18n="setup.goal_gain">Tăng cân</span></div>
+              <div class="goal-item" onclick="toggleGoal(this, 'muscle')"><i class="fa-solid fa-dumbbell"></i><span data-i18n="setup.goal_muscle">Tăng cơ</span></div>
+             <div class="goal-item goal-wide" onclick="toggleGoal(this, 'disease')">
               <i class="fa-solid fa-stethoscope"></i>
-             Cải thiện / hỗ trợ điều trị bệnh
+             <span data-i18n="setup.goal_disease">Cải thiện / hỗ trợ điều trị bệnh</span>
             </div>
             </div>
             <input type="hidden" name="main_goal" id="main_goal" />
          <div class="input-group" id="disease-group" style="display:none;">
-  <label>Bệnh / tình trạng sức khỏe</label>
+  <label data-i18n="setup.disease_label">Bệnh / tình trạng sức khỏe</label>
 
   <select name="disease_select" id="disease">
-    <option value="">-- Chọn bệnh --</option>
+    <option value="" data-i18n="setup.disease_pick">-- Chọn bệnh --</option>
     <option value="Gout">Gout</option>
     <option value="Tiểu đường">Tiểu đường</option>
     <option value="Huyết áp cao">Huyết áp cao</option>
@@ -110,6 +110,7 @@
     type="text"
     id="customDisease"
     placeholder="Nhập tên bệnh..."
+    data-i18n-ph="setup.disease_other_ph"
     style="display:none; margin-top:10px;"
   />
 
@@ -117,67 +118,67 @@
   <input type="hidden" name="disease" id="finalDisease">
 </div>
             <div class="form-grid" style="margin-top:8px">
-              <div class="input-group"><label>Cân nặng mục tiêu</label><input type="number" name="target_weight" placeholder="60" /></div>
-              <div class="input-group"><label>Deadline</label><input type="date" name="deadline" /></div>
+              <div class="input-group"><label data-i18n="setup.target_weight">Cân nặng mục tiêu</label><input type="number" name="target_weight" placeholder="60" /></div>
+              <div class="input-group"><label data-i18n="setup.deadline">Deadline</label><input type="date" name="deadline" /></div>
               <div class="input-group full">
-                <label>Tốc độ mong muốn</label>
+                <label data-i18n="setup.speed">Tốc độ mong muốn</label>
                 <select name="speed">
-                  <option value="safe">An toàn (0.5kg/tuần)</option>
-                  <option value="normal">Vừa phải (0.7kg/tuần)</option>
-                  <option value="fast">Nhanh (1kg/tuần)</option>
+                  <option value="safe" data-i18n="setup.speed_safe">An toàn (0.5kg/tuần)</option>
+                  <option value="normal" data-i18n="setup.speed_normal">Vừa phải (0.7kg/tuần)</option>
+                  <option value="fast" data-i18n="setup.speed_fast">Nhanh (1kg/tuần)</option>
                 </select>
               </div>
             </div>
           </div>
 
           <div class="step" id="step3">
-            <h2>Thói quen & Linh hoạt</h2>
-            <p>Tối ưu hóa calo theo lịch trình của bạn.</p>
+            <h2 data-i18n="setup.habit_title">Thói quen & Linh hoạt</h2>
+            <p data-i18n="setup.habit_desc">Tối ưu hóa calo theo lịch trình của bạn.</p>
             <div class="input-group">
-              <label>Tần suất vận động</label>
+              <label data-i18n="setup.activity">Tần suất vận động</label>
               <select name="activity">
-                <option value="1.2">Ít vận động (Văn phòng)</option>
-                <option value="1.375">Nhẹ (1-2 buổi tập/tuần)</option>
-                <option value="1.55">Vừa (3-5 buổi tập/tuần)</option>
-                <option value="1.725">Nặng (6-7 buổi tập/tuần)</option>
+                <option value="1.2" data-i18n="setup.act_1">Ít vận động (Văn phòng)</option>
+                <option value="1.375" data-i18n="setup.act_2">Nhẹ (1-2 buổi tập/tuần)</option>
+                <option value="1.55" data-i18n="setup.act_3">Vừa (3-5 buổi tập/tuần)</option>
+                <option value="1.725" data-i18n="setup.act_4">Nặng (6-7 buổi tập/tuần)</option>
               </select>
             </div>
             <div class="input-group">
-              <label>Ngày ăn nhiều (Cheat day)?</label>
-              <input type="text" name="cheat_days" placeholder="Ví dụ: Thứ 7 và Chủ Nhật" />
+              <label data-i18n="setup.cheat">Ngày ăn nhiều (Cheat day)?</label>
+              <input type="text" name="cheat_days" placeholder="Ví dụ: Thứ 7 và Chủ Nhật" data-i18n-ph="setup.cheat_ph" />
             </div>
             <div class="input-group">
-              <label>Bạn có hay ăn vặt không?</label>
+              <label data-i18n="setup.snack_q">Bạn có hay ăn vặt không?</label>
               <select name="snacking">
-                <option value="no">Không bao giờ</option>
-                <option value="sometimes">Thỉnh thoảng</option>
-                <option value="often">Thường xuyên</option>
+                <option value="no" data-i18n="setup.snack_no">Không bao giờ</option>
+                <option value="sometimes" data-i18n="setup.snack_sometimes">Thỉnh thoảng</option>
+                <option value="often" data-i18n="setup.snack_often">Thường xuyên</option>
               </select>
             </div>
           </div>
 
           <div class="step" id="step4">
-            <h2>Cá nhân hóa sâu</h2>
-            <p>Bước cuối cùng để hoàn tất lộ trình.</p>
+            <h2 data-i18n="setup.deep_title">Cá nhân hóa sâu</h2>
+            <p data-i18n="setup.deep_desc">Bước cuối cùng để hoàn tất lộ trình.</p>
             <div class="input-group">
-              <label>Dị ứng / Thực phẩm không ăn được</label>
-              <textarea name="allergies" rows="2" placeholder="Ví dụ: Không ăn hành, dị ứng hải sản..."></textarea>
+              <label data-i18n="setup.allergies">Dị ứng / Thực phẩm không ăn được</label>
+              <textarea name="allergies" rows="2" placeholder="Ví dụ: Không ăn hành, dị ứng hải sản..." data-i18n-ph="setup.allergies_ph"></textarea>
             </div>
             <div class="input-group">
-              <label>Bạn muốn tập trung vào chất nào?</label>
+              <label data-i18n="setup.focus_q">Bạn muốn tập trung vào chất nào?</label>
               <select name="focus_macro">
-                <option value="balanced">Cân bằng</option>
-                <option value="high_protein">Nhiều Đạm (Protein)</option>
-                <option value="low_carb">Ít Tinh bột (Low carb)</option>
+                <option value="balanced" data-i18n="setup.focus_balanced">Cân bằng</option>
+                <option value="high_protein" data-i18n="setup.focus_protein">Nhiều Đạm (Protein)</option>
+                <option value="low_carb" data-i18n="setup.focus_lowcarb">Ít Tinh bột (Low carb)</option>
               </select>
             </div>
-            <div class="input-group"><label>Lý do bắt đầu?</label><input type="text" name="reason" placeholder="Cải thiện sức khỏe..." /></div>
+            <div class="input-group"><label data-i18n="setup.reason">Lý do bắt đầu?</label><input type="text" name="reason" placeholder="Cải thiện sức khỏe..." data-i18n-ph="setup.reason_ph" /></div>
 
           </div>
 
           <div class="btn-group">
-            <button type="button" class="btn btn-prev" id="prevBtn" onclick="nextPrev(-1)" style="display:none">Quay lại</button>
-            <button type="button" class="btn btn-next" id="nextBtn" onclick="nextPrev(1)">Tiếp tục <i class="fa-solid fa-arrow-right"></i></button>
+            <button type="button" class="btn btn-prev" id="prevBtn" onclick="nextPrev(-1)" style="display:none" data-i18n="setup.prev">Quay lại</button>
+            <button type="button" class="btn btn-next" id="nextBtn" onclick="nextPrev(1)"><span data-i18n="setup.next">Tiếp tục</span> <i class="fa-solid fa-arrow-right"></i></button>
           </div>
         </form>
       </div>
@@ -185,6 +186,8 @@
   </div>
 
   <script src="toast.js"></script>
+  <script src="i18n.js"></script>
   <script src="setup.js"></script>
+  <script src="reminders.js"></script>
 </body>
 </html>

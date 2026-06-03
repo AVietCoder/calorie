@@ -60,21 +60,39 @@ document.getElementById('customDisease').addEventListener('input', function () {
     }
   }
 
-function selectGoal(el, val) {
-  document.querySelectorAll('.goal-item').forEach(item => item.classList.remove('selected'));
-  el.classList.add('selected');
-  document.getElementById('main_goal').value = val;
+// ── NHIỀU MỤC TIÊU: cho phép chọn/bỏ chọn nhiều mục tiêu cùng lúc (Yêu cầu #3) ──
+const selectedGoals = new Set();
+
+function syncGoalsState() {
+  // Lưu danh sách mục tiêu (cách nhau bởi dấu phẩy) vào hidden input để submit
+  const mg = document.getElementById('main_goal');
+  if (mg) mg.value = Array.from(selectedGoals).join(',');
 
   const diseaseGroup = document.getElementById('disease-group');
   const diseaseSelect = document.getElementById('disease');
-
-  if (val === 'disease') {
-    diseaseGroup.style.display = 'block';
+  if (selectedGoals.has('disease')) {
+    if (diseaseGroup) diseaseGroup.style.display = 'block';
   } else {
-    diseaseGroup.style.display = 'none';
-    diseaseSelect.value = '';
+    if (diseaseGroup) diseaseGroup.style.display = 'none';
+    if (diseaseSelect) diseaseSelect.value = '';
+    const fd = document.getElementById('finalDisease'); if (fd) fd.value = '';
+    const cd = document.getElementById('customDisease'); if (cd) { cd.value = ''; cd.style.display = 'none'; }
   }
 }
+
+function toggleGoal(el, val) {
+  if (selectedGoals.has(val)) {
+    selectedGoals.delete(val);
+    el.classList.remove('selected');
+  } else {
+    selectedGoals.add(val);
+    el.classList.add('selected');
+  }
+  syncGoalsState();
+}
+
+// Giữ tương thích ngược nếu còn nơi gọi selectGoal
+function selectGoal(el, val) { toggleGoal(el, val); }
 
   function validateForm() {
     const form = document.getElementById("planForm");
@@ -108,9 +126,13 @@ function selectGoal(el, val) {
       const targetWeight = Number(form.target_weight.value);
       const deadline = form.deadline.value;
 
-      if (!goal) return showError("Vui lòng chọn mục tiêu.");
+      if (selectedGoals.size === 0) {
+        return showError(
+          (window.t ? window.t("setup.pick_goal", "Vui lòng chọn ít nhất một mục tiêu.") : "Vui lòng chọn ít nhất một mục tiêu.")
+        );
+      }
 
-      if (goal === "disease") {
+      if (selectedGoals.has("disease")) {
         const diseaseSelect = document.getElementById("disease");
         const finalDisease = document.getElementById("finalDisease");
         const customDisease = document.getElementById("customDisease");
@@ -150,8 +172,8 @@ function selectGoal(el, val) {
     const formData = new FormData(document.getElementById("planForm"));
     const data = Object.fromEntries(formData.entries());
     data.goal = document.getElementById('main_goal').value;
-    data.disease = document.getElementById('main_goal').value === 'disease'
-      ? document.getElementById('disease').value
+    data.disease = selectedGoals.has('disease')
+      ? (document.getElementById('finalDisease').value || document.getElementById('disease').value || '')
       : '';
     const token = localStorage.getItem('calorie_ai_token');
 
@@ -226,18 +248,20 @@ async function loadCurrentData(token) {
           if (form[fieldName] && value !== undefined && value !== null) form[fieldName].value = value;
         });
         if (p.goal) {
-  document.getElementById('main_goal').value = p.goal;
+  // Khôi phục NHIỀU mục tiêu (chuỗi cách nhau bởi dấu phẩy)
+  selectedGoals.clear();
+  String(p.goal).split(',').map(g => g.trim()).filter(Boolean).forEach(g => selectedGoals.add(g));
 
   document.querySelectorAll('.goal-item').forEach(item => {
     item.classList.remove('selected');
-
-    if (item.getAttribute('onclick').includes(`'${p.goal}'`)) {
-      item.classList.add('selected');
-    }
+    const oc = item.getAttribute('onclick') || '';
+    const m = oc.match(/'([^']+)'/);           // toggleGoal(this, 'xxx')
+    if (m && selectedGoals.has(m[1])) item.classList.add('selected');
   });
 
-  
-  if (p.goal === 'disease') {
+  syncGoalsState();
+
+  if (selectedGoals.has('disease')) {
     const diseaseGroup = document.getElementById('disease-group');
     const diseaseSelect = document.getElementById('disease');
     const customDisease = document.getElementById('customDisease');
@@ -248,14 +272,12 @@ async function loadCurrentData(token) {
     const options = Array.from(diseaseSelect.options).map(opt => opt.value);
     const diseaseValue = (p.disease || '').trim();
 
-    
     if (options.includes(diseaseValue)) {
       diseaseSelect.value = diseaseValue;
       customDisease.style.display = 'none';
       customDisease.value = '';
       finalDisease.value = diseaseValue;
-    } 
-    
+    }
     else if (diseaseValue) {
       diseaseSelect.value = 'Khác';
       customDisease.style.display = 'block';

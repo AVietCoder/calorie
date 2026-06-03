@@ -32,12 +32,12 @@
         <div class="meal-status-container">
             <label class="checkbox-wrapper">
                 <input type="checkbox" id="confirm-meal-check" onchange="toggleAltInput()">
-                <span>Tôi sẽ ăn món này</span>
+                <span data-i18n="sch.will_eat">Tôi sẽ ăn món này</span>
             </label>
-            <input type="text" id="alt-food-name" class="alt-food-input" placeholder="Bạn muốn ăn món gì khác?">
+            <input type="text" id="alt-food-name" class="alt-food-input" data-i18n-ph="sch.alt_ph" placeholder="Bạn muốn ăn món gì khác?">
                 <div class="save-plan-footer" id="save-footer">
             <button class="btn-save-all" onclick="submitPlanChanges()">
-                <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
+                <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="common.save">Lưu thay đổi</span>
             </button>
         </div>
           </div>
@@ -54,7 +54,7 @@
 
         <!-- Biểu đồ stacked bar macro -->
         <div class="macro-chart-wrap" id="macro-chart-wrap">
-          <div class="macro-chart-label">Cơ cấu dinh dưỡng</div>
+          <div class="macro-chart-label" data-i18n="sch.nutrition_struct">Cơ cấu dinh dưỡng</div>
           <div class="macro-bar-track">
             <div class="macro-bar-seg seg-protein" id="bar-protein" style="width:0%"></div>
             <div class="macro-bar-seg seg-fat"     id="bar-fat"     style="width:0%"></div>
@@ -125,10 +125,10 @@
         <!-- Action buttons -->
         <div class="meal-modal-actions">
           <button class="btn-find" id="modal-btn-find" onclick="searchFoodNearby('')">
-            <i class="fa-solid fa-location-dot"></i> Tìm quán gần đây
+            <i class="fa-solid fa-location-dot"></i> <span data-i18n="sch.find_near">Tìm quán gần đây</span>
           </button>
           <button class="btn-chat" onclick="goToChat()">
-            <i class="fa-solid fa-comments"></i> Hỏi HLV AI
+            <i class="fa-solid fa-comments"></i> <span data-i18n="sch.ask_ai">Hỏi HLV AI</span>
           </button>
         </div>
 
@@ -138,19 +138,19 @@
   <!-- ── END MODAL ─────────────────────────────────────────────────────────── -->
 
   <aside class="side-nav">
-    <div class="nav-item" id="nav-home"><i class="fa-solid fa-comment"></i><span>AI</span></div>
-    <div class="nav-item" id="nav-diet"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
-    <div class="nav-item active" id="nav-plan"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
-    <div class="nav-item" id="nav-profile"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
-    <div class="nav-item" onclick="location.href='guide.html'"><i class="fa-solid fa-circle-question"></i><span>GUIDE</span></div>
+    <div class="nav-item" id="nav-home"><i class="fa-solid fa-comment"></i><span data-i18n="nav.ai">AI</span></div>
+    <div class="nav-item" id="nav-diet"><i class="fa-solid fa-fire-flame-curved"></i><span data-i18n="nav.diet">DIET</span></div>
+    <div class="nav-item active" id="nav-plan"><i class="fa-solid fa-calendar-days"></i><span data-i18n="nav.plan">PLAN</span></div>
+    <div class="nav-item" id="nav-profile"><i class="fa-solid fa-user"></i><span data-i18n="nav.profile">PROFILE</span></div>
+    <div class="nav-item" onclick="location.href='guide.html'"><i class="fa-solid fa-circle-question"></i><span data-i18n="nav.guide">GUIDE</span></div>
   </aside>
 
   <div class="main-wrapper">
     <header class="header">
       <a href="index.html" class="logo"><i class="fa-solid fa-leaf"></i> Calorie AI</a>
       <div id="auth-zone" class="header-tools">
-        <div class="user-profile-nav" onclick="handleLogout()" title="Nhấn để đăng xuất">
-          <span class="user-name"><i class="fa-solid fa-circle-user"></i> <strong>Đăng xuất</strong></span>
+        <div class="user-profile-nav" onclick="handleLogout()" data-i18n-title="common.logout_hint" title="Nhấn để đăng xuất">
+          <span class="user-name"><i class="fa-solid fa-circle-user"></i> <strong data-i18n="common.logout">Đăng xuất</strong></span>
           <div class="btn-logout-icon"><i class="fa-solid fa-right-from-bracket"></i></div>
         </div>
       </div>
@@ -162,8 +162,86 @@
         <div class="schedule-hero-text">
           <div class="schedule-hero-icon"><i class="fa-solid fa-calendar-week"></i></div>
           <div>
-            <h1>Lộ trình thực đơn của bạn</h1>
-            <p>AI lên lịch 7 ngày dựa trên mục tiêu, khẩu vị và cường độ vận động</p>
+            <h1 data-i18n="sch.hero_title">Lộ trình thực đơn của bạn</h1>
+            <p data-i18n="sch.hero_desc">AI lên lịch 7 ngày dựa trên mục tiêu, khẩu vị và cường độ vận động</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── HÔM NAY ĐÃ NẠP (Yêu cầu #5) + THÊM MÓN NGOÀI THỰC ĐƠN (Yêu cầu #6) ── -->
+      <div class="card today-intake-card" id="today-intake-card">
+        <div class="ti-head">
+          <div>
+            <h3><i class="fa-solid fa-bolt"></i> <span data-i18n="today.title">Hôm nay bạn đã nạp</span></h3>
+            <p data-i18n="today.subtitle">Tổng năng lượng & dinh dưỡng đã ăn trong ngày</p>
+          </div>
+          <div class="ti-ring" id="ti-ring">
+            <svg viewBox="0 0 120 120">
+              <circle class="ti-ring-bg" cx="60" cy="60" r="52"></circle>
+              <circle class="ti-ring-fg" id="ti-ring-fg" cx="60" cy="60" r="52"></circle>
+            </svg>
+            <div class="ti-ring-center">
+              <div class="ti-ring-num" id="ti-cal-consumed">0</div>
+              <div class="ti-ring-sub"><span id="ti-cal-target">0</span> <span data-i18n="common.kcal">kcal</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ti-summary" id="ti-summary">
+          <div class="ti-chip"><span data-i18n="today.consumed">Đã nạp</span><b id="ti-sum-consumed">0 kcal</b></div>
+          <div class="ti-chip"><span data-i18n="today.target">Mục tiêu</span><b id="ti-sum-target">0 kcal</b></div>
+          <div class="ti-chip" id="ti-chip-remain"><span data-i18n="today.remaining">Còn lại</span><b id="ti-sum-remain">0 kcal</b></div>
+        </div>
+
+        <div class="ti-macros">
+          <div class="ti-macro">
+            <div class="ti-macro-top"><span data-i18n="chat.protein">Protein</span><span id="ti-p">0 / 0g</span></div>
+            <div class="ti-macro-bar"><div class="ti-macro-fill p" id="ti-p-bar" style="width:0%"></div></div>
+          </div>
+          <div class="ti-macro">
+            <div class="ti-macro-top"><span data-i18n="chat.fat">Chất béo</span><span id="ti-f">0 / 0g</span></div>
+            <div class="ti-macro-bar"><div class="ti-macro-fill f" id="ti-f-bar" style="width:0%"></div></div>
+          </div>
+          <div class="ti-macro">
+            <div class="ti-macro-top"><span data-i18n="chat.carbs">Carbs</span><span id="ti-c">0 / 0g</span></div>
+            <div class="ti-macro-bar"><div class="ti-macro-fill c" id="ti-c-bar" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <div class="ti-empty" id="ti-empty" data-i18n="today.no_meal">Bạn chưa đánh dấu bữa nào hôm nay. Tick "Đã ăn" ở từng bữa để theo dõi.</div>
+
+        <!-- Món thêm ngoài thực đơn -->
+        <div class="extra-block">
+          <button type="button" class="extra-toggle" id="extra-toggle">
+            <i class="fa-solid fa-plus"></i> <span data-i18n="extra.add_btn">Thêm món ăn ngoài thực đơn</span>
+          </button>
+
+          <div class="extra-form" id="extra-form" style="display:none">
+            <p class="extra-desc" data-i18n="extra.desc">Ăn vặt, trái cây, đồ uống… ngoài thực đơn? Thêm vào đây để tính vào tổng hôm nay.</p>
+            <div class="extra-row">
+              <div class="extra-field grow">
+                <label data-i18n="extra.name">Tên món</label>
+                <input type="text" id="extra-name" data-i18n-ph="extra.name_ph" placeholder="VD: Táo, sữa chua, trà sữa..." />
+              </div>
+              <div class="extra-field">
+                <label data-i18n="extra.kcal">Năng lượng (kcal)</label>
+                <input type="number" id="extra-kcal" min="0" data-i18n-ph="extra.kcal_ph" placeholder="VD: 95" />
+              </div>
+            </div>
+            <div class="extra-row extra-macros">
+              <div class="extra-field"><label>Protein (g)</label><input type="number" id="extra-p" min="0" /></div>
+              <div class="extra-field"><label data-i18n="chat.fat">Chất béo</label><input type="number" id="extra-f" min="0" /></div>
+              <div class="extra-field"><label>Carbs (g)</label><input type="number" id="extra-c" min="0" /></div>
+            </div>
+            <div class="extra-actions">
+              <button type="button" class="btn-extra-ai" id="extra-ai"><i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="extra.estimate">Tự động tính bằng AI</span></button>
+              <button type="button" class="btn-extra-add" id="extra-add"><i class="fa-solid fa-check"></i> <span data-i18n="common.add">Thêm</span></button>
+            </div>
+          </div>
+
+          <div class="extra-list-wrap" id="extra-list-wrap" style="display:none">
+            <div class="extra-list-title" data-i18n="extra.list_title">Món thêm hôm nay</div>
+            <div class="extra-list" id="extra-list"></div>
           </div>
         </div>
       </div>
@@ -172,41 +250,41 @@
         <div class="redirect-chat-card" onclick="window.location.href='chat.html'">
           <div class="redirect-chat-icon"><i class="fa-solid fa-comments"></i></div>
           <div class="redirect-chat-content">
-            <h3>HLV Dinh Dưỡng AI</h3>
-            <p>Trao đổi với AI để cập nhật thực đơn và theo dõi bữa ăn.</p>
+            <h3 data-i18n="sch.coach_title">HLV Dinh Dưỡng AI</h3>
+            <p data-i18n="sch.coach_desc">Trao đổi với AI để cập nhật thực đơn và theo dõi bữa ăn.</p>
           </div>
           <div class="redirect-chat-arrow"><i class="fa-solid fa-chevron-right"></i></div>
         </div>
 
         <div class="card">
-          <h3><i class="fa-solid fa-calendar-week"></i> Lộ trình thực đơn 7 ngày</h3>
+          <h3><i class="fa-solid fa-calendar-week"></i> <span data-i18n="sch.week_title">Lộ trình thực đơn 7 ngày</span></h3>
           <div id="menu-content-area">
             <div id="ai-response-text"></div>
             <div class="timetable-grid">
-              <div class="time-header">Bữa</div>
+              <div class="time-header" data-i18n="sch.meal">Bữa</div>
               <div class="day-header">T2</div><div class="day-header">T3</div><div class="day-header">T4</div>
               <div class="day-header">T5</div><div class="day-header">T6</div><div class="day-header">T7</div>
               <div class="day-header">CN</div>
 
-              <div class="time-label">Sáng</div>
+              <div class="time-label" data-i18n="sch.breakfast">Sáng</div>
               <div class="meal-cell" id="d1-morning">-</div><div class="meal-cell" id="d2-morning">-</div>
               <div class="meal-cell" id="d3-morning">-</div><div class="meal-cell" id="d4-morning">-</div>
               <div class="meal-cell" id="d5-morning">-</div><div class="meal-cell" id="d6-morning">-</div>
               <div class="meal-cell" id="d7-morning">-</div>
 
-              <div class="time-label">Trưa</div>
+              <div class="time-label" data-i18n="sch.lunch">Trưa</div>
               <div class="meal-cell" id="d1-lunch">-</div><div class="meal-cell" id="d2-lunch">-</div>
               <div class="meal-cell" id="d3-lunch">-</div><div class="meal-cell" id="d4-lunch">-</div>
               <div class="meal-cell" id="d5-lunch">-</div><div class="meal-cell" id="d6-lunch">-</div>
               <div class="meal-cell" id="d7-lunch">-</div>
 
-              <div class="time-label">Tối</div>
+              <div class="time-label" data-i18n="sch.dinner">Tối</div>
               <div class="meal-cell" id="d1-evening">-</div><div class="meal-cell" id="d2-evening">-</div>
               <div class="meal-cell" id="d3-evening">-</div><div class="meal-cell" id="d4-evening">-</div>
               <div class="meal-cell" id="d5-evening">-</div><div class="meal-cell" id="d6-evening">-</div>
               <div class="meal-cell" id="d7-evening">-</div>
 
-              <div class="time-label">Phụ</div>
+              <div class="time-label" data-i18n="sch.snack">Phụ</div>
               <div class="meal-cell" id="d1-snack">-</div><div class="meal-cell" id="d2-snack">-</div>
               <div class="meal-cell" id="d3-snack">-</div><div class="meal-cell" id="d4-snack">-</div>
               <div class="meal-cell" id="d5-snack">-</div><div class="meal-cell" id="d6-snack">-</div>
@@ -219,12 +297,251 @@
   </div>
 
   <script src="toast.js"></script>
+  <script src="i18n.js"></script>
   <script>
   /* ── MODAL LOGIC ──────────────────────────────────────────────────────────── */
   let _currentModalFood = "";
   let _currentMealCtx = null;        // { day, meal } của modal đang mở
   let tempPlan = [];                 // Bản sao FLAT của plan hiện tại (mỗi item = 1 bữa)
   const modifiedMap = new Map();     // key = `${day}-${meal}` → object món đã đổi
+
+  /* ═══════════════════════════════════════════════════════════════════════
+   * THEO DÕI HÔM NAY (Yêu cầu #4, #5, #6)
+   * Lưu cục bộ theo từng user + từng ngày (localStorage) — không cần đổi DB.
+   *   calorie_ai_intake_<uid> = {
+   *     'YYYY-MM-DD': { eaten: { '<planDay>-<meal>': true }, extras: [ {...} ] }
+   *   }
+   * ═══════════════════════════════════════════════════════════════════════ */
+  let dailyTarget = { calories: 0, macros: { protein: 0, fat: 0, carbs: 0 } };
+
+  function intakeKey() {
+    const uid = localStorage.getItem('user_id') || 'anon';
+    return `calorie_ai_intake_${uid}`;
+  }
+  function todayStr() { return new Date().toISOString().slice(0, 10); }
+  // JS: 0=CN..6=T7  →  plan day 1=T2..7=CN
+  function todayPlanDay() { const d = new Date().getDay(); return d === 0 ? 7 : d; }
+
+  function loadIntakeAll() {
+    try { return JSON.parse(localStorage.getItem(intakeKey())) || {}; }
+    catch { return {}; }
+  }
+  function getTodayIntake() {
+    const all = loadIntakeAll();
+    const k = todayStr();
+    if (!all[k]) all[k] = { eaten: {}, extras: [] };
+    if (!all[k].eaten) all[k].eaten = {};
+    if (!all[k].extras) all[k].extras = [];
+    return { all, day: all[k] };
+  }
+  function saveTodayIntake(all) { localStorage.setItem(intakeKey(), JSON.stringify(all)); }
+
+  // "28g" / "920mg" / 450 → số
+  function parseMacro(v) {
+    if (v == null) return 0;
+    const n = parseFloat(String(v).replace(/[^0-9.]/g, ''));
+    return isNaN(n) ? 0 : n;
+  }
+
+  function isEaten(day, meal) {
+    const { day: d } = getTodayIntake();
+    return !!d.eaten[`${day}-${meal}`];
+  }
+  function setEaten(day, meal, val) {
+    const { all, day: d } = getTodayIntake();
+    const key = `${day}-${meal}`;
+    if (val) d.eaten[key] = true; else delete d.eaten[key];
+    saveTodayIntake(all);
+    renderTodayIntake();
+  }
+
+  /** Tính tổng đã nạp hôm nay = các bữa (thuộc plan-day hôm nay) đã tick + món thêm. */
+  function computeTodayTotals() {
+    const tot = { calories: 0, protein: 0, fat: 0, carbs: 0, count: 0 };
+    const { day: d } = getTodayIntake();
+    const pday = todayPlanDay();
+    (tempPlan || []).forEach(item => {
+      if (Number(item.day) !== pday) return;
+      if (!d.eaten[`${pday}-${item.meal}`]) return;
+      tot.calories += parseMacro(item.calories);
+      tot.protein += parseMacro(item.protein);
+      tot.fat += parseMacro(item.fat);
+      tot.carbs += parseMacro(item.carbs);
+      tot.count++;
+    });
+    (d.extras || []).forEach(ex => {
+      tot.calories += parseMacro(ex.calories);
+      tot.protein += parseMacro(ex.protein);
+      tot.fat += parseMacro(ex.fat);
+      tot.carbs += parseMacro(ex.carbs);
+      tot.count++;
+    });
+    return tot;
+  }
+
+  function renderTodayIntake() {
+    const tot = computeTodayTotals();
+    const target = dailyTarget.calories || 0;
+    const tMac = dailyTarget.macros || { protein: 0, fat: 0, carbs: 0 };
+
+    const consumed = Math.round(tot.calories);
+    const setTxt = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+    const kcal = (window.t ? window.t('common.kcal', 'kcal') : 'kcal');
+
+    setTxt('ti-cal-consumed', consumed.toLocaleString());
+    setTxt('ti-cal-target', target.toLocaleString());
+    setTxt('ti-sum-consumed', `${consumed.toLocaleString()} ${kcal}`);
+    setTxt('ti-sum-target', `${target.toLocaleString()} ${kcal}`);
+
+    // Còn lại / vượt mức
+    const remainEl = document.getElementById('ti-sum-remain');
+    const chipRemain = document.getElementById('ti-chip-remain');
+    const labRemain = chipRemain ? chipRemain.querySelector('span') : null;
+    const diff = target - consumed;
+    if (diff >= 0) {
+      if (remainEl) remainEl.textContent = `${diff.toLocaleString()} ${kcal}`;
+      if (labRemain) labRemain.textContent = (window.t ? window.t('today.remaining', 'Còn lại') : 'Còn lại');
+      if (chipRemain) chipRemain.classList.remove('over');
+    } else {
+      if (remainEl) remainEl.textContent = `${Math.abs(diff).toLocaleString()} ${kcal}`;
+      if (labRemain) labRemain.textContent = (window.t ? window.t('today.over', 'Vượt mức') : 'Vượt mức');
+      if (chipRemain) chipRemain.classList.add('over');
+    }
+
+    // Vòng tròn tiến độ (chu vi r=52 ≈ 326.7)
+    const ring = document.getElementById('ti-ring-fg');
+    if (ring) {
+      const C = 2 * Math.PI * 52;
+      const pct = target > 0 ? Math.min(1, consumed / target) : 0;
+      ring.style.strokeDasharray = `${C}`;
+      ring.style.strokeDashoffset = `${C * (1 - pct)}`;
+      ring.style.stroke = diff < 0 ? 'var(--danger)' : 'var(--primary)';
+    }
+
+    // Thanh macro
+    const macroBar = (valId, barId, val, tgt, unit = 'g') => {
+      const v = Math.round(val), tg = Math.round(tgt);
+      setTxt(valId, `${v} / ${tg}${unit}`);
+      const bar = document.getElementById(barId);
+      if (bar) bar.style.width = (tg > 0 ? Math.min(100, (v / tg) * 100) : 0) + '%';
+    };
+    macroBar('ti-p', 'ti-p-bar', tot.protein, tMac.protein || 0);
+    macroBar('ti-f', 'ti-f-bar', tot.fat, tMac.fat || 0);
+    macroBar('ti-c', 'ti-c-bar', tot.carbs, tMac.carbs || 0);
+
+    const empty = document.getElementById('ti-empty');
+    if (empty) empty.style.display = tot.count === 0 ? '' : 'none';
+
+    renderExtraList();
+  }
+
+  /* ── Món thêm ngoài thực đơn (Yêu cầu #6) ── */
+  function renderExtraList() {
+    const wrap = document.getElementById('extra-list-wrap');
+    const list = document.getElementById('extra-list');
+    if (!wrap || !list) return;
+    const { day: d } = getTodayIntake();
+    const extras = d.extras || [];
+    if (!extras.length) { wrap.style.display = 'none'; list.innerHTML = ''; return; }
+    wrap.style.display = '';
+    const kcal = (window.t ? window.t('common.kcal', 'kcal') : 'kcal');
+    list.innerHTML = extras.map(ex => `
+      <div class="extra-item" data-id="${ex.id}">
+        <div class="extra-item-main">
+          <div class="extra-item-name">${escapeHtmlSc(ex.name)}</div>
+          <div class="extra-item-macro">P ${Math.round(parseMacro(ex.protein))}g · F ${Math.round(parseMacro(ex.fat))}g · C ${Math.round(parseMacro(ex.carbs))}g</div>
+        </div>
+        <div class="extra-item-kcal">${Math.round(parseMacro(ex.calories)).toLocaleString()} ${kcal}</div>
+        <button class="extra-item-del" title="Xóa"><i class="fa-solid fa-xmark"></i></button>
+      </div>`).join('');
+    list.querySelectorAll('.extra-item-del').forEach(b => {
+      b.onclick = () => {
+        const id = b.closest('.extra-item').dataset.id;
+        const { all, day } = getTodayIntake();
+        day.extras = (day.extras || []).filter(x => x.id !== id);
+        saveTodayIntake(all);
+        renderTodayIntake();
+      };
+    });
+  }
+
+  function escapeHtmlSc(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function addExtraFood() {
+    const name = document.getElementById('extra-name').value.trim();
+    if (!name) { showToast(window.t ? window.t('extra.need_name', 'Vui lòng nhập tên món') : 'Vui lòng nhập tên món', 'error'); return; }
+    const item = {
+      id: 'ex_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+      name,
+      calories: parseMacro(document.getElementById('extra-kcal').value),
+      protein: parseMacro(document.getElementById('extra-p').value),
+      fat: parseMacro(document.getElementById('extra-f').value),
+      carbs: parseMacro(document.getElementById('extra-c').value),
+    };
+    const { all, day } = getTodayIntake();
+    day.extras = day.extras || [];
+    day.extras.push(item);
+    saveTodayIntake(all);
+    // reset form
+    ['extra-name', 'extra-kcal', 'extra-p', 'extra-f', 'extra-c'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
+    renderTodayIntake();
+    showToast(window.t ? window.t('extra.added', 'Đã thêm vào hôm nay!') : 'Đã thêm vào hôm nay!', 'success');
+  }
+
+  async function estimateExtraFoodAI() {
+    const name = document.getElementById('extra-name').value.trim();
+    if (!name) { showToast(window.t ? window.t('extra.need_name', 'Vui lòng nhập tên món') : 'Vui lòng nhập tên món', 'error'); return; }
+    const btn = document.getElementById('extra-ai');
+    const old = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + (window.t ? window.t('extra.estimating', 'AI đang ước tính...') : 'AI đang ước tính...');
+    try {
+      const token = localStorage.getItem('calorie_ai_token');
+      const res = await fetch('/api/coach-dynamic', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'estimate_food', food: name })
+      });
+      const data = await res.json();
+      if (data.success && data.food) {
+        const f = data.food;
+        document.getElementById('extra-kcal').value = f.calories != null ? Math.round(f.calories) : '';
+        document.getElementById('extra-p').value = Math.round(parseMacro(f.protein)) || '';
+        document.getElementById('extra-f').value = Math.round(parseMacro(f.fat)) || '';
+        document.getElementById('extra-c').value = Math.round(parseMacro(f.carbs)) || '';
+        if (f.food) document.getElementById('extra-name').value = f.food;
+      } else {
+        showToast(data.error || 'Không ước tính được', 'error');
+      }
+    } catch (e) {
+      console.error(e);
+      showToast('Lỗi kết nối khi ước tính', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = old;
+    }
+  }
+
+  function wireExtraFoodUI() {
+    const toggle = document.getElementById('extra-toggle');
+    const form = document.getElementById('extra-form');
+    if (toggle && form) {
+      toggle.onclick = () => {
+        const open = form.style.display !== 'none';
+        form.style.display = open ? 'none' : '';
+        toggle.classList.toggle('open', !open);
+      };
+    }
+    const addBtn = document.getElementById('extra-add');
+    if (addBtn) addBtn.onclick = addExtraFood;
+    const aiBtn = document.getElementById('extra-ai');
+    if (aiBtn) aiBtn.onclick = estimateExtraFoodAI;
+  }
+
+  // Cập nhật lại nhãn động khi đổi ngôn ngữ
+  document.addEventListener('langchange', () => { try { renderTodayIntake(); } catch (e) {} });
 
   /**
    * Logic checkbox:
@@ -304,7 +621,7 @@
     const token = localStorage.getItem('calorie_ai_token');
     // 1. Đóng modal + che toàn bộ UI ngay lập tức
     document.getElementById("meal-modal-overlay")?.classList.remove("open");
-    showSavingOverlay("AI đang cân đối lại thực đơn...");
+    showSavingOverlay("Đang tính lại dinh dưỡng món bạn đổi...");
 
     try {
       const res = await fetch('/api/coach-dynamic', {
@@ -318,9 +635,9 @@
       const data = await res.json();
 
       if (data.success) {
-        showToast("Đã lưu thực đơn mới!", "success");
+        showToast(data.message || "Đã cập nhật & tính lại dinh dưỡng!", "success");
         modifiedMap.clear();
-        // Giữ overlay → reload (overlay biến mất khi page mới load xong)
+        // Giữ overlay → reload (plan đã lưu chứa dinh dưỡng chính xác của món mới)
         showSavingOverlay("Đang tải lại lộ trình mới...");
         location.reload();
       } else {
@@ -461,6 +778,13 @@
   function updateRemainingTimetable(newPlan) {
     if (!newPlan) return;
     const mealIdMap = { "Sáng": "morning", "Trưa": "lunch", "Tối": "evening", "Phụ": "snack" };
+    const pday = todayPlanDay();
+    const eatenLabel = (window.t ? window.t('sch.eaten', 'Đã ăn') : 'Đã ăn');
+
+    // Tô sáng cột "hôm nay"
+    document.querySelectorAll('.day-header').forEach((h, i) => {
+      h.classList.toggle('today-col', (i + 1) === pday);
+    });
 
     newPlan.forEach(item => {
       const cellId = `d${item.day}-${mealIdMap[item.meal]}`;
@@ -470,18 +794,29 @@
       // Lưu data vào cell để dùng khi click
       cell._mealData = item;
       cell.classList.add("has-data");
+      const isToday = Number(item.day) === pday;
+      cell.classList.toggle("today-cell", isToday);
 
       cell.style.border = "1.5px solid var(--primary-green)";
       cell.style.background = "linear-gradient(180deg, #ffffff, var(--sage-50))";
       cell.style.position = "relative";
       cell.style.cursor = "pointer";
 
+      // Yêu cầu #4: ô tick "Đã ăn" chỉ hiển thị ở cột HÔM NAY
+      const eaten = isToday && isEaten(pday, item.meal);
+      const eatenHtml = isToday ? `
+        <label class="eaten-check ${eaten ? 'on' : ''}" title="${eatenLabel}">
+          <input type="checkbox" ${eaten ? 'checked' : ''}>
+          <i class="fa-solid fa-check"></i><span>${eatenLabel}</span>
+        </label>` : '';
+
       cell.innerHTML = `
-        <div style="display:flex;flex-direction:column;gap:3px;width:100%;pointer-events:none">
+        <div class="cell-inner ${eaten ? 'is-eaten' : ''}" style="display:flex;flex-direction:column;gap:3px;width:100%;pointer-events:none">
           <div style="font-weight:700;color:var(--primary-deep);font-size:12px;line-height:1.3">${item.food}</div>
           <div style="font-size:10px;color:var(--text-sub)">${item.amount}</div>
           <div style="margin-top:2px;font-weight:800;color:var(--primary);font-size:11px">${item.calories} kcal</div>
         </div>
+        ${eatenHtml}
         <button
           title="Tìm quán ${item.food.replace(/'/g, "\\'")} gần đây"
           data-search="${item.food.replace(/"/g, '&quot;')}"
@@ -500,8 +835,22 @@
         ><i class="fa-solid fa-location-dot" style="font-size:9px;pointer-events:none"></i></button>
       `;
 
+      // Tick "Đã ăn" → KHÔNG mở modal, chỉ cập nhật trạng thái + tổng hôm nay
+      const eatenBox = cell.querySelector('.eaten-check input');
+      if (eatenBox) {
+        eatenBox.onclick = (e) => {
+          e.stopPropagation();
+          setEaten(pday, item.meal, e.target.checked);
+          const inner = cell.querySelector('.cell-inner');
+          const lab = cell.querySelector('.eaten-check');
+          if (inner) inner.classList.toggle('is-eaten', e.target.checked);
+          if (lab) lab.classList.toggle('on', e.target.checked);
+        };
+      }
+
       // Click cell → mở modal
       cell.onclick = function(e) {
+        if (e.target.closest('.eaten-check')) return; // bỏ qua nếu bấm vào ô tick
         const btn = e.target.closest('button[data-search]');
         if (btn) {
           e.stopPropagation();
@@ -511,6 +860,8 @@
         openMealModal(this._mealData);
       };
     });
+
+    renderTodayIntake();
   }
 
   function updateProgress(startWeight, currentWeight, targetWeight) {
@@ -541,13 +892,14 @@
     roadmapContainer.appendChild(loader);
 
     try {
-      const [statusRes, coachRes] = await Promise.all([
+      const [statusRes, coachRes, dietRes] = await Promise.all([
         fetch('/api/status', { method: 'GET', headers: { 'Authorization': `Bearer ${token}` } }),
         fetch('/api/coach-dynamic', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ isQueryOnly: true })
-        })
+        }),
+        fetch('/api/diet-info', { method: 'GET', headers: { 'Authorization': `Bearer ${token}` } })
       ]);
 
       if (!statusRes.ok) {
@@ -558,6 +910,22 @@
 
       const statusData = await statusRes.json();
       if (!statusData.is_setup_completed) { window.location.href = 'setup.html'; return; }
+
+      // Mục tiêu calo + macro hôm nay (Yêu cầu #5)
+      try {
+        const dietData = await dietRes.json();
+        if (dietData && dietData.success && dietData.data) {
+          dailyTarget = {
+            calories: Number(dietData.data.calories) || 0,
+            macros: {
+              protein: Number(dietData.data.macros?.protein) || 0,
+              fat: Number(dietData.data.macros?.fat) || 0,
+              carbs: Number(dietData.data.macros?.carbs) || 0,
+            }
+          };
+        }
+      } catch (e) { console.warn('diet-info parse', e); }
+      renderTodayIntake();
 
       const result = await coachRes.json();
       console.log("Kết quả từ HLV AI:", result.isDeadlinePassed);
@@ -616,10 +984,11 @@
     setTimeout(() => window.location.href = "signin.html", 1000);
   }
 
-  window.onload = loadAIMenu;
+  window.onload = () => { wireExtraFoodUI(); renderTodayIntake(); loadAIMenu(); };
   document.getElementById('nav-home').onclick    = () => window.location.href = 'chat.html';
   document.getElementById('nav-diet').onclick    = () => window.location.href = 'diet-details.html';
   document.getElementById('nav-profile').onclick = () => window.location.href = 'setup.html';
   </script>
+  <script src="reminders.js"></script>
 </body>
 </html>

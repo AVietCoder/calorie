@@ -34,12 +34,20 @@ export default async function handler(req, res) {
 
         const tdee = Math.round(bmr * (p.activity_level || 1.2));
 
+        // Hỗ trợ NHIỀU mục tiêu: 'goal' có thể là chuỗi nhiều mục tiêu cách nhau bởi dấu phẩy
+        // (vd: "lose,muscle"). Quy tắc tính calo: ưu tiên giảm cân (an toàn) -> thâm hụt;
+        // nếu không giảm mà có tăng cân/tăng cơ -> dư calo; còn lại (giữ cân / chỉ hỗ trợ bệnh) -> giữ TDEE.
+        const goals = String(p.goal || '')
+            .split(',')
+            .map((g) => g.trim().toLowerCase())
+            .filter(Boolean);
+
         let targetCalories = tdee;
         const speedMap = { 'safe': 250, 'normal': 500, 'fast': 750 };
         const adjustment = speedMap[p.speed] || 500;
 
-        if (p.goal === 'lose') targetCalories -= adjustment;
-        else if (p.goal === 'gain' || p.goal === 'muscle') targetCalories += adjustment;
+        if (goals.includes('lose')) targetCalories -= adjustment;
+        else if (goals.includes('gain') || goals.includes('muscle')) targetCalories += adjustment;
 
         const protein = Math.round((targetCalories * 0.3) / 4);
         const fat = Math.round((targetCalories * 0.25) / 9);

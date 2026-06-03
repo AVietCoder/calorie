@@ -19,42 +19,43 @@
         <a href="index.html" class="logo" style="margin-bottom: 10px; font-size: 1.5rem;text-decoration: none;">
             <i class="fa-solid fa-leaf" style="color: #2ecc71;"></i> <span style="font-weight: 700; color: #333;">Calorie AI</span>
         </a>
-        <h2>Tạo tài khoản mới</h2>
-        <p style="color: #666;">Bắt đầu hành trình dinh dưỡng của bạn</p>
+        <h2 data-i18n="auth.signup_title">Tạo tài khoản mới</h2>
+        <p style="color: #666;" data-i18n="auth.signup_sub">Bắt đầu hành trình dinh dưỡng của bạn</p>
     </div>
 
     <form class="auth-form" id="signupForm">
         <div class="input-group">
-            <label>Tên đăng nhập</label>
-            <input type="text" id="username" placeholder="Ví dụ: nva123" required>
+            <label data-i18n="auth.username">Tên đăng nhập</label>
+            <input type="text" id="username" placeholder="Ví dụ: nva123" data-i18n-ph="auth.username_ph_signup" required>
         </div>
         <div class="input-group">
-            <label>Mật khẩu</label>
+            <label data-i18n="auth.password">Mật khẩu</label>
             <input type="password" id="password" placeholder="••••••••" required>
         </div>
         
         <div class="input-group">
-            <label>Năm sinh</label>
+            <label data-i18n="auth.birth">Năm sinh</label>
             <input type="number" id="birthYear" placeholder="1995" required>
         </div>
 
         <div class="input-group">
-            <label>Cân nặng (kg)</label>
+            <label data-i18n="auth.weight">Cân nặng (kg)</label>
             <input type="number" id="weight" placeholder="65" required>
         </div>
         <div class="input-group">
-            <label>Chiều cao (cm)</label>
+            <label data-i18n="auth.height">Chiều cao (cm)</label>
             <input type="number" id="height" placeholder="170" required>
         </div>
 
-        <button type="submit" class="btn-auth">Đăng ký ngay</button>
+        <button type="submit" class="btn-auth" data-i18n="auth.signup_btn">Đăng ký ngay</button>
     </form>
 
     <div class="auth-footer">
-        Đã có tài khoản? <a href="signin.html">Đăng nhập</a>
+        <span data-i18n="auth.have_account">Đã có tài khoản?</span> <a href="signin.html" data-i18n="auth.signin_link">Đăng nhập</a>
     </div>
 </div>
 <script src="toast.js"></script>
+<script src="i18n.js"></script>
 <script src="signup.js"></script>
 </body>
 </html>
