@@ -211,6 +211,81 @@
       "auth.signup_btn": "Đăng ký ngay",
       "auth.have_account": "Đã có tài khoản?",
       "auth.signin_link": "Đăng nhập",
+
+      /* ----- diet: thẻ bệnh lý + nhãn động (bổ sung) ----- */
+      "diet.personalized": "Cá nhân hoá",
+      "diet.kcal_per_day": "kcal / ngày",
+      "diet.disease_eyebrow": "Bệnh lý cần lưu ý",
+      "diet.disease_loading": "Đang tải thông tin sức khoẻ...",
+      "diet.disease_loading_desc": "Hệ thống sẽ cá nhân hoá thực đơn dựa trên tình trạng sức khoẻ của bạn.",
+      "diet.disease_none_title": "Không có bệnh nền",
+      "diet.disease_none_desc": "Bạn chưa khai báo bệnh lý nào. Thực đơn sẽ tối ưu cho mục tiêu cân nặng & năng lượng.",
+      "diet.disease_one_title": "Lưu ý chế độ ăn cho tình trạng sức khoẻ",
+      "diet.disease_many_title": "Bạn đang có {n} tình trạng cần lưu ý",
+      "diet.disease_warn_desc": "Vui lòng chú ý lựa chọn thực phẩm phù hợp. Hệ thống sẽ ưu tiên cảnh báo món ăn không tốt cho các bệnh lý dưới đây.",
+
+      /* nhãn biểu đồ trong Diet */
+      "chart.protein": "Protein",
+      "chart.carbs": "Carbs",
+      "chart.fats": "Chất béo",
+      "chart.weight_kg": "Cân nặng (kg)",
+      "chart.target": "Mục tiêu",
+      "chart.start": "Bắt đầu",
+      "chart.current": "Hiện tại",
+      "chart.week_n": "Tuần {n}",
+      "chart.cal_intake_est": "Calo nạp (ước tính)",
+      "chart.bmr_basal": "BMR (cơ bản)",
+      "chart.activity": "Vận động",
+      "chart.bmr": "BMR",
+      "chart.tdee": "TDEE",
+      "chart.mon": "T2", "chart.tue": "T3", "chart.wed": "T4", "chart.thu": "T5",
+      "chart.fri": "T6", "chart.sat": "T7", "chart.sun": "CN",
+
+      /* tên các loại bệnh (mục chọn bệnh ở profile) */
+      "disease.gout": "Gout",
+      "disease.diabetes": "Tiểu đường",
+      "disease.hypertension": "Huyết áp cao",
+      "disease.high_cholesterol": "Mỡ máu cao",
+      "disease.fatty_liver": "Gan nhiễm mỡ",
+      "disease.stomach": "Bệnh dạ dày",
+      "disease.kidney": "Bệnh thận",
+      "disease.other": "Khác",
+
+      /* nhắc nhở: chuông báo nổi giữa màn hình */
+      "rem.alarm_now": "BÂY GIỜ",
+      "rem.alarm_dismiss": "Đã hiểu",
+      "rem.alarm_default_med": "Đã đến giờ uống thuốc của bạn.",
+      "rem.alarm_default_meal": "Đã đến giờ ăn của bạn.",
+
+      /* thêm món ngoài thực đơn: tải ảnh */
+      "extra.upload_photo": "Tải ảnh món ăn",
+      "extra.analyzing_photo": "AI đang phân tích ảnh...",
+      "extra.photo_done": "Đã phân tích ảnh! Kiểm tra lại số liệu nhé.",
+      "extra.photo_fail": "Không phân tích được ảnh",
+      "extra.not_food": "Ảnh không giống món ăn. Hãy thử ảnh khác.",
+      "extra.photo_hint": "hoặc chụp/tải ảnh để AI tự nhận diện",
+
+      /* modal bữa ăn: lựa chọn hành động */
+      "sch.opt_eat": "Tôi sẽ ăn món này",
+      "sch.opt_change": "Đổi sang món khác",
+      "sch.opt_skip": "Tôi sẽ không ăn bữa này",
+      "sch.skipped_badge": "Đã bỏ bữa",
+      "sch.skip_saved": "Đã đánh dấu bỏ bữa này",
+      "sch.skip_undo": "Đã bỏ đánh dấu bữa này",
+
+      /* toast dùng chung (schedule / diet) */
+      "toast.logging_out": "Đang đăng xuất...",
+      "toast.diet_load_fail": "Không thể tải dữ liệu lộ trình",
+      "toast.menu_updated": "Đã cập nhật thực đơn mới từ AI!",
+      "toast.no_change": "Bạn chưa thay đổi món nào",
+      "toast.recalc": "Đang tính lại dinh dưỡng món bạn đổi...",
+      "toast.reload_plan": "Đang tải lại lộ trình mới...",
+      "toast.update_ok": "Đã cập nhật & tính lại dinh dưỡng!",
+      "toast.save_net_err": "Lỗi kết nối khi lưu",
+      "toast.coach_net_err": "Lỗi kết nối HLV AI",
+      "toast.login_required": "Vui lòng đăng nhập!",
+      "toast.estimate_fail": "Không ước tính được",
+      "toast.estimate_net_err": "Lỗi kết nối khi ước tính",
     },
 
     en: {
@@ -398,6 +473,81 @@
       "auth.signup_btn": "Sign up",
       "auth.have_account": "Already have an account?",
       "auth.signin_link": "Sign in",
+
+      /* ----- diet: condition card + dynamic labels ----- */
+      "diet.personalized": "Personalized",
+      "diet.kcal_per_day": "kcal / day",
+      "diet.disease_eyebrow": "Conditions to watch",
+      "diet.disease_loading": "Loading your health info...",
+      "diet.disease_loading_desc": "We'll personalize your menu based on your health conditions.",
+      "diet.disease_none_title": "No underlying conditions",
+      "diet.disease_none_desc": "You haven't reported any condition. Your menu is optimized for weight & energy goals.",
+      "diet.disease_one_title": "Dietary notes for your condition",
+      "diet.disease_many_title": "You have {n} conditions to watch",
+      "diet.disease_warn_desc": "Please choose suitable foods. The system will flag foods that aren't good for the conditions below.",
+
+      /* chart labels in Diet */
+      "chart.protein": "Protein",
+      "chart.carbs": "Carbs",
+      "chart.fats": "Fats",
+      "chart.weight_kg": "Weight (kg)",
+      "chart.target": "Target",
+      "chart.start": "Start",
+      "chart.current": "Now",
+      "chart.week_n": "Week {n}",
+      "chart.cal_intake_est": "Calories (est.)",
+      "chart.bmr_basal": "BMR (basal)",
+      "chart.activity": "Activity",
+      "chart.bmr": "BMR",
+      "chart.tdee": "TDEE",
+      "chart.mon": "Mon", "chart.tue": "Tue", "chart.wed": "Wed", "chart.thu": "Thu",
+      "chart.fri": "Fri", "chart.sat": "Sat", "chart.sun": "Sun",
+
+      /* disease names (profile condition picker) */
+      "disease.gout": "Gout",
+      "disease.diabetes": "Diabetes",
+      "disease.hypertension": "High blood pressure",
+      "disease.high_cholesterol": "High cholesterol",
+      "disease.fatty_liver": "Fatty liver",
+      "disease.stomach": "Stomach problems",
+      "disease.kidney": "Kidney disease",
+      "disease.other": "Other",
+
+      /* reminders: center-screen alarm */
+      "rem.alarm_now": "NOW",
+      "rem.alarm_dismiss": "Got it",
+      "rem.alarm_default_med": "It's time to take your medication.",
+      "rem.alarm_default_meal": "It's time to eat.",
+
+      /* extra food: photo upload */
+      "extra.upload_photo": "Upload a food photo",
+      "extra.analyzing_photo": "AI is analyzing the photo...",
+      "extra.photo_done": "Photo analyzed! Please double-check the numbers.",
+      "extra.photo_fail": "Couldn't analyze the photo",
+      "extra.not_food": "That photo doesn't look like food. Try another one.",
+      "extra.photo_hint": "or snap/upload a photo for AI to detect",
+
+      /* meal modal: action choices */
+      "sch.opt_eat": "I'll eat this dish",
+      "sch.opt_change": "Change to another dish",
+      "sch.opt_skip": "I'll skip this meal",
+      "sch.skipped_badge": "Skipped",
+      "sch.skip_saved": "Marked this meal as skipped",
+      "sch.skip_undo": "Unmarked this meal",
+
+      /* shared toasts (schedule / diet) */
+      "toast.logging_out": "Logging out...",
+      "toast.diet_load_fail": "Couldn't load your plan data",
+      "toast.menu_updated": "Menu updated from AI!",
+      "toast.no_change": "You haven't changed any dish",
+      "toast.recalc": "Recalculating nutrition for your new dish...",
+      "toast.reload_plan": "Reloading your new plan...",
+      "toast.update_ok": "Updated & recalculated nutrition!",
+      "toast.save_net_err": "Network error while saving",
+      "toast.coach_net_err": "AI Coach connection error",
+      "toast.login_required": "Please sign in!",
+      "toast.estimate_fail": "Couldn't estimate",
+      "toast.estimate_net_err": "Network error while estimating",
     },
   };
 
@@ -412,6 +562,77 @@
     if (table && key in table) return table[key];
     if (DICT[DEFAULT_LANG] && key in DICT[DEFAULT_LANG]) return DICT[DEFAULT_LANG][key];
     return fallback != null ? fallback : key;
+  }
+
+  /* t() có hỗ trợ thay thế biến dạng {n}: tn('diet.disease_many_title', {n: 3}) */
+  function tn(key, vars, fallback) {
+    let s = t(key, fallback);
+    if (vars && typeof s === "string") {
+      Object.keys(vars).forEach((k) => {
+        s = s.replace(new RegExp("\\{" + k + "\\}", "g"), vars[k]);
+      });
+    }
+    return s;
+  }
+
+  /* ---------------------------------------------------------------------------
+   * Bản đồ TÊN BỆNH: giá trị lưu trong DB (thường tiếng Việt) -> khoá i18n.
+   * Giúp thẻ "Bệnh lý cần lưu ý" hiển thị đúng ngôn ngữ. Bệnh tự nhập -> giữ nguyên.
+   * ------------------------------------------------------------------------- */
+  const DISEASE_KEY_BY_VALUE = {
+    "gout": "disease.gout",
+    "tiểu đường": "disease.diabetes", "tieu duong": "disease.diabetes", "diabetes": "disease.diabetes",
+    "huyết áp cao": "disease.hypertension", "cao huyết áp": "disease.hypertension",
+    "huyet ap cao": "disease.hypertension", "high blood pressure": "disease.hypertension", "hypertension": "disease.hypertension",
+    "mỡ máu cao": "disease.high_cholesterol", "mo mau cao": "disease.high_cholesterol", "high cholesterol": "disease.high_cholesterol",
+    "gan nhiễm mỡ": "disease.fatty_liver", "gan nhiem mo": "disease.fatty_liver", "fatty liver": "disease.fatty_liver",
+    "bệnh dạ dày": "disease.stomach", "đau dạ dày": "disease.stomach", "benh da day": "disease.stomach", "stomach": "disease.stomach", "stomach problems": "disease.stomach",
+    "bệnh thận": "disease.kidney", "benh than": "disease.kidney", "kidney": "disease.kidney", "kidney disease": "disease.kidney",
+    "khác": "disease.other", "khac": "disease.other", "other": "disease.other",
+  };
+  function localizeDisease(value) {
+    const raw = String(value || "").trim();
+    if (!raw) return raw;
+    const k = DISEASE_KEY_BY_VALUE[raw.toLowerCase()];
+    return k ? t(k, raw) : raw; // tên bệnh tự nhập -> giữ nguyên
+  }
+
+  /* ---------------------------------------------------------------------------
+   * Bản đồ TÊN MÓN ĂN (best-effort): chỉ dịch sang EN khi đang ở tiếng Anh,
+   * khớp chính xác mới dịch, không khớp thì giữ nguyên tên tiếng Việt.
+   * ------------------------------------------------------------------------- */
+  const FOOD_EN = {
+    "phở": "Pho", "phở bò": "Beef pho", "phở gà": "Chicken pho",
+    "bún bò": "Beef noodle soup (bun bo)", "bún bò huế": "Hue beef noodle soup",
+    "bún chả": "Grilled pork & noodles (bun cha)", "bún riêu": "Crab noodle soup (bun rieu)",
+    "bún thịt nướng": "Grilled pork vermicelli", "bún": "Rice vermicelli",
+    "cơm": "Rice", "cơm trắng": "Steamed white rice", "cơm tấm": "Broken rice with grilled pork",
+    "cơm gà": "Chicken rice", "cơm sườn": "Rice with pork chop",
+    "bánh mì": "Banh mi (Vietnamese baguette)", "bánh mì trứng": "Egg banh mi",
+    "gỏi cuốn": "Fresh spring rolls", "chả giò": "Fried spring rolls", "nem rán": "Fried spring rolls",
+    "hủ tiếu": "Hu tieu noodle soup", "mì": "Noodles", "mì xào": "Stir-fried noodles", "miến": "Glass noodles",
+    "cháo": "Rice porridge", "cháo gà": "Chicken congee", "cháo trắng": "Plain rice porridge",
+    "canh": "Soup", "canh chua": "Sour soup", "canh rau": "Vegetable soup",
+    "rau luộc": "Boiled vegetables", "rau muống xào": "Stir-fried water spinach", "rau xào": "Stir-fried vegetables",
+    "trứng": "Eggs", "trứng luộc": "Boiled eggs", "trứng chiên": "Fried eggs", "trứng ốp la": "Fried eggs (sunny-side up)",
+    "ức gà": "Chicken breast", "thịt gà": "Chicken", "gà luộc": "Boiled chicken",
+    "thịt bò": "Beef", "bò xào": "Stir-fried beef", "thịt heo": "Pork", "thịt lợn": "Pork",
+    "cá": "Fish", "cá hấp": "Steamed fish", "cá kho": "Braised fish", "cá chiên": "Fried fish",
+    "tôm": "Shrimp", "tôm hấp": "Steamed shrimp",
+    "đậu hũ": "Tofu", "đậu phụ": "Tofu", "đậu hũ sốt cà": "Tofu in tomato sauce",
+    "sữa chua": "Yogurt", "sữa chua không đường": "Unsweetened yogurt",
+    "sinh tố": "Smoothie", "yến mạch": "Oatmeal", "salad": "Salad",
+    "trái cây": "Fruit", "chuối": "Banana", "táo": "Apple", "cam": "Orange", "ổi": "Guava",
+    "trà sữa": "Bubble milk tea", "nước ép": "Juice",
+  };
+  function localizeFood(name) {
+    const raw = String(name || "").trim();
+    if (!raw || getLang() !== "en") return raw;
+    const key = raw.toLowerCase().replace(/\s+/g, " ");
+    if (FOOD_EN[key]) return FOOD_EN[key];
+    const base = key.replace(/\(.*?\)/g, "").trim(); // bỏ phần mô tả trong ngoặc
+    if (FOOD_EN[base]) return FOOD_EN[base];
+    return raw; // không có trong từ điển -> giữ tên gốc
   }
 
   function applyTranslations(root) {
@@ -512,7 +733,8 @@
 
   // Expose
   window.t = t;
-  window.i18n = { t, setLang, getLang, applyTranslations, DICT };
+  window.tn = tn;
+  window.i18n = { t, tn, setLang, getLang, applyTranslations, localizeDisease, localizeFood, DICT };
 
   function boot() {
     injectStyles();

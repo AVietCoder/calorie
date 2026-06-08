@@ -30,17 +30,30 @@
 
       <div class="meal-modal-body">
         <div class="meal-status-container">
-            <label class="checkbox-wrapper">
-                <input type="checkbox" id="confirm-meal-check" onchange="toggleAltInput()">
-                <span data-i18n="sch.will_eat">Tôi sẽ ăn món này</span>
+          <div class="meal-action-group" id="meal-action-group">
+            <label class="meal-action-opt eat" id="opt-eat-wrap">
+              <input type="radio" name="meal-action" value="eat" id="meal-act-eat">
+              <span data-i18n="sch.opt_eat">Tôi sẽ ăn món này</span>
             </label>
-            <input type="text" id="alt-food-name" class="alt-food-input" data-i18n-ph="sch.alt_ph" placeholder="Bạn muốn ăn món gì khác?">
-                <div class="save-plan-footer" id="save-footer">
-            <button class="btn-save-all" onclick="submitPlanChanges()">
-                <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="common.save">Lưu thay đổi</span>
-            </button>
-        </div>
+            <label class="meal-action-opt change" id="opt-change-wrap">
+              <input type="radio" name="meal-action" value="change" id="meal-act-change">
+              <span data-i18n="sch.opt_change">Đổi sang món khác</span>
+            </label>
+            <label class="meal-action-opt skip" id="opt-skip-wrap">
+              <input type="radio" name="meal-action" value="skip" id="meal-act-skip">
+              <span data-i18n="sch.opt_skip">Tôi sẽ không ăn bữa này</span>
+            </label>
           </div>
+          <input type="text" id="alt-food-name" class="alt-food-input" data-i18n-ph="sch.alt_ph" placeholder="Bạn muốn ăn món gì khác?">
+          <div class="meal-skip-note" id="meal-skip-note">
+            <i class="fa-solid fa-ban"></i> <span data-i18n="sch.skip_saved">Đã đánh dấu bỏ bữa này</span>
+          </div>
+          <div class="save-plan-footer" id="save-footer">
+            <button class="btn-save-all" onclick="submitPlanChanges()">
+              <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="common.save">Lưu thay đổi</span>
+            </button>
+          </div>
+        </div>
 
 
         <!-- Calo lớn -->
@@ -218,6 +231,14 @@
 
           <div class="extra-form" id="extra-form" style="display:none">
             <p class="extra-desc" data-i18n="extra.desc">Ăn vặt, trái cây, đồ uống… ngoài thực đơn? Thêm vào đây để tính vào tổng hôm nay.</p>
+            <div class="extra-photo-row">
+              <button type="button" class="btn-extra-photo" id="extra-photo-btn">
+                <i class="fa-solid fa-camera"></i> <span data-i18n="extra.upload_photo">Tải ảnh món ăn</span>
+              </button>
+              <span class="extra-photo-hint" data-i18n="extra.photo_hint">hoặc chụp/tải ảnh để AI tự nhận diện</span>
+              <input type="file" id="extra-photo-input" accept="image/*" style="display:none" />
+            </div>
+            <div class="extra-photo-preview" id="extra-photo-preview"><img id="extra-photo-img" alt="" /></div>
             <div class="extra-row">
               <div class="extra-field grow">
                 <label data-i18n="extra.name">Tên món</label>
@@ -332,6 +353,7 @@
     if (!all[k]) all[k] = { eaten: {}, extras: [] };
     if (!all[k].eaten) all[k].eaten = {};
     if (!all[k].extras) all[k].extras = [];
+    if (!all[k].skipped) all[k].skipped = {};
     return { all, day: all[k] };
   }
   function saveTodayIntake(all) { localStorage.setItem(intakeKey(), JSON.stringify(all)); }
@@ -350,9 +372,40 @@
   function setEaten(day, meal, val) {
     const { all, day: d } = getTodayIntake();
     const key = `${day}-${meal}`;
-    if (val) d.eaten[key] = true; else delete d.eaten[key];
+    if (val) {
+      d.eaten[key] = true;
+      if (d.skipped) delete d.skipped[key];   // ăn thì không còn "bỏ bữa"
+    } else {
+      delete d.eaten[key];
+    }
     saveTodayIntake(all);
     renderTodayIntake();
+  }
+
+  // ── Yêu cầu #5: "bỏ bữa" (sẽ không ăn) — lưu cục bộ, KHÔNG đụng plan/DB ──
+  function isSkipped(day, meal) {
+    const { day: d } = getTodayIntake();
+    return !!(d.skipped && d.skipped[`${day}-${meal}`]);
+  }
+  function setSkipped(day, meal, val) {
+    const { all, day: d } = getTodayIntake();
+    const key = `${day}-${meal}`;
+    if (!d.skipped) d.skipped = {};
+    if (val) {
+      d.skipped[key] = true;
+      delete d.eaten[key];                    // bỏ bữa thì không tính là đã ăn
+    } else {
+      delete d.skipped[key];
+    }
+    saveTodayIntake(all);
+  }
+
+  // i18n tiện ích (an toàn nếu i18n chưa sẵn)
+  function T(key, fb) { return window.t ? window.t(key, fb) : fb; }
+  // Dịch TÊN MÓN sang EN khi đang ở tiếng Anh (Yêu cầu #1)
+  function LF(name) {
+    try { return (window.i18n && window.i18n.localizeFood) ? window.i18n.localizeFood(name) : name; }
+    catch { return name; }
   }
 
   /** Tính tổng đã nạp hôm nay = các bữa (thuộc plan-day hôm nay) đã tick + món thêm. */
@@ -513,14 +566,62 @@
         document.getElementById('extra-c').value = Math.round(parseMacro(f.carbs)) || '';
         if (f.food) document.getElementById('extra-name').value = f.food;
       } else {
-        showToast(data.error || 'Không ước tính được', 'error');
+        showToast(data.error || T('toast.estimate_fail', 'Không ước tính được'), 'error');
       }
     } catch (e) {
       console.error(e);
-      showToast('Lỗi kết nối khi ước tính', 'error');
+      showToast(T('toast.estimate_net_err', 'Lỗi kết nối khi ước tính'), 'error');
     } finally {
       btn.disabled = false;
       btn.innerHTML = old;
+    }
+  }
+
+  async function analyzeExtraPhoto(file) {
+    if (!file) return;
+    const btn = document.getElementById('extra-photo-btn');
+    const preview = document.getElementById('extra-photo-preview');
+    const previewImg = document.getElementById('extra-photo-img');
+    try {
+      const url = URL.createObjectURL(file);
+      if (previewImg) previewImg.src = url;
+      if (preview) preview.style.display = 'block';
+    } catch (e) {}
+    const old = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + T('extra.analyzing_photo', 'AI đang phân tích ảnh...');
+    }
+    try {
+      const token = localStorage.getItem('calorie_ai_token');
+      const fd = new FormData();
+      fd.append('image', file);
+      const noteEl = document.getElementById('extra-name');
+      if (noteEl && noteEl.value.trim()) fd.append('note', noteEl.value.trim());
+      const res = await fetch('/api/analyze-food', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: fd,
+      });
+      const data = await res.json();
+      if (data.success && data.food) {
+        const f = data.food;
+        if (f.food) document.getElementById('extra-name').value = f.food;
+        document.getElementById('extra-kcal').value = f.calories != null ? Math.round(f.calories) : '';
+        document.getElementById('extra-p').value = Math.round(parseMacro(f.protein)) || '';
+        document.getElementById('extra-f').value = Math.round(parseMacro(f.fat)) || '';
+        document.getElementById('extra-c').value = Math.round(parseMacro(f.carbs)) || '';
+        showToast(T('extra.photo_done', 'Đã phân tích ảnh! Kiểm tra lại số liệu nhé.'), 'success');
+      } else if (data.notFood) {
+        showToast(data.error || T('extra.not_food', 'Ảnh không giống món ăn. Hãy thử ảnh khác.'), 'error');
+      } else {
+        showToast(data.error || T('extra.photo_fail', 'Không phân tích được ảnh'), 'error');
+      }
+    } catch (e) {
+      console.error(e);
+      showToast(T('extra.photo_fail', 'Không phân tích được ảnh'), 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = old; }
     }
   }
 
@@ -538,6 +639,18 @@
     if (addBtn) addBtn.onclick = addExtraFood;
     const aiBtn = document.getElementById('extra-ai');
     if (aiBtn) aiBtn.onclick = estimateExtraFoodAI;
+
+    // Yêu cầu #3: tải ảnh để AI nhận diện món
+    const photoBtn = document.getElementById('extra-photo-btn');
+    const photoInput = document.getElementById('extra-photo-input');
+    if (photoBtn && photoInput) {
+      photoBtn.onclick = () => photoInput.click();
+      photoInput.onchange = (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) analyzeExtraPhoto(file);
+        e.target.value = ''; // cho phép chọn lại cùng một ảnh
+      };
+    }
   }
 
   // Cập nhật lại nhãn động khi đổi ngôn ngữ
@@ -548,18 +661,36 @@
    * - Tick "Tôi sẽ ăn món này" → ẨN ô input + ẨN nút lưu (giữ nguyên món, không gửi gì).
    * - Bỏ tick → HIỆN ô input. Chỉ HIỆN nút lưu khi user nhập tên món khác (không rỗng).
    */
+  function selectedMealAction() {
+    const r = document.querySelector('input[name="meal-action"]:checked');
+    return r ? r.value : 'eat';
+  }
+
   function toggleAltInput() {
-    const check = document.getElementById("confirm-meal-check");
     const altInput = document.getElementById("alt-food-name");
     const saveFooter = document.getElementById("save-footer");
-    if (!check || !altInput || !saveFooter) return;
+    const skipNote = document.getElementById("meal-skip-note");
+    if (!altInput || !saveFooter) return;
 
-    if (check.checked) {
-      altInput.style.display = "none";
-      saveFooter.style.display = "none";
-    } else {
+    // Tô đậm lựa chọn đang chọn
+    document.querySelectorAll('.meal-action-opt').forEach(el => {
+      const inp = el.querySelector('input');
+      el.classList.toggle('sel', !!(inp && inp.checked));
+    });
+
+    const action = selectedMealAction();
+    if (action === 'change') {
       altInput.style.display = "block";
       saveFooter.style.display = altInput.value.trim() !== "" ? "block" : "none";
+      if (skipNote) skipNote.style.display = "none";
+    } else if (action === 'skip') {
+      altInput.style.display = "none";
+      saveFooter.style.display = "none";
+      if (skipNote) skipNote.style.display = "flex";
+    } else { // eat
+      altInput.style.display = "none";
+      saveFooter.style.display = "none";
+      if (skipNote) skipNote.style.display = "none";
     }
   }
 
@@ -572,12 +703,11 @@
   /** Khi user gõ món thay thế → cập nhật vào modifiedMap */
   function saveLocalChange() {
     if (!_currentMealCtx) return;
-    const check = document.getElementById("confirm-meal-check");
     const altInput = document.getElementById("alt-food-name");
     const altFood = altInput.value.trim();
     const key = `${_currentMealCtx.day}-${_currentMealCtx.meal}`;
 
-    if (!check.checked && altFood) {
+    if (selectedMealAction() === 'change' && altFood) {
       modifiedMap.set(key, {
         day: _currentMealCtx.day,
         meal: _currentMealCtx.meal,
@@ -614,14 +744,14 @@
   async function submitPlanChanges() {
     const modifiedMeals = Array.from(modifiedMap.values());
     if (modifiedMeals.length === 0) {
-      showToast("Bạn chưa thay đổi món nào", "info");
+      showToast(T('toast.no_change', "Bạn chưa thay đổi món nào"), "info");
       return;
     }
 
     const token = localStorage.getItem('calorie_ai_token');
     // 1. Đóng modal + che toàn bộ UI ngay lập tức
     document.getElementById("meal-modal-overlay")?.classList.remove("open");
-    showSavingOverlay("Đang tính lại dinh dưỡng món bạn đổi...");
+    showSavingOverlay(T('toast.recalc', "Đang tính lại dinh dưỡng món bạn đổi..."));
 
     try {
       const res = await fetch('/api/coach-dynamic', {
@@ -635,10 +765,10 @@
       const data = await res.json();
 
       if (data.success) {
-        showToast(data.message || "Đã cập nhật & tính lại dinh dưỡng!", "success");
+        showToast(data.message || T('toast.update_ok', "Đã cập nhật & tính lại dinh dưỡng!"), "success");
         modifiedMap.clear();
         // Giữ overlay → reload (plan đã lưu chứa dinh dưỡng chính xác của món mới)
-        showSavingOverlay("Đang tải lại lộ trình mới...");
+        showSavingOverlay(T('toast.reload_plan', "Đang tải lại lộ trình mới..."));
         location.reload();
       } else {
         document.getElementById("saving-overlay")?.remove();
@@ -650,7 +780,7 @@
       document.getElementById("saving-overlay")?.remove();
       document.body.style.overflow = "";
       console.error("Network error:", err);
-      showToast("Lỗi kết nối khi lưu", "error");
+      showToast(T('toast.save_net_err', "Lỗi kết nối khi lưu"), "error");
     }
   }
 
@@ -659,7 +789,7 @@
     _currentMealCtx = { day: item.day, meal: item.meal };
 
     // 1. Header / calo / amount
-    document.getElementById("modal-food-name").textContent = item.food || "—";
+    document.getElementById("modal-food-name").textContent = LF(item.food) || "—";
     document.getElementById("modal-meal-time").textContent = item.meal || "—";
     document.getElementById("modal-calories").textContent = item.calories != null ? item.calories : "—";
     document.getElementById("modal-amount").textContent = item.amount || "—";
@@ -705,33 +835,52 @@
       chartWrap.style.display = "none";
     }
 
-    // 4. Ticket box (Confirm / Edit)
-    const check = document.getElementById("confirm-meal-check");
+    // 4. Khu chọn hành động: Ăn / Đổi món / Bỏ bữa (Yêu cầu #5)
     const altInput = document.getElementById("alt-food-name");
+    const rEat = document.getElementById("meal-act-eat");
+    const rChange = document.getElementById("meal-act-change");
+    const rSkip = document.getElementById("meal-act-skip");
     const key = `${item.day}-${item.meal}`;
     const pendingMod = modifiedMap.get(key);
+    const isToday = Number(item.day) === todayPlanDay();
+    const skipped = isToday && isSkipped(item.day, item.meal);
 
-    // Mặc định: tick "Tôi sẽ ăn món này" (ẩn input + nút lưu)
-    // Nếu user đã từng thay món → bỏ tick + điền lại tên món đã đổi
-    check.checked = !pendingMod;
+    // Chỉ cho "bỏ bữa" ở ngày HÔM NAY (việc theo dõi nạp tính theo ngày)
+    const skipWrap = document.getElementById("opt-skip-wrap");
+    if (skipWrap) skipWrap.style.display = isToday ? "" : "none";
+
+    // Trạng thái mặc định khi mở modal
+    if (pendingMod) rChange.checked = true;
+    else if (skipped) rSkip.checked = true;
+    else rEat.checked = true;
     altInput.value = pendingMod ? pendingMod.food : "";
     toggleAltInput();
 
     document.getElementById("modal-btn-find").onclick = () => searchFoodNearby(item.food || "");
 
-    check.onchange = () => {
-      // Khi tick lại "sẽ ăn món này" → xoá thay đổi đã pending
-      if (check.checked) {
+    const onAction = () => {
+      const action = selectedMealAction();
+      if (action === 'eat') {
         modifiedMap.delete(key);
         altInput.value = "";
+        if (isToday) setSkipped(item.day, item.meal, false);
+      } else if (action === 'change') {
+        if (isToday) setSkipped(item.day, item.meal, false);
+      } else if (action === 'skip') {
+        modifiedMap.delete(key);
+        altInput.value = "";
+        setSkipped(item.day, item.meal, true);
+        showToast(T('sch.skip_saved', 'Đã đánh dấu bỏ bữa này'), 'info');
       }
       toggleAltInput();
       saveLocalChange();
+      // Phản ánh ngay lên ô lịch + tổng hôm nay
+      try { updateRemainingTimetable(tempPlan); } catch (e) {}
     };
-    altInput.oninput = () => {
-      toggleAltInput();
-      saveLocalChange();
-    };
+    rEat.onchange = onAction;
+    rChange.onchange = onAction;
+    rSkip.onchange = onAction;
+    altInput.oninput = () => { toggleAltInput(); saveLocalChange(); };
 
     document.getElementById("meal-modal-overlay").classList.add("open");
     document.body.style.overflow = "hidden";
@@ -802,24 +951,32 @@
       cell.style.position = "relative";
       cell.style.cursor = "pointer";
 
-      // Yêu cầu #4: ô tick "Đã ăn" chỉ hiển thị ở cột HÔM NAY
-      const eaten = isToday && isEaten(pday, item.meal);
-      const eatenHtml = isToday ? `
+      // Yêu cầu #4/#5: ô tick "Đã ăn" + trạng thái "bỏ bữa" chỉ ở cột HÔM NAY
+      const skipped = isToday && isSkipped(pday, item.meal);
+      const eaten = isToday && !skipped && isEaten(pday, item.meal);
+      const skipBadgeLabel = T('sch.skipped_badge', 'Đã bỏ bữa');
+      // Khi đã "bỏ bữa" → ẩn ô tick "Đã ăn", hiện badge đỏ thay thế
+      const eatenHtml = (isToday && !skipped) ? `
         <label class="eaten-check ${eaten ? 'on' : ''}" title="${eatenLabel}">
           <input type="checkbox" ${eaten ? 'checked' : ''}>
           <i class="fa-solid fa-check"></i><span>${eatenLabel}</span>
         </label>` : '';
+      const skippedHtml = skipped
+        ? `<span class="skipped-badge"><i class="fa-solid fa-ban"></i>${skipBadgeLabel}</span>`
+        : '';
 
+      const calTxt = (item.calories != null && item.calories !== '') ? item.calories : '—';
       cell.innerHTML = `
-        <div class="cell-inner ${eaten ? 'is-eaten' : ''}" style="display:flex;flex-direction:column;gap:3px;width:100%;pointer-events:none">
-          <div style="font-weight:700;color:var(--primary-deep);font-size:12px;line-height:1.3">${item.food}</div>
-          <div style="font-size:10px;color:var(--text-sub)">${item.amount}</div>
-          <div style="margin-top:2px;font-weight:800;color:var(--primary);font-size:11px">${item.calories} kcal</div>
+        <div class="cell-inner ${eaten ? 'is-eaten' : ''} ${skipped ? 'is-skipped' : ''}" style="display:flex;flex-direction:column;gap:3px;width:100%;pointer-events:none">
+          <div style="font-weight:700;color:var(--primary-deep);font-size:12px;line-height:1.3">${escapeHtmlSc(LF(item.food))}</div>
+          <div style="font-size:10px;color:var(--text-sub)">${escapeHtmlSc(item.amount || '—')}</div>
+          <div style="margin-top:2px;font-weight:800;color:var(--primary);font-size:11px">${calTxt} kcal</div>
         </div>
+        ${skippedHtml}
         ${eatenHtml}
         <button
-          title="Tìm quán ${item.food.replace(/'/g, "\\'")} gần đây"
-          data-search="${item.food.replace(/"/g, '&quot;')}"
+          title="Tìm quán ${String(item.food || '').replace(/'/g, "\\'")} gần đây"
+          data-search="${String(item.food || '').replace(/"/g, '&quot;')}"
           style="
             position:absolute;bottom:6px;right:6px;
             width:22px;height:22px;border-radius:50%;
@@ -903,7 +1060,7 @@
       ]);
 
       if (!statusRes.ok) {
-        showToast("Vui lòng đăng nhập!", "info");
+        showToast(T('toast.login_required', "Vui lòng đăng nhập!"), "info");
         setTimeout(() => { window.location.href = "signin.html"; }, 1369);
         return;
       }
@@ -957,7 +1114,7 @@
             tempPlan = result.newPlan;            // ✅ Khởi tạo tempPlan từ data backend
             modifiedMap.clear();                  // Reset các thay đổi pending
             updateRemainingTimetable(result.newPlan);
-            showToast("Đã cập nhật thực đơn mới từ AI!", "success");
+            showToast(T('toast.menu_updated', "Đã cập nhật thực đơn mới từ AI!"), "success");
           }
         }
       } else {
@@ -967,7 +1124,7 @@
       }
     } catch (err) {
       console.error("Lỗi kết nối HLV AI:", err);
-      showToast("Lỗi kết nối HLV AI", "error");
+      showToast(T('toast.coach_net_err', "Lỗi kết nối HLV AI"), "error");
       responseArea.innerHTML = '<p style="color:var(--danger);font-size:13px;text-align:center">Không thể kết nối với HLV AI. Vui lòng thử lại sau.</p>';
     } finally {
       const loaderObj = document.getElementById('main-loader');
@@ -980,7 +1137,7 @@
 
   function handleLogout() {
     localStorage.removeItem('calorie_ai_token');
-    showToast("Đang đăng xuất...", "info");
+    showToast(T('toast.logging_out', "Đang đăng xuất..."), "info");
     setTimeout(() => window.location.href = "signin.html", 1000);
   }
 

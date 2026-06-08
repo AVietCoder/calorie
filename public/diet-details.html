@@ -47,7 +47,7 @@
                 <div class="hero-meta">
                   <span class="chip" id="display-bmr"><i class="fa-solid fa-bolt"></i> BMR: --</span>
                   <span class="chip" id="display-tdee"><i class="fa-solid fa-fire"></i> TDEE: --</span>
-                  <span class="chip"><i class="fa-solid fa-seedling"></i> Cá nhân hoá</span>
+                  <span class="chip"><i class="fa-solid fa-seedling"></i> <span data-i18n="diet.personalized">Cá nhân hoá</span></span>
                 </div>
               </div>
               <div class="hero-chart"><canvas id="energyChart"></canvas></div>
@@ -75,9 +75,9 @@
           <div class="disease-card is-empty" id="disease-card">
             <div class="disease-icon"><i class="fa-solid fa-heart-pulse"></i></div>
             <div class="disease-body">
-              <span class="disease-eyebrow"><i class="fa-solid fa-shield-heart"></i> Bệnh lý cần lưu ý</span>
-              <div class="disease-title" id="disease-title">Đang tải thông tin sức khoẻ...</div>
-              <div class="disease-desc" id="disease-desc">Hệ thống sẽ cá nhân hoá thực đơn dựa trên tình trạng sức khoẻ của bạn.</div>
+              <span class="disease-eyebrow"><i class="fa-solid fa-shield-heart"></i> <span data-i18n="diet.disease_eyebrow">Bệnh lý cần lưu ý</span></span>
+              <div class="disease-title" id="disease-title" data-i18n="diet.disease_loading">Đang tải thông tin sức khoẻ...</div>
+              <div class="disease-desc" id="disease-desc" data-i18n="diet.disease_loading_desc">Hệ thống sẽ cá nhân hoá thực đơn dựa trên tình trạng sức khoẻ của bạn.</div>
               <div class="disease-tags" id="disease-tags"></div>
             </div>
           </div>
@@ -95,7 +95,7 @@
                   <canvas id="macroChart"></canvas>
                   <div class="macro-center">
                     <div class="num" id="macro-center-cal">--</div>
-                    <div class="lbl">kcal / ngày</div>
+                    <div class="lbl" data-i18n="diet.kcal_per_day">kcal / ngày</div>
                   </div>
                 </div>
                 <div class="macro-list">

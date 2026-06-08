@@ -56,25 +56,129 @@
     return false;
   }
 
-  function fire(rem) {
-    const title =
-      rem.type === "med"
-        ? tt("rem.fire_med", "💊 Đến giờ uống thuốc")
-        : tt("rem.fire_meal", "🍽️ Đến giờ ăn");
-    const body = rem.label || (rem.type === "med" ? "Uống thuốc" : "Ăn đúng giờ");
+  /* ---- Âm thanh chuông báo (WebAudio, không cần file) ---- */
+  let _audioCtx = null;
+  function getAudioCtx() {
+    if (_audioCtx) return _audioCtx;
+    try {
+      _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch {
+      _audioCtx = null;
+    }
+    return _audioCtx;
+  }
+  // Trình duyệt chặn autoplay -> mở khoá audio sau tương tác đầu tiên của người dùng
+  function unlockAudio() {
+    const c = getAudioCtx();
+    if (c && c.state === "suspended") c.resume().catch(() => {});
+  }
+  document.addEventListener("pointerdown", unlockAudio);
+  document.addEventListener("keydown", unlockAudio);
 
+  function playAlarmSound() {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    try {
+      if (ctx.state === "suspended") ctx.resume().catch(() => {});
+      const now = ctx.currentTime;
+      const notes = [880, 1175, 880]; // chuông 3 nốt nhẹ nhàng
+      notes.forEach((freq, i) => {
+        const t0 = now + i * 0.22;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(0.25, t0 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.2);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(t0);
+        osc.stop(t0 + 0.22);
+      });
+    } catch (e) {
+      /* bỏ qua nếu trình duyệt chặn */
+    }
+  }
+
+  /* ---- Chuông báo nổi GIỮA màn hình (Yêu cầu #2) ---- */
+  function buildAlarmModal() {
+    let ov = document.getElementById("rem-alarm-overlay");
+    if (ov) return ov;
+    ov = document.createElement("div");
+    ov.className = "rem-alarm-overlay";
+    ov.id = "rem-alarm-overlay";
+    ov.innerHTML = `
+      <div class="rem-alarm-card" role="dialog" aria-modal="true">
+        <button class="rem-alarm-x" id="rem-alarm-x" aria-label="Close">&times;</button>
+        <div class="rem-alarm-icon" id="rem-alarm-icon"><i class="fa-solid fa-bell"></i></div>
+        <div class="rem-alarm-now" id="rem-alarm-now">${tt("rem.alarm_now", "BÂY GIỜ")}</div>
+        <h2 class="rem-alarm-title" id="rem-alarm-title">—</h2>
+        <div class="rem-alarm-body" id="rem-alarm-body">—</div>
+        <div class="rem-alarm-time" id="rem-alarm-time">--:--</div>
+        <button class="rem-alarm-dismiss" id="rem-alarm-dismiss">${tt("rem.alarm_dismiss", "Đã hiểu")}</button>
+      </div>`;
+    document.body.appendChild(ov);
+    const close = () => closeAlarm();
+    ov.querySelector("#rem-alarm-x").onclick = close;
+    ov.querySelector("#rem-alarm-dismiss").onclick = close;
+    ov.addEventListener("click", (e) => {
+      if (e.target === ov) close();
+    });
+    return ov;
+  }
+  function closeAlarm() {
+    const ov = document.getElementById("rem-alarm-overlay");
+    if (ov) ov.classList.remove("open");
+  }
+  function showAlarm(rem) {
+    const ov = buildAlarmModal();
+    const isMed = rem.type === "med";
+    ov.classList.toggle("med", isMed);
+    ov.querySelector("#rem-alarm-icon").innerHTML = isMed
+      ? '<i class="fa-solid fa-pills"></i>'
+      : '<i class="fa-solid fa-utensils"></i>';
+    ov.querySelector("#rem-alarm-now").textContent = tt("rem.alarm_now", "BÂY GIỜ");
+    ov.querySelector("#rem-alarm-title").textContent = isMed
+      ? tt("rem.fire_med", "💊 Đến giờ uống thuốc")
+      : tt("rem.fire_meal", "🍽️ Đến giờ ăn");
+    ov.querySelector("#rem-alarm-body").textContent =
+      rem.label ||
+      (isMed
+        ? tt("rem.alarm_default_med", "Đã đến giờ uống thuốc của bạn.")
+        : tt("rem.alarm_default_meal", "Đã đến giờ ăn của bạn."));
+    ov.querySelector("#rem-alarm-time").textContent = rem.time || "";
+    ov.querySelector("#rem-alarm-dismiss").textContent = tt("rem.alarm_dismiss", "Đã hiểu");
+    ov.classList.add("open");
+    playAlarmSound();
+  }
+
+  function fire(rem) {
+    const isMed = rem.type === "med";
+    const title = isMed
+      ? tt("rem.fire_med", "💊 Đến giờ uống thuốc")
+      : tt("rem.fire_meal", "🍽️ Đến giờ ăn");
+    const body =
+      rem.label ||
+      (isMed
+        ? tt("rem.alarm_default_med", "Đã đến giờ uống thuốc của bạn.")
+        : tt("rem.alarm_default_meal", "Đã đến giờ ăn của bạn."));
+
+    // 1) Thông báo trình duyệt (nếu đã được cấp quyền)
     if ("Notification" in window && Notification.permission === "granted") {
       try {
         const n = new Notification(title, { body, icon: "logo.png", tag: rem.id });
         n.onclick = () => {
           window.focus();
+          closeAlarm();
           n.close();
         };
       } catch (e) {
-        /* một số trình duyệt cần service worker; fallback toast bên dưới */
+        /* một số trình duyệt cần service worker */
       }
     }
-    toast(`${title} — ${body}`, "info");
+
+    // 2) Chuông báo NỔI GIỮA màn hình + làm mờ nền + âm thanh (Yêu cầu #2)
+    showAlarm(rem);
   }
 
   /* ---------------- Scheduler ---------------- */
@@ -159,6 +263,31 @@
         color:var(--primary-deep,#3d7353);border-radius:12px;padding:10px;font-family:inherit;font-weight:600;
         font-size:13px;cursor:pointer;}
       .rem-notif-btn.ok{border-style:solid;background:var(--sage-50,#eaf3ee);}
+
+      /* ---- Chuông báo nổi giữa màn hình (Yêu cầu #2) ---- */
+      .rem-alarm-overlay{position:fixed;inset:0;z-index:100000;display:none;align-items:center;justify-content:center;
+        background:rgba(45,52,54,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:20px;animation:remFade .25s ease;}
+      .rem-alarm-overlay.open{display:flex;}
+      .rem-alarm-card{position:relative;width:100%;max-width:380px;background:var(--surface,#fff);border-radius:24px;
+        box-shadow:0 30px 70px rgba(0,0,0,.3);padding:34px 26px 26px;text-align:center;
+        animation:remAlarmPop .35s cubic-bezier(.2,.9,.3,1.3);}
+      @keyframes remAlarmPop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
+      .rem-alarm-x{position:absolute;top:12px;right:14px;border:none;background:transparent;font-size:24px;line-height:1;
+        color:var(--text-sub,#636e72);cursor:pointer;width:34px;height:34px;border-radius:50%;transition:background .2s;}
+      .rem-alarm-x:hover{background:var(--sage-50,#eaf3ee);}
+      .rem-alarm-icon{width:84px;height:84px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;
+        font-size:38px;color:#fff;background:var(--gradient-primary,linear-gradient(135deg,#58a677,#3d7353));
+        box-shadow:0 10px 26px -8px rgba(88,166,119,.8);animation:remBell 1s ease-in-out infinite;transform-origin:50% 10%;}
+      .rem-alarm-overlay.med .rem-alarm-icon{background:linear-gradient(135deg,#e0a458,#b8975a);box-shadow:0 10px 26px -8px rgba(184,151,90,.8);}
+      @keyframes remBell{0%,100%{transform:rotate(0)}20%{transform:rotate(14deg)}40%{transform:rotate(-12deg)}60%{transform:rotate(8deg)}80%{transform:rotate(-5deg)}}
+      .rem-alarm-now{display:inline-block;font-size:11px;font-weight:800;letter-spacing:1.5px;color:var(--primary-deep,#3d7353);
+        background:var(--sage-50,#eaf3ee);padding:4px 12px;border-radius:999px;margin-bottom:10px;}
+      .rem-alarm-title{font-size:21px;font-weight:800;color:var(--text-main,#2d3436);margin:0 0 6px;}
+      .rem-alarm-body{font-size:14.5px;color:var(--text-sub,#636e72);margin:0 0 12px;line-height:1.5;}
+      .rem-alarm-time{font-size:30px;font-weight:800;color:var(--primary-deep,#3d7353);margin-bottom:18px;font-variant-numeric:tabular-nums;}
+      .rem-alarm-dismiss{width:100%;border:none;border-radius:14px;padding:14px;font-family:inherit;font-weight:800;font-size:15px;cursor:pointer;
+        color:#fff;background:var(--gradient-primary,linear-gradient(135deg,#58a677,#3d7353));box-shadow:0 8px 18px -6px rgba(88,166,119,.7);transition:transform .15s;}
+      .rem-alarm-dismiss:hover{transform:translateY(-1px);}
     `;
     document.head.appendChild(s);
   }
@@ -336,6 +465,13 @@
     else host.appendChild(bell);
     refreshDot();
   }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeAlarm();
+      closePanel();
+    }
+  });
 
   document.addEventListener("langchange", () => {
     if (document.getElementById("rem-overlay")) {

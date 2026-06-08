@@ -3,6 +3,15 @@
     window.showToast = (m) => console.log('[toast]', m);
   }
 
+  /* i18n helpers (i18n.js đã load trước file này) */
+  const T  = (k, fb) => (typeof window.t === 'function' ? window.t(k, fb) : (fb != null ? fb : k));
+  const TN = (k, vars, fb) => (typeof window.tn === 'function' ? window.tn(k, vars, fb) : T(k, fb));
+  const LD = (v) => (window.i18n && window.i18n.localizeDisease ? window.i18n.localizeDisease(v) : v);
+
+  /* Lưu lại dữ liệu lần tải gần nhất để render lại khi đổi ngôn ngữ */
+  let _lastDietData = null;
+  let _lastDisease = null;
+
   const PALETTE = {
     protein: '#c25b4a',
     carbs: '#b8975a',
@@ -46,7 +55,7 @@
     macroChart = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: ['Protein', 'Carbs', 'Fats'],
+        labels: [T('chart.protein','Protein'), T('chart.carbs','Carbs'), T('chart.fats','Fats')],
         datasets: [{
           data: [Number(p) * 4 || 0, Number(c) * 4 || 0, Number(f) * 9 || 0],
           backgroundColor: [PALETTE.protein, PALETTE.carbs, PALETTE.fat],
@@ -80,7 +89,7 @@
     const cur = Number(current) || 0;
     const tgt = Number(target) || cur;
 
-    const labels = ['Bắt đầu', 'Tuần 1', 'Tuần 2', 'Hiện tại', '...', deadline || 'Mục tiêu'];
+    const labels = [T('chart.start','Bắt đầu'), TN('chart.week_n',{n:1},'Tuần 1'), TN('chart.week_n',{n:2},'Tuần 2'), T('chart.current','Hiện tại'), '...', deadline || T('chart.target','Mục tiêu')];
     const series = [
       s,
       +(s + (cur - s) * 0.33).toFixed(1),
@@ -103,7 +112,7 @@
         labels,
         datasets: [
           {
-            label: 'Cân nặng (kg)',
+            label: T('chart.weight_kg','Cân nặng (kg)'),
             data: series,
             spanGaps: true,
             borderColor: PALETTE.primary,
@@ -118,7 +127,7 @@
             pointBorderWidth: 2
           },
           {
-            label: 'Mục tiêu',
+            label: T('chart.target','Mục tiêu'),
             data: targetLine,
             borderColor: PALETTE.gold,
             borderDash: [6, 6],
@@ -156,7 +165,7 @@
     const tc = Number(targetCal) || 2000;
     const variation = [1.00, 0.96, 1.02, 0.98, 1.05, 1.10, 1.04];
     const data = variation.map(v => Math.round(tc * v));
-    const labels = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    const labels = [T('chart.mon','T2'), T('chart.tue','T3'), T('chart.wed','T4'), T('chart.thu','T5'), T('chart.fri','T6'), T('chart.sat','T7'), T('chart.sun','CN')];
     const goalLine = labels.map(() => tc);
 
     const grad = ctx.getContext('2d').createLinearGradient(0, 0, 0, 280);
@@ -171,7 +180,7 @@
         labels,
         datasets: [
           {
-            label: 'Calo nạp (ước tính)',
+            label: T('chart.cal_intake_est','Calo nạp (ước tính)'),
             data,
             backgroundColor: grad,
             borderRadius: 10,
@@ -179,7 +188,7 @@
             maxBarThickness: 36
           },
           {
-            label: 'Mục tiêu',
+            label: T('chart.target','Mục tiêu'),
             data: goalLine,
             type: 'line',
             borderColor: PALETTE.gold,
@@ -229,7 +238,7 @@
     bmrChart = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: ['BMR (cơ bản)', 'Vận động'],
+        labels: [T('chart.bmr_basal','BMR (cơ bản)'), T('chart.activity','Vận động')],
         datasets: [{
           data: [b, activity],
           backgroundColor: [PALETTE.primaryDeep, PALETTE.gold],
@@ -269,7 +278,7 @@
   energyChart = new Chart(ctx, {
     type: 'polarArea',
     data: {
-      labels: ['BMR', 'TDEE', 'Mục tiêu'],
+      labels: [T('chart.bmr','BMR'), T('chart.tdee','TDEE'), T('chart.target','Mục tiêu')],
       datasets: [{
         data: [b, t, tg],
         backgroundColor: [
@@ -427,11 +436,16 @@
   }
 
   function renderDisease(raw){
+    _lastDisease = raw;
     const card = document.getElementById('disease-card');
     const titleEl = document.getElementById('disease-title');
     const descEl = document.getElementById('disease-desc');
     const tagsEl = document.getElementById('disease-tags');
     if (!card) return;
+
+    // Đã render động -> gỡ data-i18n để applyTranslations không ghi đè lại
+    titleEl && titleEl.removeAttribute('data-i18n');
+    descEl && descEl.removeAttribute('data-i18n');
 
     let list = [];
     if (Array.isArray(raw)) list = raw.filter(Boolean).map(x => String(x).trim()).filter(Boolean);
@@ -439,16 +453,18 @@
 
     if (list.length === 0){
       card.classList.add('is-empty');
-      titleEl.textContent = 'Không có bệnh nền';
-      descEl.textContent = 'Bạn chưa khai báo bệnh lý nào. Thực đơn sẽ tối ưu cho mục tiêu cân nặng & năng lượng.';
+      titleEl.textContent = T('diet.disease_none_title', 'Không có bệnh nền');
+      descEl.textContent = T('diet.disease_none_desc', 'Bạn chưa khai báo bệnh lý nào. Thực đơn sẽ tối ưu cho mục tiêu cân nặng & năng lượng.');
       tagsEl.innerHTML = '';
       return;
     }
 
     card.classList.remove('is-empty');
-    titleEl.textContent = list.length === 1 ? 'Lưu ý chế độ ăn cho tình trạng sức khoẻ' : `Bạn đang có ${list.length} tình trạng cần lưu ý`;
-    descEl.textContent = 'Vui lòng chú ý lựa chọn thực phẩm phù hợp. Hệ thống sẽ ưu tiên cảnh báo món ăn không tốt cho các bệnh lý dưới đây.';
-    tagsEl.innerHTML = list.map(name => `<span class="disease-tag"><i class="fa-solid fa-notes-medical"></i>${escapeHtml(name)}</span>`).join('');
+    titleEl.textContent = list.length === 1
+      ? T('diet.disease_one_title', 'Lưu ý chế độ ăn cho tình trạng sức khoẻ')
+      : TN('diet.disease_many_title', { n: list.length }, `Bạn đang có ${list.length} tình trạng cần lưu ý`);
+    descEl.textContent = T('diet.disease_warn_desc', 'Vui lòng chú ý lựa chọn thực phẩm phù hợp. Hệ thống sẽ ưu tiên cảnh báo món ăn không tốt cho các bệnh lý dưới đây.');
+    tagsEl.innerHTML = list.map(name => `<span class="disease-tag"><i class="fa-solid fa-notes-medical"></i>${escapeHtml(LD(name))}</span>`).join('');
   }
 
   function escapeHtml(str){
@@ -503,6 +519,7 @@
       }
 
       const d = result.data || {};
+      _lastDietData = d;
       const calories = Number(d.calories) || 0;
       const weight = d.profile?.weight ?? '';
       const targetWeight = d.profile?.target_weight ?? '';
@@ -537,7 +554,7 @@
       renderAllCharts(d);
     } catch (err) {
       console.error('Lỗi:', err);
-      showToast('Không thể tải dữ liệu lộ trình', 'error');
+      showToast(T('toast.diet_load_fail','Không thể tải dữ liệu lộ trình'), 'error');
 
       // Fallback demo
       setText('macro-center-cal', '2,000');
@@ -555,6 +572,7 @@
       setWidth('c-bar', ((220 * 4 / 2000) * 100).toFixed(0) + '%');
       setWidth('f-bar', ((60 * 9 / 2000) * 100).toFixed(0) + '%');
 
+      _lastDietData = { calories: 2000, bmr: 1600, tdee: 2200, macros: { protein: 140, carbs: 220, fat: 60 }, profile: { start_weight: 78, weight: 74, target_weight: 68, deadline: '01/12/2025' } };
       renderMacroChart(140, 220, 60);
       renderWeightChart(78, 74, 68, '01/12/2025');
       renderWeeklyChart(2000);
@@ -570,7 +588,7 @@
 
   function handleLogout() {
     localStorage.removeItem('calorie_ai_token');
-    showToast('Đang đăng xuất...', 'info');
+    showToast(T('toast.logging_out','Đang đăng xuất...'), 'info');
     setTimeout(() => {
       window.location.href = 'signin.html';
     }, 800);
@@ -586,6 +604,14 @@
     if (navHome) navHome.onclick = () => window.location.href = 'chat.html';
     if (navPlan) navPlan.onclick = () => window.location.href = 'schedule.html';
     if (navProfile) navProfile.onclick = () => window.location.href = 'setup.html';
+  });
+
+  // Đổi ngôn ngữ -> vẽ lại biểu đồ + thẻ bệnh lý theo ngôn ngữ mới
+  document.addEventListener('langchange', () => {
+    try {
+      if (_lastDietData) renderAllCharts(_lastDietData);
+      renderDisease(_lastDisease);
+    } catch (e) { console.warn('langchange re-render', e); }
   });
 
   window.loadDietData = loadDietData;

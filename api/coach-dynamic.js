@@ -298,13 +298,15 @@ Chỉ trả về JSON hợp lệ, không markdown, không giải thích.
 `;
 
 const buildCreatePlanPrompt = (profile, foodsDB) => `
-Bạn là chuyên gia dinh dưỡng và am hiểu ẩm thực Việt Nam.
+Bạn là chuyên gia dinh dưỡng và am hiểu sâu ẩm thực Việt Nam 3 miền Bắc - Trung - Nam.
 
 ${buildProfileSection(profile)}
 
 YÊU CẦU:
-- Ưu tiên món Việt phổ biến (cơm, phở, bún, cháo, cá, gà, rau luộc, canh...).
-- Đa dạng giữa các ngày, không lặp món quá nhiều.
+- Dùng MÓN ĂN VIỆT NAM thực tế, đúng tên gọi quen thuộc (vd: phở bò, bún chả,
+  cơm tấm sườn bì chả, cháo gà, bánh mì thịt, canh chua cá, rau muống luộc...).
+- Ghi tên món rõ ràng, cụ thể (kèm thành phần chính), tránh tên chung chung như "cơm" hay "món mặn".
+- Đa dạng giữa các ngày, không lặp món quá nhiều; cân đối đủ tinh bột - đạm - rau.
 - Cân bằng theo mục tiêu (giảm cân / tăng cơ / duy trì).
 - Tránh các món ảnh hưởng bệnh lý (nếu có).
 ${buildFoodsSection(foodsDB)}
@@ -383,18 +385,13 @@ const callAIForPlan = async ({ systemPrompt, userPayload, traceId }) => {
 const fmtG = (v) => (v == null || !Number.isFinite(Number(v)) ? null : `${Math.round(Number(v))}g`);
 const fmtMg = (v) => (v == null || !Number.isFinite(Number(v)) ? null : `${Math.round(Number(v))}mg`);
 
-/** Tìm món trong FOODS DB theo tên đã chuẩn hóa -> dinh dưỡng chính xác từ DB. */
+/** Tìm món trong FOODS DB theo tên đã chuẩn hóa -> dinh dưỡng chính xác từ DB.
+ *  CHỈ khớp CHÍNH XÁC (sau khi chuẩn hóa) để tránh "đổi món" lại nhận nhầm
+ *  dinh dưỡng/tên của một món KHÁC do khớp gần đúng (Yêu cầu #5, #6). */
 const findFoodInDB = (food, foodsDB) => {
   const key = normalizeFoodName(food);
   if (!key) return null;
-  let hit = (foodsDB || []).find((f) => normalizeFoodName(f.description) === key);
-  if (!hit && key.length >= 4) {
-    // match gần đúng (chứa nhau) — chỉ khi đủ dài để tránh nhầm lẫn
-    hit = (foodsDB || []).find((f) => {
-      const d = normalizeFoodName(f.description);
-      return d && (d.includes(key) || key.includes(d));
-    });
-  }
+  const hit = (foodsDB || []).find((f) => normalizeFoodName(f.description) === key);
   if (!hit) return null;
   return {
     food: hit.description,
@@ -412,14 +409,21 @@ const findFoodInDB = (food, foodsDB) => {
 
 /** Hỏi AI ước tính dinh dưỡng cho ĐÚNG 1 món (không đụng tới các bữa khác). */
 const estimateOneFoodAI = async ({ food, mealLabel, traceId }) => {
-  const sys = `Bạn là chuyên gia dinh dưỡng ẩm thực Việt Nam.
-Ước tính dinh dưỡng cho ĐÚNG MỘT món ăn theo khẩu phần 1 người Việt thông thường.
+  const sys = `Bạn là chuyên gia dinh dưỡng ẩm thực Việt Nam, hiểu rõ món ăn 3 miền Bắc - Trung - Nam.
+MẶC ĐỊNH coi đây là MÓN ĂN VIỆT NAM trừ khi tên ghi rõ là món nước ngoài.
+Hiểu các tên gọi vùng miền và cách viết khác nhau (vd: "bắp" = "ngô", "heo" = "lợn",
+"khoai mì" = "sắn", "trái" = "quả", "hủ tiếu" / "hủ tíu", "bánh mỳ" = "bánh mì").
+Phân biệt đúng các món dễ nhầm (vd: phở bò ≠ bún bò Huế ≠ bún riêu; cơm tấm ≠ cơm gà;
+xôi mặn ≠ xôi xéo). KHÔNG được đoán nhầm sang một món khác chỉ vì tên gần giống.
+
+Ước tính dinh dưỡng cho ĐÚNG MỘT món ăn theo khẩu phần 1 người Việt thông thường
+(vd: 1 tô/bát phở ~ 400-500g; 1 đĩa cơm tấm sườn ~ 1 phần; 1 ổ bánh mì ~ 1 ổ).
 ${mealLabel ? `Bữa: ${mealLabel}.` : ""}
 Món: "${food}".
 
 Trả về DUY NHẤT một JSON object đúng các trường sau:
-{ "food": "<tên món>", "amount": "<khẩu phần, vd: 1 bát (400ml)>",
-  "calories": <number>, "protein": "<g>", "fat": "<g>", "carbs": "<g>",
+{ "food": "<giữ NGUYÊN tên món người dùng nhập>", "amount": "<khẩu phần, vd: 1 tô (450g)>",
+  "calories": <number kcal>, "protein": "<g>", "fat": "<g>", "carbs": "<g>",
   "fiber": "<g>", "sugar": "<g>", "sodium": "<mg>" }
 Chỉ trả JSON hợp lệ, không markdown, không giải thích.`;
 
@@ -582,10 +586,14 @@ export default async function handler(req, res) {
           foodsDB,
           traceId,
         });
+        // ✅ FIX #5: LUÔN giữ ĐÚNG tên món người dùng vừa nhập — không bao giờ
+        //            đổi về tên món cũ/khác do DB hay AI trả tên hơi lệch.
+        //            Dinh dưỡng thì lấy theo `nut` (đã tính lại chính xác).
+        const userFood = String(mod.food == null ? "" : mod.food).trim();
         resolvedMeals.push({
           day: Number(mod.day),
           meal: mod.meal,
-          food: nut.food || mod.food,
+          food: userFood || nut.food,
           amount: nut.amount || mod.amount || "1 phần",
           calories: nut.calories,
           protein: nut.protein,

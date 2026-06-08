@@ -777,3 +777,36 @@
   display:flex;align-items:center;justify-content:center;color:transparent;transition:all .2s;}
 .eaten-check.on{background:var(--primary);color:#fff;border-color:var(--primary);}
 .eaten-check.on i{background:#fff;border-color:#fff;color:var(--primary);}
+
+/* ── Yêu cầu #5: trạng thái "bỏ bữa" trên ô lịch ───────────────────────────── */
+.cell-inner.is-skipped > div{ text-decoration:line-through; color:var(--danger); opacity:.7; }
+.skipped-badge{ position:absolute; top:5px; left:5px; z-index:2;
+  display:inline-flex; align-items:center; gap:4px;
+  background:var(--danger); color:#fff; font-size:9px; font-weight:700;
+  padding:2px 8px; border-radius:999px; letter-spacing:.3px;
+  box-shadow:0 2px 6px rgba(226,85,85,.4); }
+
+/* ── Yêu cầu #5: nhóm 3 lựa chọn trong modal (ăn / đổi / bỏ) ────────────────── */
+.meal-action-group{ display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
+.meal-action-opt{ display:flex; align-items:center; gap:10px; cursor:pointer;
+  padding:10px 12px; border:1.5px solid var(--border); border-radius:12px;
+  font-size:13.5px; font-weight:600; color:var(--text-dark);
+  background:#fff; transition:border-color .15s, background .15s; }
+.meal-action-opt:hover{ border-color:var(--primary); }
+.meal-action-opt input{ accent-color:var(--primary); width:16px; height:16px; flex:none; }
+.meal-action-opt.sel{ border-color:var(--primary); background:var(--sage-50, #f3f7f1); }
+.meal-action-opt.skip.sel{ border-color:var(--danger); background:#fdeeee; color:var(--danger); }
+.meal-skip-note{ display:none; align-items:center; gap:8px; margin:2px 0 10px;
+  color:var(--danger); font-size:12.5px; font-weight:600; }
+
+/* ── Yêu cầu #3: tải ảnh món ăn ngoài thực đơn ─────────────────────────────── */
+.extra-photo-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:4px 0 10px; }
+.btn-extra-photo{ display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+  border:1.5px dashed var(--primary); color:var(--primary-deep, var(--primary));
+  background:#fff; border-radius:10px; padding:8px 14px; font-size:13px; font-weight:700;
+  transition:background .15s; }
+.btn-extra-photo:hover{ background:var(--sage-50, #f3f7f1); }
+.btn-extra-photo[disabled]{ opacity:.6; cursor:default; }
+.extra-photo-hint{ font-size:11.5px; color:var(--text-sub); }
+.extra-photo-preview{ display:none; margin:0 0 10px; }
+.extra-photo-preview img{ max-height:120px; border-radius:10px; border:1px solid var(--border); }
