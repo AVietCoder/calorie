@@ -654,7 +654,19 @@
   }
 
   // Cập nhật lại nhãn động khi đổi ngôn ngữ
-  document.addEventListener('langchange', () => { try { renderTodayIntake(); } catch (e) {} });
+  document.addEventListener('langchange', () => {
+    try { renderTodayIntake(); } catch (e) {}
+    // Cập nhật lại nội dung overlay chúc mừng nếu đang hiện
+    const card = document.querySelector('.congrat-card');
+    if (card) {
+      const h3 = card.querySelector('h3');
+      const p  = card.querySelector('p');
+      const btn = card.querySelector('button');
+      if (h3)  h3.textContent  = T('plan.congrat_title', 'Chúc mừng bạn!');
+      if (p)   p.textContent   = T('plan.congrat_body',  'Bạn đã hoàn thành xuất sắc chặng đường dinh dưỡng. Hãy cập nhật lại chỉ số mới để AI thiết kế lộ trình tiếp theo nhé!');
+      if (btn) btn.textContent = T('plan.congrat_btn',   'Tiếp tục chặng đường mới');
+    }
+  });
 
   /**
    * Logic checkbox:
@@ -1103,9 +1115,9 @@
           overlay.innerHTML = `
             <div class="congrat-card">
               <i class="fa-solid fa-trophy"></i>
-              <h3>Chúc mừng bạn!</h3>
-              <p>Bạn đã hoàn thành xuất sắc chặng đường dinh dưỡng. Hãy cập nhật lại chỉ số mới để AI thiết kế lộ trình tiếp theo nhé!</p>
-              <button onclick="window.location.href='setup.html?mode=extend'" class="meal-modal-btn primary" style="width:100%">Tiếp tục chặng đường mới</button>
+              <h3>${T('plan.congrat_title', 'Chúc mừng bạn!')}</h3>
+              <p>${T('plan.congrat_body', 'Bạn đã hoàn thành xuất sắc chặng đường dinh dưỡng. Hãy cập nhật lại chỉ số mới để AI thiết kế lộ trình tiếp theo nhé!')}</p>
+              <button onclick="window.location.href='setup.html?mode=extend'" class="meal-modal-btn primary" style="width:100%">${T('plan.congrat_btn', 'Tiếp tục chặng đường mới')}</button>
             </div>
           `;
           wrapper.appendChild(overlay);

@@ -283,6 +283,26 @@
       "toast.update_ok": "Đã cập nhật & tính lại dinh dưỡng!",
       "toast.save_net_err": "Lỗi kết nối khi lưu",
       "toast.coach_net_err": "Lỗi kết nối HLV AI",
+
+      /* ----- guide header ----- */
+      "guide.back_dashboard": "Về Dashboard",
+      "guide.login_to_continue": "Đăng nhập để tiếp tục",
+
+      /* ----- guide TOC & section titles ----- */
+      "guide.toc_title": "Mục lục",
+      "guide.toc_intro": "Giới thiệu",
+      "guide.toc_start": "Bắt đầu nhanh",
+      "guide.toc_setup": "Thiết lập hồ sơ",
+      "guide.toc_dashboard": "Dashboard Diet",
+      "guide.toc_chat": "Trò chuyện AI",
+      "guide.toc_plan": "Lịch 7 ngày",
+      "guide.toc_tips": "Mẹo & Lưu ý",
+      "guide.toc_faq": "Câu hỏi thường gặp",
+
+      /* ----- plan completion overlay ----- */
+      "plan.congrat_title": "Chúc mừng bạn!",
+      "plan.congrat_body": "Bạn đã hoàn thành xuất sắc chặng đường dinh dưỡng. Hãy cập nhật lại chỉ số mới để AI thiết kế lộ trình tiếp theo nhé!",
+      "plan.congrat_btn": "Tiếp tục chặng đường mới",
       "toast.login_required": "Vui lòng đăng nhập!",
       "toast.estimate_fail": "Không ước tính được",
       "toast.estimate_net_err": "Lỗi kết nối khi ước tính",
@@ -545,6 +565,26 @@
       "toast.update_ok": "Updated & recalculated nutrition!",
       "toast.save_net_err": "Network error while saving",
       "toast.coach_net_err": "AI Coach connection error",
+
+      /* ----- guide header ----- */
+      "guide.back_dashboard": "Back to Dashboard",
+      "guide.login_to_continue": "Sign in to continue",
+
+      /* ----- guide TOC & section titles ----- */
+      "guide.toc_title": "Contents",
+      "guide.toc_intro": "Introduction",
+      "guide.toc_start": "Quick start",
+      "guide.toc_setup": "Set up profile",
+      "guide.toc_dashboard": "Diet Dashboard",
+      "guide.toc_chat": "AI Chat",
+      "guide.toc_plan": "7-day plan",
+      "guide.toc_tips": "Tips & Notes",
+      "guide.toc_faq": "FAQ",
+
+      /* ----- plan completion overlay ----- */
+      "plan.congrat_title": "Congratulations!",
+      "plan.congrat_body": "You've successfully completed your nutrition journey. Update your new stats so AI can design your next plan!",
+      "plan.congrat_btn": "Start a new journey",
       "toast.login_required": "Please sign in!",
       "toast.estimate_fail": "Couldn't estimate",
       "toast.estimate_net_err": "Network error while estimating",
