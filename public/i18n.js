@@ -299,6 +299,103 @@
       "guide.toc_tips": "Mẹo & Lưu ý",
       "guide.toc_faq": "Câu hỏi thường gặp",
 
+      /* ----- guide: shared labels ----- */
+      "guide.label_tip": "Mẹo:",
+      "guide.label_note": "Lưu ý:",
+
+      /* ----- guide: hero ----- */
+      "guide.intro_title": "Calorie AI là gì?",
+      "guide.intro_desc": "Calorie AI là trợ lý dinh dưỡng AI hỗ trợ người dùng, đặc biệt là người có bệnh nền, theo dõi và kiểm soát chế độ ăn uống hằng ngày nhằm góp phần hỗ trợ quá trình cải thiện và điều trị bệnh thông qua dinh dưỡng.<br><br>Người dùng chỉ cần nhập thông tin cơ thể và mục tiêu, hệ thống sẽ tự động phân tích, tính toán dinh dưỡng và gợi ý thực đơn phù hợp theo từng tình trạng sức khỏe.",
+      "guide.chip_read5": "Đọc trong 5 phút",
+      "guide.chip_beginner": "Phù hợp người mới",
+      "guide.chip_updated": "Cập nhật liên tục",
+      "guide.feat_auto_t": "Tính toán tự động",
+      "guide.feat_auto_d": "BMR, TDEE, mục tiêu calo & macro theo công thức chuẩn.",
+      "guide.feat_coach_t": "HLV AI 24/7",
+      "guide.feat_coach_d": "Hỏi đáp về món ăn, thay thế nguyên liệu, ghi nhận bữa ăn.",
+      "guide.feat_plan_t": "Lịch 7 ngày",
+      "guide.feat_plan_d": "Thực đơn xoay vòng, có thể yêu cầu AI sinh lại theo sở thích.",
+      "guide.feat_progress_t": "Tiến độ trực quan",
+      "guide.feat_progress_d": "Biểu đồ cân nặng, calo và macro theo thời gian thực.",
+
+      /* ----- guide: start ----- */
+      "guide.start_title": "Bắt đầu trong 4 bước",
+      "guide.start_lead": "Quy trình từ lúc đăng ký đến khi nhận thực đơn cá nhân hoá.",
+      "guide.start_s1_t": "1. Đăng ký tài khoản",
+      "guide.start_s1_d": "Tạo tài khoản để bắt đầu lưu dữ liệu dinh dưỡng cá nhân.",
+      "guide.start_s2_t": "2. Khai báo hồ sơ",
+      "guide.start_s2_d": "Nhập thông tin cơ thể, mức vận động, mục tiêu (giảm cân / tăng cơ / duy trì) hoặc tình trạng sức khỏe.",
+      "guide.start_s3_t": "3. Nhận đề xuất",
+      "guide.start_s3_d": "Hệ thống tự động tính BMR, TDEE và xây dựng chế độ ăn phù hợp với thể trạng.",
+      "guide.start_s4_t": "4. Theo dõi mỗi ngày",
+      "guide.start_s4_d": "Ghi nhận bữa ăn hằng ngày qua chat, theo dõi lượng calo và macro đã nạp, đồng thời kiểm soát tiến độ so với mục tiêu. Thực đơn được tự động điều chỉnh linh hoạt dựa trên dữ liệu ăn uống thực tế của người dùng.",
+
+      /* ----- guide: setup ----- */
+      "guide.setup_title": "Thiết lập hồ sơ (Setup)",
+      "guide.setup_lead": "Trang <strong>setup.html</strong> chia làm 4 bước — biểu tượng tiến độ ở trên cùng cho biết bạn đang ở đâu.",
+      "guide.setup_fields_h": "Các trường thông tin",
+      "guide.setup_li1": "<strong>Thông tin cơ bản:</strong> tên, tuổi, giới tính.",
+      "guide.setup_li2": "<strong>Chỉ số cơ thể:</strong> chiều cao (cm), cân nặng hiện tại (kg).",
+      "guide.setup_li3": "<strong>Mức vận động:</strong> ít vận động → vận động nặng (ảnh hưởng TDEE).",
+      "guide.setup_li4": "<strong>Mục tiêu:</strong> Giảm cân · Duy trì · Tăng cơ — chọn 1 trong các thẻ Goal.",
+      "guide.setup_tip_body": "Cập nhật cân nặng mỗi tuần để biểu đồ tiến độ phản ánh đúng thực tế.",
+
+      /* ----- guide: dashboard ----- */
+      "guide.dash_title": "Dashboard Diet",
+      "guide.dash_lead": "Trang <strong>diet-details.html</strong> tổng hợp toàn bộ chỉ số quan trọng dưới dạng biểu đồ trực quan.",
+      "guide.dash_macro_t": "Macro Donut",
+      "guide.dash_macro_d": "Tỉ lệ Protein / Carbs / Fat đề xuất.",
+      "guide.dash_weight_t": "Tiến độ cân nặng",
+      "guide.dash_weight_d": "Đường biểu diễn cân theo tuần.",
+      "guide.dash_cal_t": "Calo theo ngày",
+      "guide.dash_cal_d": "Cột calo nạp 7 ngày gần nhất.",
+      "guide.dash_bmr_t": "BMR vs TDEE",
+      "guide.dash_bmr_d": "So sánh năng lượng cơ bản và tiêu hao.",
+      "guide.dash_warn_body": "Nếu các chip BMR/TDEE hiển thị \"--\", bạn cần hoàn tất Setup trước.",
+
+      /* ----- guide: chat ----- */
+      "guide.chat_title": "Trò chuyện với HLV AI",
+      "guide.chat_lead": "Trang <strong>chat.html</strong> là nơi bạn ghi nhận bữa ăn và nhận tư vấn theo ngữ cảnh.",
+      "guide.chat_ask_h": "Bạn có thể hỏi gì?",
+      "guide.chat_q1": "\"Tôi vừa ăn 1 bát phở bò, ghi nhận giúp tôi.\"",
+      "guide.chat_q2": "\"Bữa tối hôm nay nên ăn gì để đủ Protein?\"",
+      "guide.chat_q3": "\"Có thể thay thịt bò bằng món chay nào?\"",
+      "guide.chat_q4": "\"Hôm nay tôi còn bao nhiêu calo?\"",
+      "guide.chat_note_body": "Khi AI nhận diện món ăn, sẽ hiện hộp xác nhận trước khi lưu vào nhật ký để đảm bảo dữ liệu chính xác.",
+
+      /* ----- guide: plan ----- */
+      "guide.plan_title": "Lịch ăn 7 ngày",
+      "guide.plan_lead": "Trang <strong>schedule.html</strong> hiển thị thực đơn dạng bảng theo ngày × bữa.",
+      "guide.plan_li1": "Mỗi ô là một bữa được AI gợi ý phù hợp với mục tiêu calo & macro.",
+      "guide.plan_li2": "Bấm <strong>\"Sinh lại lịch\"</strong> để AI tạo phương án mới.",
+      "guide.plan_li3": "Kéo thanh bên dưới để xem các phản hồi/giải thích từ AI về kế hoạch.",
+
+      /* ----- guide: tips ----- */
+      "guide.tips_title": "Mẹo dùng hiệu quả",
+      "guide.tips_dash_t": "Vào Dashboard",
+      "guide.tips_dash_d": "Kiểm tra chỉ số mỗi sáng để có kế hoạch ăn phù hợp trong ngày.",
+      "guide.tips_dash_go": "Mở Diet",
+      "guide.tips_chat_t": "Ghi nhận bữa ăn",
+      "guide.tips_chat_d": "Nhập càng sớm càng tốt sau khi ăn để dữ liệu được chính xác.",
+      "guide.tips_chat_go": "Mở Chat",
+      "guide.tips_plan_t": "Lên kế hoạch tuần",
+      "guide.tips_plan_d": "Sinh lịch vào đầu tuần để chuẩn bị nguyên liệu trước.",
+      "guide.tips_plan_go": "Mở Plan",
+      "guide.tips_setup_t": "Cập nhật hồ sơ",
+      "guide.tips_setup_d": "Thay đổi cân nặng/mục tiêu định kỳ để AI tính lại chỉ số.",
+      "guide.tips_setup_go": "Mở Setup",
+
+      /* ----- guide: faq ----- */
+      "guide.faq_title": "Câu hỏi thường gặp",
+      "guide.faq_q1": "Dữ liệu của tôi có được bảo mật?",
+      "guide.faq_a1": "Toàn bộ dữ liệu cá nhân được lưu trên tài khoản riêng và chỉ bạn truy cập được sau khi đăng nhập.",
+      "guide.faq_q2": "Tại sao calo tôi nhập không khớp với AI tính?",
+      "guide.faq_a2": "AI ước lượng theo khẩu phần trung bình. Nếu món của bạn lớn/nhỏ hơn, hãy nói rõ trong chat (ví dụ: \"1 bát phở lớn 500ml\").",
+      "guide.faq_q3": "Tôi có thể đổi mục tiêu sau khi setup?",
+      "guide.faq_a3": "Có. Vào trang Setup → chọn mục tiêu mới → AI sẽ tính lại calo và macro mục tiêu.",
+      "guide.faq_q4": "Lịch 7 ngày có thay đổi mỗi tuần không?",
+      "guide.faq_a4": "Bạn có thể bấm \"Sinh lại\" bất kỳ lúc nào để có thực đơn mới phù hợp khẩu vị/mùa.",
+
       /* ----- plan completion overlay ----- */
       "plan.congrat_title": "Chúc mừng bạn!",
       "plan.congrat_body": "Bạn đã hoàn thành xuất sắc chặng đường dinh dưỡng. Hãy cập nhật lại chỉ số mới để AI thiết kế lộ trình tiếp theo nhé!",
@@ -580,6 +677,103 @@
       "guide.toc_plan": "7-day plan",
       "guide.toc_tips": "Tips & Notes",
       "guide.toc_faq": "FAQ",
+
+      /* ----- guide: shared labels ----- */
+      "guide.label_tip": "Tip:",
+      "guide.label_note": "Note:",
+
+      /* ----- guide: hero ----- */
+      "guide.intro_title": "What is Calorie AI?",
+      "guide.intro_desc": "Calorie AI is an AI nutrition assistant that helps users — especially those with underlying conditions — track and manage their daily diet to support recovery and treatment through nutrition.<br><br>Just enter your body metrics and goals, and the system automatically analyzes, calculates nutrition and suggests menus tailored to each health condition.",
+      "guide.chip_read5": "5-minute read",
+      "guide.chip_beginner": "Beginner friendly",
+      "guide.chip_updated": "Continuously updated",
+      "guide.feat_auto_t": "Automatic calculation",
+      "guide.feat_auto_d": "BMR, TDEE, calorie & macro targets using standard formulas.",
+      "guide.feat_coach_t": "AI Coach 24/7",
+      "guide.feat_coach_d": "Ask about dishes, swap ingredients, and log meals.",
+      "guide.feat_plan_t": "7-day plan",
+      "guide.feat_plan_d": "A rotating menu; ask AI to regenerate it to your taste.",
+      "guide.feat_progress_t": "Visual progress",
+      "guide.feat_progress_d": "Real-time charts for weight, calories and macros.",
+
+      /* ----- guide: start ----- */
+      "guide.start_title": "Get started in 4 steps",
+      "guide.start_lead": "The journey from sign-up to receiving your personalized menu.",
+      "guide.start_s1_t": "1. Create an account",
+      "guide.start_s1_d": "Create an account to start saving your personal nutrition data.",
+      "guide.start_s2_t": "2. Fill in your profile",
+      "guide.start_s2_d": "Enter your body metrics, activity level, goals (lose weight / build muscle / maintain) or health conditions.",
+      "guide.start_s3_t": "3. Get recommendations",
+      "guide.start_s3_d": "The system automatically computes BMR, TDEE and builds a diet suited to your body.",
+      "guide.start_s4_t": "4. Track every day",
+      "guide.start_s4_d": "Log daily meals via chat, track the calories and macros you've consumed, and monitor progress toward your goal. The menu adapts flexibly based on your actual eating data.",
+
+      /* ----- guide: setup ----- */
+      "guide.setup_title": "Set up your profile (Setup)",
+      "guide.setup_lead": "The <strong>setup.html</strong> page has 4 steps — the progress icons at the top show where you are.",
+      "guide.setup_fields_h": "Information fields",
+      "guide.setup_li1": "<strong>Basic info:</strong> name, age, gender.",
+      "guide.setup_li2": "<strong>Body metrics:</strong> height (cm), current weight (kg).",
+      "guide.setup_li3": "<strong>Activity level:</strong> sedentary → very active (affects TDEE).",
+      "guide.setup_li4": "<strong>Goal:</strong> Lose weight · Maintain · Build muscle — pick one of the Goal cards.",
+      "guide.setup_tip_body": "Update your weight weekly so the progress chart reflects reality.",
+
+      /* ----- guide: dashboard ----- */
+      "guide.dash_title": "Diet Dashboard",
+      "guide.dash_lead": "The <strong>diet-details.html</strong> page brings together all key metrics as visual charts.",
+      "guide.dash_macro_t": "Macro Donut",
+      "guide.dash_macro_d": "Recommended Protein / Carbs / Fat ratio.",
+      "guide.dash_weight_t": "Weight progress",
+      "guide.dash_weight_d": "Weight trend line by week.",
+      "guide.dash_cal_t": "Calories by day",
+      "guide.dash_cal_d": "Calorie bars for the last 7 days.",
+      "guide.dash_bmr_t": "BMR vs TDEE",
+      "guide.dash_bmr_d": "Compare basal and total energy expenditure.",
+      "guide.dash_warn_body": "If the BMR/TDEE chips show \"--\", you need to complete Setup first.",
+
+      /* ----- guide: chat ----- */
+      "guide.chat_title": "Chat with the AI Coach",
+      "guide.chat_lead": "The <strong>chat.html</strong> page is where you log meals and get contextual advice.",
+      "guide.chat_ask_h": "What can you ask?",
+      "guide.chat_q1": "\"I just ate a bowl of beef pho, please log it.\"",
+      "guide.chat_q2": "\"What should I eat for dinner to get enough protein?\"",
+      "guide.chat_q3": "\"What vegetarian dish can replace beef?\"",
+      "guide.chat_q4": "\"How many calories do I have left today?\"",
+      "guide.chat_note_body": "When AI recognizes a dish, a confirmation box appears before saving to your log to keep the data accurate.",
+
+      /* ----- guide: plan ----- */
+      "guide.plan_title": "7-day meal plan",
+      "guide.plan_lead": "The <strong>schedule.html</strong> page shows the menu as a table of day × meal.",
+      "guide.plan_li1": "Each cell is a meal suggested by AI to fit your calorie & macro targets.",
+      "guide.plan_li2": "Tap <strong>\"Regenerate plan\"</strong> for AI to create a new option.",
+      "guide.plan_li3": "Drag the bar below to see AI feedback/explanations about the plan.",
+
+      /* ----- guide: tips ----- */
+      "guide.tips_title": "Tips for effective use",
+      "guide.tips_dash_t": "Open Dashboard",
+      "guide.tips_dash_d": "Check your metrics each morning to plan suitable meals for the day.",
+      "guide.tips_dash_go": "Open Diet",
+      "guide.tips_chat_t": "Log meals",
+      "guide.tips_chat_d": "Enter meals as soon as possible after eating for accurate data.",
+      "guide.tips_chat_go": "Open Chat",
+      "guide.tips_plan_t": "Plan your week",
+      "guide.tips_plan_d": "Generate the plan at the start of the week to prep ingredients ahead.",
+      "guide.tips_plan_go": "Open Plan",
+      "guide.tips_setup_t": "Update profile",
+      "guide.tips_setup_d": "Change your weight/goals periodically so AI recalculates your metrics.",
+      "guide.tips_setup_go": "Open Setup",
+
+      /* ----- guide: faq ----- */
+      "guide.faq_title": "Frequently asked questions",
+      "guide.faq_q1": "Is my data secure?",
+      "guide.faq_a1": "All personal data is stored on your own account and only you can access it after signing in.",
+      "guide.faq_q2": "Why don't my entered calories match the AI's calculation?",
+      "guide.faq_a2": "AI estimates based on average portions. If your dish is larger/smaller, say so in chat (e.g. \"a large 500ml bowl of pho\").",
+      "guide.faq_q3": "Can I change my goal after setup?",
+      "guide.faq_a3": "Yes. Go to Setup → choose a new goal → AI will recalculate your target calories and macros.",
+      "guide.faq_q4": "Does the 7-day plan change each week?",
+      "guide.faq_a4": "You can tap \"Regenerate\" anytime to get a new menu suited to your taste/season.",
 
       /* ----- plan completion overlay ----- */
       "plan.congrat_title": "Congratulations!",
