@@ -2,6 +2,7 @@ import { IncomingForm } from "formidable";
 import OpenAI from "openai";
 import fs from "fs";
 import { supabase } from "./lib/supabase.js";
+import { retrieveKnowledge, buildKnowledgeSection } from "./lib/knowledge.js";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -187,6 +188,7 @@ const buildCoachPrompt = ({
   isQueryOnly,
   isDeadlinePassed,
   foodsDB,
+  knowledgeBlock = "",
 }) => {
   let prompt = `
 Bạn là HLV Dinh dưỡng AI thông minh, thân thiện và am hiểu ẩm thực Việt Nam.
@@ -225,7 +227,7 @@ THÔNG TIN NGƯỜI DÙNG
 - Macro ưu tiên: ${profile.focus_macro ?? "N/A"}
 - Calo mục tiêu/ngày: ${profile.target_calories || "1500-1800"} kcal
 - Lý do thực hiện: ${profile.reason || "N/A"}
-
+${knowledgeBlock ? "\n" + knowledgeBlock + "\n" : ""}
 YÊU CẦU:
 - Ưu tiên các món ăn phổ biến của người Việt Nam.
 - Thực đơn đa dạng giữa các ngày (không lặp lại món quá nhiều).
@@ -384,7 +386,7 @@ Hãy gửi lời chúc mừng chân thành vì họ đã hoàn thành chặng đ
   return prompt;
 };
 
-const buildNutritionPrompt = (foodsDB = []) => {
+const buildNutritionPrompt = (foodsDB = [], knowledgeBlock = "") => {
   const foodsSection =
     foodsDB.length > 0
       ? `
@@ -415,7 +417,7 @@ QUY TẮC NHẬN DIỆN MÓN VIỆT (RẤT QUAN TRỌNG):
 - Hiểu tên gọi vùng miền & cách viết khác nhau (bắp=ngô, heo=lợn, khoai mì=sắn, trái=quả, "bánh mỳ"="bánh mì", "hủ tíu"="hủ tiếu").
 - Ước tính theo khẩu phần người Việt thực tế (vd: 1 tô phở ~ 400-500g; 1 đĩa cơm tấm ~ 1 phần đầy đủ; 1 ổ bánh mì).
 - Đặt "description" bằng TÊN MÓN VIỆT cụ thể, có dấu tiếng Việt (vd: "Bún bò Huế", "Cơm tấm sườn bì chả").
-${foodsSection}
+${foodsSection}${knowledgeBlock ? "\n" + knowledgeBlock + "\n" : ""}
 QUY TẮC KIỂM TRA ẢNH:
 - CHỈ KHI người dùng gửi hình ảnh: Nếu hình ảnh KHÔNG liên quan đến thực phẩm/đồ uống, bạn BẮT BUỘC phải trả về nội dung lỗi nằm trong thẻ <error>...</error>.
 - Ví dụ: <error>Xin lỗi, tôi thấy đây là một chiếc xe hơi. Tôi chỉ có thể phân tích thực phẩm.</error>
@@ -510,6 +512,22 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: "Người dùng không tồn tại" });
     }
 
+    // ── RAG: lấy kiến thức dinh dưỡng chuyên môn theo bệnh lý của người dùng ──
+    // Tài liệu được nạp từ api/knowledge/knowledge-base.json (sinh ra từ các PDF
+    // trong scripts/sources). AI sẽ dựa vào đây để tư vấn sát với bệnh lý.
+    const knowledge = await retrieveKnowledge({
+      message,
+      disease: profile.disease,
+      topK: 6,
+    });
+    const knowledgeBlock = buildKnowledgeSection(knowledge);
+    if (knowledge.chunks.length) {
+      console.log(
+        `📚 [chat] đã chèn ${knowledge.chunks.length} đoạn kiến thức ` +
+          `(mode=${knowledge.mode}, bệnh=${knowledge.usedDiseaseKeys.join(",") || "—"})`
+      );
+    }
+
     let history = normalizeHistory(profile.chat_history || []);
     let currentPlan = Array.isArray(profile.weekly_plan) ? profile.weekly_plan : [];
     const now = new Date();
@@ -555,7 +573,7 @@ export default async function handler(req, res) {
       const messages = [
         {
           role: "system",
-          content: buildNutritionPrompt(foodsDB),
+          content: buildNutritionPrompt(foodsDB, knowledgeBlock),
         },
         ...history.slice(-10),
         {
@@ -655,6 +673,7 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
       isQueryOnly: effectiveIsQueryOnly,
       isDeadlinePassed,
       foodsDB,
+      knowledgeBlock,
     });
 
     const coachMessages = [

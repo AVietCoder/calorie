@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { supabase } from "./lib/supabase.js";
+import { retrieveKnowledge, buildKnowledgeSection } from "./lib/knowledge.js";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -297,34 +298,34 @@ Ví dụ:
 Chỉ trả về JSON hợp lệ, không markdown, không giải thích.
 `;
 
-const buildCreatePlanPrompt = (profile, foodsDB) => `
+const buildCreatePlanPrompt = (profile, foodsDB, knowledgeBlock = "") => `
 Bạn là chuyên gia dinh dưỡng và am hiểu sâu ẩm thực Việt Nam 3 miền Bắc - Trung - Nam.
 
 ${buildProfileSection(profile)}
-
+${knowledgeBlock ? "\n" + knowledgeBlock + "\n" : ""}
 YÊU CẦU:
 - Dùng MÓN ĂN VIỆT NAM thực tế, đúng tên gọi quen thuộc (vd: phở bò, bún chả,
   cơm tấm sườn bì chả, cháo gà, bánh mì thịt, canh chua cá, rau muống luộc...).
 - Ghi tên món rõ ràng, cụ thể (kèm thành phần chính), tránh tên chung chung như "cơm" hay "món mặn".
 - Đa dạng giữa các ngày, không lặp món quá nhiều; cân đối đủ tinh bột - đạm - rau.
 - Cân bằng theo mục tiêu (giảm cân / tăng cơ / duy trì).
-- Tránh các món ảnh hưởng bệnh lý (nếu có).
+- Tránh các món ảnh hưởng bệnh lý (nếu có), và ưu tiên các món hỗ trợ bệnh lý theo TÀI LIỆU CHUYÊN MÔN ở trên (nếu có).
 ${buildFoodsSection(foodsDB)}
 ${PLAN_FORMAT_SPEC}
 `;
 
-const buildRebalancePrompt = (profile, anchors, foodsDB) => `
+const buildRebalancePrompt = (profile, anchors, foodsDB, knowledgeBlock = "") => `
 Bạn là chuyên gia dinh dưỡng AI.
 
 NGƯỜI DÙNG VỪA ĐỔI ${anchors.length} MÓN:
 ${anchors.map((a) => `- Ngày ${a.day}, Bữa "${a.meal}" → "${a.food}"`).join("\n")}
 
 ${buildProfileSection(profile)}
-
+${knowledgeBlock ? "\n" + knowledgeBlock + "\n" : ""}
 NHIỆM VỤ:
 1. GIỮ NGUYÊN tất cả các món đã đổi ở trên (đúng day + meal + food).
 2. Cân đối lại các bữa khác để tổng calo TB/ngày ~ ${profile.target_calories} kcal.
-3. Phù hợp mục tiêu "${profile.goal}" và bệnh lý "${profile.disease || "Không"}".
+3. Phù hợp mục tiêu "${profile.goal}" và bệnh lý "${profile.disease || "Không"}" (ưu tiên tuân theo TÀI LIỆU CHUYÊN MÔN ở trên nếu có).
 4. Trả ĐẦY ĐỦ ${TOTAL_DAYS} ngày × 4 bữa.
 ${buildFoodsSection(foodsDB)}
 ${PLAN_FORMAT_SPEC}
@@ -711,8 +712,23 @@ export default async function handler(req, res) {
     let foodsInserted = 0;
 
     if (needsNewPlan) {
+      // ── RAG: nạp kiến thức dinh dưỡng theo bệnh lý để xây thực đơn phù hợp ──
+      const knowledge = await retrieveKnowledge({
+        disease: profile.disease,
+        message: "",
+        topK: 8,
+      });
+      const knowledgeBlock = buildKnowledgeSection(knowledge);
+      if (knowledge.chunks.length) {
+        log.info(`${traceId} | knowledge`, {
+          passages: knowledge.chunks.length,
+          mode: knowledge.mode,
+          diseases: knowledge.usedDiseaseKeys,
+        });
+      }
+
       const newFlatPlan = await callAIForPlan({
-        systemPrompt: buildCreatePlanPrompt(profile, foodsDB),
+        systemPrompt: buildCreatePlanPrompt(profile, foodsDB, knowledgeBlock),
         traceId,
       });
       currentPlan = groupPlanByDay(newFlatPlan);
