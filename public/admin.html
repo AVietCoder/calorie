@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1024" />
+<title>Quản trị · Tài liệu RAG · Calorie AI</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="both.css" />
+<link rel="stylesheet" href="toast.css" />
+<link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <div id="toast-container"></div>
+
+  <aside class="side-nav">
+    <div class="nav-item" onclick="location.href='chat.html'"><i class="fa-solid fa-comment"></i><span>AI</span></div>
+    <div class="nav-item" onclick="location.href='diet-details.html'"><i class="fa-solid fa-fire-flame-curved"></i><span>DIET</span></div>
+    <div class="nav-item" onclick="location.href='schedule.html'"><i class="fa-solid fa-calendar-days"></i><span>PLAN</span></div>
+    <div class="nav-item" onclick="location.href='setup.html'"><i class="fa-solid fa-user"></i><span>PROFILE</span></div>
+    <div class="nav-item active"><i class="fa-solid fa-shield-halved"></i><span>ADMIN</span></div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="header">
+      <a href="chat.html" class="logo"><i class="fa-solid fa-leaf"></i> Calorie AI</a>
+      <div class="header-tools">
+        <div class="user-profile-nav" onclick="location.href='diet-details.html'" title="Quay lại Dashboard">
+          <span class="user-name"><i class="fa-solid fa-arrow-left"></i> <strong>Về Dashboard</strong></span>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <!-- Access-denied overlay -->
+      <div id="denied" class="admin-denied" style="display:none;">
+        <i class="fa-solid fa-lock"></i>
+        <h2>Khu vực quản trị</h2>
+        <p id="deniedMsg">Bạn cần quyền quản trị (admin) để truy cập trang này.</p>
+        <a class="btn-ghost" href="guide.html"><i class="fa-solid fa-arrow-left"></i> Về trang hướng dẫn</a>
+      </div>
+
+      <!-- Admin content -->
+      <div id="adminBody" style="display:none;">
+        <div class="admin-head">
+          <div>
+            <h1><i class="fa-solid fa-book-medical"></i> Tài liệu RAG cho AI</h1>
+            <p class="muted">Tải tài liệu PDF lên để AI "học" và tham khảo khi tư vấn. Quy trình: lưu file gốc lên <strong>Cloudinary</strong> → trích văn bản → chia đoạn → tạo embedding → lưu vào Supabase. Có hiệu lực ngay, không cần deploy lại.</p>
+          </div>
+        </div>
+
+        <!-- Status bar -->
+        <div class="status-bar" id="statusBar">
+          <div class="status-pill" id="pillStore"><i class="fa-solid fa-database"></i> <span>Đang kiểm tra…</span></div>
+          <div class="status-pill" id="pillPdfs"><i class="fa-solid fa-file-pdf"></i> <span>— tài liệu</span></div>
+          <div class="status-pill" id="pillChunks"><i class="fa-solid fa-layer-group"></i> <span>— đoạn</span></div>
+          <div class="status-pill" id="pillCloud"><i class="fa-solid fa-cloud"></i> <span>Cloudinary: —</span></div>
+          <div class="status-pill" id="pillEmbed"><i class="fa-solid fa-wand-magic-sparkles"></i> <span>Embeddings: —</span></div>
+        </div>
+
+        <div class="admin-grid">
+          <!-- Upload card -->
+          <section class="card">
+            <h2><i class="fa-solid fa-cloud-arrow-up"></i> Tải tài liệu PDF</h2>
+
+            <label class="dropzone" id="dropzone">
+              <input type="file" id="fileInput" accept="application/pdf,.pdf" hidden />
+              <i class="fa-solid fa-file-pdf"></i>
+              <span id="fileLabel">Bấm để chọn tệp PDF (≤ 20MB)</span>
+            </label>
+
+            <button class="btn-primary" id="uploadBtn"><i class="fa-solid fa-upload"></i> Tải lên & xử lý</button>
+            <div class="progress" id="progress" style="display:none;">
+              <div class="spinner"></div>
+              <span id="progressMsg">Đang xử lý…</span>
+            </div>
+            <p class="hint">Lưu ý: PDF dạng scan ảnh (không có text) sẽ không trích được nội dung. Nếu chưa cấu hình Cloudinary, file gốc sẽ không được lưu trên cloud (phần chữ vẫn lưu Supabase).</p>
+          </section>
+
+          <!-- PDF list card -->
+          <section class="card">
+            <div class="card-head-row">
+              <h2><i class="fa-solid fa-folder-open"></i> Tài liệu đã tải lên</h2>
+              <div class="card-actions">
+                <button class="btn-ghost" id="refreshBtn"><i class="fa-solid fa-rotate"></i> Làm mới</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="docs-table">
+                <thead>
+                  <tr><th>Tệp</th><th>Kích thước</th><th>Trạng thái</th><th>Đoạn</th><th>Embed</th><th>File</th><th></th></tr>
+                </thead>
+                <tbody id="pdfsBody">
+                  <tr><td colspan="7" class="empty">Đang tải…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="toast.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

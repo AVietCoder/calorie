@@ -2,6 +2,14 @@
   "functions": {
     "api/**/*.js": {
       "includeFiles": "api/knowledge/**"
+    },
+    "api/admin.js": {
+      "includeFiles": "api/knowledge/**",
+      "maxDuration": 60
+    },
+    "api/chat.js": {
+      "includeFiles": "api/knowledge/**",
+      "maxDuration": 60
     }
   },
   "rewrites": [

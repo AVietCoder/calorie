@@ -1,74 +1,72 @@
 /**
- * knowledge.js — Retrieval layer that lets the AI coach "học" (learn from) the
- * clinical diet documents in scripts/sources (diabetes, gout, fatty liver,
- * high cholesterol, kidney disease, gastrointestinal).
+ * knowledge.js — Retrieval layer (RAG) for the AI coach.
  *
- * This is Retrieval-Augmented Generation (RAG): instead of fine-tuning the
- * model, we retrieve the most relevant passages from the documents at request
- * time and inject them into the prompt as grounded reference material.
+ * Two knowledge sources are combined automatically:
  *
- * Two retrieval modes, picked automatically:
- *   1. Disease routing (always on, zero setup, language-independent):
- *      the user's `profile.disease` string is matched against each document's
- *      label list, so a Vietnamese disease name reliably selects the right
- *      English document.
- *   2. Semantic ranking (optional upgrade): if you run
- *      `node scripts/ingest-knowledge.mjs` once, every chunk gets an embedding
- *      vector, and the user's actual message is matched by cosine similarity —
- *      this handles free-form questions and cross-document queries, including
- *      Vietnamese-question vs English-document matching.
- *   When embeddings are absent we fall back to lexical overlap, and when even
- *   that is uninformative (e.g. a Vietnamese question with no embeddings) we
- *   simply inject the routed disease document in reading order.
+ *   A. BUILT-IN, disease-routed base — api/knowledge/knowledge-base.json
+ *      (the curated 6 docs: diabetes, gout, fatty liver, high cholesterol,
+ *      kidney, gastrointestinal). Routed by the user's profile.disease string.
  *
- * The module is defensive: any failure returns an empty result so the chat
- * flow is never broken by the knowledge layer.
+ *   B. ADMIN-UPLOADED, semantic layer — Supabase admin_kb_chunks (see
+ *      migrations/admin.sql), populated from /admin.html. General nutrition
+ *      PDFs an admin adds; retrieved by semantic similarity to the live query
+ *      (or lexical overlap when embeddings aren't available). This takes effect
+ *      immediately, no redeploy.
+ *
+ * RANKING:
+ *   • Disease routing always selects the right built-in document.
+ *   • Semantic ranking (cosine over embeddings) is used when chunks have
+ *     embeddings AND OPENAI_API_KEY is set; otherwise lexical overlap; otherwise
+ *     plain document order.
+ *
+ * Every path is wrapped so a failure returns an empty result and never breaks
+ * the chat flow.
+ *
+ * NOTE: this module avoids `import.meta` (it transpiles to CommonJS on Vercel,
+ * where `import.meta` is a syntax error). File lookups use process.cwd() + fs.
  */
 
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
+import { embedQuery } from "./rag/embeddings.js";
+import {
+  adminStoreReady,
+  countAdminChunks,
+  fetchAdminChunks,
+} from "./rag/store.js";
+
+const ADMIN_TITLE = "Tài liệu dinh dưỡng bổ sung (quản trị viên tải lên)";
 
 /* ----------------------------------------------------------------------- */
-/* Load knowledge base (cached at module level)                            */
+/* Bundled knowledge base (built-in base) — cached, read via cwd()+fs.     */
 /* ----------------------------------------------------------------------- */
-let _kb = null;
-
-const CANDIDATE_PATHS = [
-  path.join(__dirname, "..", "knowledge", "knowledge-base.json"),
+let _bundle = null;
+const BUNDLE_PATHS = [
   path.join(process.cwd(), "api", "knowledge", "knowledge-base.json"),
   path.join(process.cwd(), "knowledge", "knowledge-base.json"),
   path.join(process.cwd(), "knowledge-base.json"),
 ];
 
-function loadKB() {
-  if (_kb) return _kb;
-  for (const p of CANDIDATE_PATHS) {
+function loadBundle() {
+  if (_bundle) return _bundle;
+  for (const p of BUNDLE_PATHS) {
     try {
       if (fs.existsSync(p)) {
-        const raw = fs.readFileSync(p, "utf-8");
-        const parsed = JSON.parse(raw);
-        _kb = parsed && Array.isArray(parsed.chunks) ? parsed : { chunks: [] };
-        const withEmb = _kb.chunks.filter((c) => Array.isArray(c.embedding)).length;
-        console.log(
-          `📚 [knowledge] loaded ${_kb.chunks.length} chunks from ${p}` +
-            (withEmb ? ` (${withEmb} with embeddings)` : " (keyword mode)")
-        );
-        return _kb;
+        const parsed = JSON.parse(fs.readFileSync(p, "utf-8"));
+        _bundle = parsed && Array.isArray(parsed.chunks) ? parsed : { chunks: [] };
+        return _bundle;
       }
     } catch (err) {
       console.warn(`⚠️ [knowledge] failed to read ${p}: ${err.message}`);
     }
   }
-  console.warn("⚠️ [knowledge] knowledge-base.json not found; knowledge disabled.");
-  _kb = { chunks: [] };
-  return _kb;
+  _bundle = { chunks: [] };
+  return _bundle;
 }
 
 /* ----------------------------------------------------------------------- */
 /* Text utilities                                                          */
 /* ----------------------------------------------------------------------- */
-
-/** Lowercase + strip Vietnamese diacritics so matching is accent-insensitive. */
 function deaccent(s = "") {
   return String(s)
     .toLowerCase()
@@ -87,16 +85,12 @@ const STOPWORDS = new Set(
 );
 
 function tokenize(s = "") {
-  return deaccent(s)
-    .split(" ")
-    .filter((w) => w.length > 2 && !STOPWORDS.has(w));
+  return deaccent(s).split(" ").filter((w) => w.length > 2 && !STOPWORDS.has(w));
 }
 
 function cosine(a, b) {
   if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return 0;
-  let dot = 0,
-    na = 0,
-    nb = 0;
+  let dot = 0, na = 0, nb = 0;
   for (let i = 0; i < a.length; i++) {
     dot += a[i] * b[i];
     na += a[i] * a[i];
@@ -107,25 +101,17 @@ function cosine(a, b) {
 }
 
 /* ----------------------------------------------------------------------- */
-/* Disease routing                                                         */
+/* Disease routing (built-in base only)                                    */
 /* ----------------------------------------------------------------------- */
-
-/**
- * Match the free-text `disease` field against each document's label list.
- * Returns the set of disease_keys that apply (may be empty).
- */
-function matchDiseaseKeys(diseaseStr, kb) {
+function matchDiseaseKeys(diseaseStr, chunks) {
   const hay = deaccent(diseaseStr);
   if (!hay) return new Set();
-
-  // Collect the label list per disease_key from the chunks themselves.
   const labelsByKey = new Map();
-  for (const c of kb.chunks) {
+  for (const c of chunks) {
     if (!labelsByKey.has(c.disease_key)) {
       labelsByKey.set(c.disease_key, new Set((c.labels || []).map(deaccent)));
     }
   }
-
   const keys = new Set();
   for (const [key, labels] of labelsByKey) {
     for (const label of labels) {
@@ -138,153 +124,134 @@ function matchDiseaseKeys(diseaseStr, kb) {
   return keys;
 }
 
-/* ----------------------------------------------------------------------- */
-/* Optional embedding of the live query (semantic mode)                    */
-/* ----------------------------------------------------------------------- */
-let _openai = null;
-async function getOpenAI() {
-  if (_openai) return _openai;
-  if (!process.env.OPENAI_API_KEY) return null;
-  try {
-    const { default: OpenAI } = await import("openai");
-    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    return _openai;
-  } catch {
-    return null;
+/* Rank a pool of chunks by semantic (if qvec) else lexical overlap. */
+function rankPool(pool, qvec, qTokens) {
+  if (qvec) {
+    return pool
+      .map((c) => ({ c, score: Array.isArray(c.embedding) ? cosine(qvec, c.embedding) : 0 }))
+      .sort((a, b) => b.score - a.score);
   }
-}
-
-async function embedQuery(text, model) {
-  const client = await getOpenAI();
-  if (!client) return null;
-  try {
-    const resp = await client.embeddings.create({
-      model: model || "text-embedding-3-small",
-      input: String(text).slice(0, 8000),
-    });
-    return resp.data?.[0]?.embedding || null;
-  } catch (err) {
-    console.warn(`⚠️ [knowledge] query embedding failed: ${err.message}`);
-    return null;
+  if (qTokens && qTokens.length) {
+    const qset = new Set(qTokens);
+    return pool
+      .map((c) => {
+        const ctoks = tokenize(c.text);
+        let hits = 0;
+        for (const t of ctoks) if (qset.has(t)) hits++;
+        return { c, score: hits / Math.max(8, ctoks.length) };
+      })
+      .sort((a, b) => b.score - a.score);
   }
+  return [];
 }
 
 /* ----------------------------------------------------------------------- */
 /* Main retrieval                                                          */
 /* ----------------------------------------------------------------------- */
-
-/**
- * Retrieve the most relevant document passages for this request.
- *
- * @param {Object}  opts
- * @param {string}  opts.message   The user's message / query (Vietnamese is fine).
- * @param {string}  opts.disease   The user's profile.disease string.
- * @param {number}  [opts.topK=6]  Max passages to return.
- * @param {number}  [opts.maxChars=4500] Soft cap on total injected characters.
- * @returns {Promise<{chunks:Array, usedDiseaseKeys:string[], mode:string}>}
- */
-async function retrieveKnowledge({
+export async function retrieveKnowledge({
   message = "",
   disease = "",
   topK = 6,
   maxChars = 4500,
 } = {}) {
   try {
-    const kb = loadKB();
-    if (!kb.chunks.length) return { chunks: [], usedDiseaseKeys: [], mode: "empty" };
+    const qStr = `${disease ? disease + ". " : ""}${message}`.trim() || disease;
+    const qTokens = tokenize(`${disease} ${message}`);
 
-    const diseaseKeys = matchDiseaseKeys(disease, kb);
-    const hasEmbeddings =
-      !!kb.embedding_model && kb.chunks.some((c) => Array.isArray(c.embedding));
+    // Embed the query once (reused for base + admin). Null if no OpenAI key.
+    let qvec = null;
+    if (process.env.OPENAI_API_KEY && qStr) {
+      qvec = await embedQuery(qStr);
+    }
 
-    // If the user has >1 condition, allow a few more passages.
-    const k = Math.min(Math.max(topK, diseaseKeys.size * 4), 12);
+    /* ---------- A. Built-in disease-routed base ---------- */
+    const baseChunks = [];
+    const bundle = loadBundle();
+    const diseaseKeys = matchDiseaseKeys(disease, bundle.chunks);
+    let baseMode = "none";
+    if (bundle.chunks.length) {
+      const pool = diseaseKeys.size
+        ? bundle.chunks.filter((c) => diseaseKeys.has(c.disease_key))
+        : bundle.chunks;
+      const baseHasEmb = pool.some((c) => Array.isArray(c.embedding) && c.embedding.length);
+      const ranked = rankPool(pool, baseHasEmb ? qvec : null, qTokens);
+      const k = Math.min(Math.max(topK, diseaseKeys.size * 4), 12);
 
-    // Candidate pool: routed disease docs if matched, else the whole base.
-    const pool = diseaseKeys.size
-      ? kb.chunks.filter((c) => diseaseKeys.has(c.disease_key))
-      : kb.chunks;
-
-    let ranked = [];
-    let mode = "routing_order";
-
-    if (hasEmbeddings) {
-      const qText = `${disease ? disease + ". " : ""}${message}`.trim() || disease;
-      const qvec = await embedQuery(qText, kb.embedding_model);
-      if (qvec) {
-        ranked = pool
-          .map((c) => ({ c, score: cosine(qvec, c.embedding) }))
-          .sort((a, b) => b.score - a.score);
-        mode = "semantic";
+      if (diseaseKeys.size) {
+        const useScores = ranked.length && ranked[0].score > 0;
+        const ordered = useScores ? ranked.map((r) => r.c) : pool;
+        baseChunks.push(...ordered.slice(0, k));
+        baseMode = useScores ? (baseHasEmb && qvec ? "semantic" : "lexical") : "routing_order";
+      } else {
+        const strong = ranked.filter((r) => (baseHasEmb && qvec ? r.score >= 0.3 : r.score >= 0.12));
+        baseChunks.push(...strong.slice(0, k).map((r) => r.c));
+        baseMode = baseChunks.length ? (baseHasEmb && qvec ? "semantic" : "lexical") : "none";
       }
     }
 
-    if (!ranked.length) {
-      // Lexical overlap fallback (works when query shares words with the docs).
-      const qTokens = tokenize(`${disease} ${message}`);
-      if (qTokens.length) {
-        const qset = new Set(qTokens);
-        ranked = pool
-          .map((c) => {
-            const ctoks = tokenize(c.text);
-            let hits = 0;
-            for (const t of ctoks) if (qset.has(t)) hits++;
-            return { c, score: hits / Math.max(8, ctoks.length) };
-          })
-          .sort((a, b) => b.score - a.score);
-        mode = "lexical";
+    /* ---------- B. Admin-uploaded semantic layer ---------- */
+    const adminChunks = [];
+    let adminMode = "none";
+    try {
+      if ((await adminStoreReady()) && (await countAdminChunks()) > 0) {
+        const pool = await fetchAdminChunks(1000);
+        if (pool.length) {
+          const adminHasEmb = pool.some((c) => Array.isArray(c.embedding) && c.embedding.length);
+          const ranked = rankPool(pool, adminHasEmb ? qvec : null, qTokens);
+          const threshold = adminHasEmb && qvec ? 0.3 : 0.12;
+          const adminTopK = Math.min(topK, 4);
+          const strong = ranked.filter((r) => r.score >= threshold).slice(0, adminTopK);
+          for (const r of strong) {
+            adminChunks.push({
+              text: r.c.text,
+              disease_title: ADMIN_TITLE,
+              section: `đoạn ${(r.c.chunk_index ?? 0) + 1}`,
+              source: "admin",
+            });
+          }
+          adminMode = adminChunks.length ? (adminHasEmb && qvec ? "semantic" : "lexical") : "none";
+        }
       }
+    } catch (err) {
+      console.warn(`⚠️ [knowledge] admin retrieval skipped: ${err.message}`);
     }
 
-    let picked;
-    if (diseaseKeys.size) {
-      // We have a disease match: ALWAYS inject that document's guidance.
-      // If ranking produced useful scores, lead with the best; otherwise use
-      // document order so the section reads coherently.
-      const useScores = ranked.length && ranked[0].score > 0;
-      const ordered = useScores ? ranked.map((r) => r.c) : pool;
-      picked = ordered.slice(0, k);
-    } else {
-      // No disease match: only inject if we found a genuinely relevant passage
-      // (avoid polluting a healthy user's prompt with random disease info).
-      const strong = ranked.filter((r) =>
-        mode === "semantic" ? r.score >= 0.3 : r.score >= 0.12
-      );
-      picked = strong.slice(0, k).map((r) => r.c);
-      mode = picked.length ? mode : "none";
+    /* ---------- Merge + character budget ---------- */
+    const merged = [...baseChunks, ...adminChunks];
+    if (!merged.length) {
+      return { chunks: [], usedDiseaseKeys: [...diseaseKeys], mode: "none", source: "none" };
     }
-
-    // Enforce character budget.
     const out = [];
     let total = 0;
-    for (const c of picked) {
+    for (const c of merged) {
       const len = (c.text || "").length;
       if (out.length && total + len > maxChars) break;
       out.push(c);
       total += len;
     }
 
-    return {
-      chunks: out,
-      usedDiseaseKeys: [...diseaseKeys],
-      mode,
-    };
+    const source =
+      baseChunks.length && adminChunks.length
+        ? "base+admin"
+        : adminChunks.length
+        ? "admin"
+        : "base";
+    const mode = baseChunks.length ? baseMode : adminMode;
+
+    return { chunks: out, usedDiseaseKeys: [...diseaseKeys], mode, source };
   } catch (err) {
     console.warn(`⚠️ [knowledge] retrieveKnowledge error: ${err.message}`);
-    return { chunks: [], usedDiseaseKeys: [], mode: "error" };
+    return { chunks: [], usedDiseaseKeys: [], mode: "error", source: "error" };
   }
 }
 
 /**
- * Format retrieved chunks into a Vietnamese prompt block telling the model to
- * treat them as authoritative clinical guidance for the user's condition.
- * Returns "" when there is nothing to inject.
+ * Format retrieved chunks into a Vietnamese prompt block. Returns "" when empty.
  */
-function buildKnowledgeSection(result) {
+export function buildKnowledgeSection(result) {
   const chunks = result?.chunks || [];
   if (!chunks.length) return "";
 
-  // Group by document title for readable, source-attributed output.
   const byTitle = new Map();
   for (const c of chunks) {
     const title = c.disease_title || c.source || "Tài liệu dinh dưỡng";
@@ -317,7 +284,4 @@ ${body}
 `.trim();
 }
 
-module.exports = {
-  retrieveKnowledge,
-  buildKnowledgeSection,
-};
+export default { retrieveKnowledge, buildKnowledgeSection };
