@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Admin Dashboard · Calorie AI</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="admin.css" />
+<link rel="icon" href="logo.png" />
+</head>
+<body>
+<div id="shell"></div>
+<script src="admin-common.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(async function () {
+  if (!(await AdminUtils.ensureAdmin())) return;
+
+  const shell = document.getElementById("shell");
+  shell.innerHTML = `
+    ${AdminUtils.renderSidebar("dashboard")}
+    <main class="admin-main">
+      <div class="admin-head">
+        <h1>📊 Dashboard tổng quan</h1>
+        <div class="who"><i class="fa-solid fa-shield-halved"></i> Admin Panel</div>
+      </div>
+      <div class="cards" id="kpi-cards"></div>
+
+      <div class="panel-row">
+        <div class="panel">
+          <h2>🩺 Phân bố bệnh lý người dùng</h2>
+          <canvas id="ch-health" height="180"></canvas>
+        </div>
+        <div class="panel">
+          <h2>📈 Người dùng mới (30 ngày)</h2>
+          <canvas id="ch-newusers" height="180"></canvas>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>🧠 Trạng thái RAG</h2>
+        <div id="rag-status">Đang tải…</div>
+      </div>
+    </main>
+  `;
+
+  const data = await AdminUtils.api("/api/admin/stats");
+
+  // KPIs
+  const kpis = [
+    { label: "Tổng users", value: data.overview.totalUsers, icon: "fa-users", cls: "primary" },
+    { label: "Active (7d)", value: data.overview.activeUsers7d, icon: "fa-bolt", cls: "success" },
+    { label: "Conversations", value: data.overview.totalConversations, icon: "fa-comments", cls: "primary" },
+    { label: "Prompts", value: data.overview.totalPrompts, icon: "fa-message", cls: "warn" },
+    { label: "Ảnh chat đã lưu", value: data.overview.totalImages, icon: "fa-image", cls: "primary" },
+    { label: "PDFs", value: data.overview.totalPdfs, icon: "fa-file-pdf", cls: "danger" },
+    { label: "Chunks RAG", value: data.overview.totalChunks, icon: "fa-cube", cls: "success" },
+    { label: "AI calls", value: data.overview.totalAiLogs, icon: "fa-robot", cls: "primary" },
+  ];
+  document.getElementById("kpi-cards").innerHTML = kpis
+    .map(
+      (k) => `
+    <div class="kpi ${k.cls}">
+      <i class="fa-solid ${k.icon} icon"></i>
+      <div class="label">${k.label}</div>
+      <div class="value">${Number(k.value || 0).toLocaleString("vi-VN")}</div>
+    </div>`
+    )
+    .join("");
+
+  // Health chart
+  const h = data.health || {};
+  const healthLabels = {
+    kidney: "Thận", diabetes: "Tiểu đường", hypertension: "Huyết áp",
+    obesity: "Béo phì", cholesterol: "Cholesterol", gout: "Gout",
+    liver: "Gan", gastro: "Tiêu hóa", other: "Khác", none: "Không bệnh",
+  };
+  const hKeys = Object.keys(healthLabels);
+  new Chart(document.getElementById("ch-health"), {
+    type: "doughnut",
+    data: {
+      labels: hKeys.map((k) => healthLabels[k]),
+      datasets: [{
+        data: hKeys.map((k) => h[k] || 0),
+        backgroundColor: ["#4f7cff","#16b67a","#f6a609","#ef4a4a","#6f5cff","#0ea5e9","#a16207","#db2777","#94a3b8","#22c55e"],
+      }],
+    },
+    options: { plugins: { legend: { position: "right" } } },
+  });
+
+  // New users chart - last 30 days
+  const days = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    days.push(d.toISOString().slice(0, 10));
+  }
+  const nu = data.newUsersByDay || {};
+  new Chart(document.getElementById("ch-newusers"), {
+    type: "line",
+    data: {
+      labels: days.map((d) => d.slice(5)),
+      datasets: [{
+        label: "Người dùng mới",
+        data: days.map((d) => nu[d] || 0),
+        fill: true, tension: 0.35,
+        borderColor: "#4f7cff",
+        backgroundColor: "rgba(79,124,255,0.15)",
+      }],
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } },
+  });
+
+  // RAG status
+  const ragEl = document.getElementById("rag-status");
+  const ok = data.rag.status === "online";
+  ragEl.innerHTML = `
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+      <span class="tag ${ok ? "ready" : "uploaded"}">${ok ? "✅ Online" : "⚠️ Empty"}</span>
+      <span><b>${data.overview.totalChunks.toLocaleString("vi-VN")}</b> chunks · <b>${data.overview.totalPdfs}</b> PDFs</span>
+      <span>Last sync: <b>${data.rag.lastSync ? AdminUtils.timeAgo(data.rag.lastSync) : "chưa có"}</b></span>
+    </div>`;
+})();
+</script>
+</body>
+</html>

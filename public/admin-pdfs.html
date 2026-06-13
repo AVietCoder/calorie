@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PDF Knowledge Center · Admin</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="admin.css" />
+<link rel="icon" href="logo.png" />
+</head>
+<body>
+<div id="shell"></div>
+<script src="cloudinary.js"></script>
+<script src="admin-common.js"></script>
+<script>
+(async function () {
+  if (!(await AdminUtils.ensureAdmin())) return;
+
+  document.getElementById("shell").innerHTML = `
+    ${AdminUtils.renderSidebar("pdfs")}
+    <main class="admin-main">
+      <div class="admin-head">
+        <h1>📄 PDF Knowledge Center</h1>
+        <div class="who">Upload và quản lý tài liệu RAG</div>
+      </div>
+
+      <div class="cards" id="kb-cards"></div>
+
+      <div class="panel">
+        <h2>⬆️ Upload PDF mới</h2>
+        <div class="uploader" id="dropzone">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <p><b>Kéo thả PDF vào đây</b> hoặc click để chọn (nhiều file)</p>
+          <input type="file" id="file-in" accept="application/pdf" multiple hidden />
+        </div>
+        <div id="active-jobs" style="margin-top: 14px;"></div>
+      </div>
+
+      <div class="panel">
+        <h2>📚 Tất cả tài liệu</h2>
+        <div style="overflow:auto;max-height:60vh">
+          <table class="table" id="pdf-table">
+            <thead><tr>
+              <th>Tên file</th><th>Kích thước</th><th>Chunks</th><th>Trạng thái</th>
+              <th>Người upload</th><th>Ngày upload</th><th></th>
+            </tr></thead>
+            <tbody><tr><td colspan="7"><div class="skeleton" style="height:20px"></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  `;
+
+  const STEPS = [
+    { key: "uploaded",   label: "PDF Uploaded" },
+    { key: "extracting", label: "Extracting Text" },
+    { key: "chunking",   label: "Chunking" },
+    { key: "embedding",  label: "Generating Embeddings" },
+    { key: "saving",     label: "Saving to Vector Store" },
+    { key: "ready",      label: "AI Ready" },
+  ];
+  const STEP_ORDER = STEPS.map((s) => s.key);
+
+  const dropzone = document.getElementById("dropzone");
+  const fileIn = document.getElementById("file-in");
+  dropzone.onclick = () => fileIn.click();
+  dropzone.ondragover = (e) => { e.preventDefault(); dropzone.classList.add("drag"); };
+  dropzone.ondragleave = () => dropzone.classList.remove("drag");
+  dropzone.ondrop = (e) => {
+    e.preventDefault();
+    dropzone.classList.remove("drag");
+    handleFiles(e.dataTransfer.files);
+  };
+  fileIn.onchange = () => handleFiles(fileIn.files);
+
+  async function handleFiles(fileList) {
+    const files = Array.from(fileList).filter((f) => f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf"));
+    if (!files.length) return AdminUtils.toast("Chỉ chấp nhận file PDF", "error");
+    for (const f of files) processOne(f);
+  }
+
+  function makeJobCard(name, size) {
+    const card = document.createElement("div");
+    card.className = "panel";
+    card.style.padding = "12px";
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px">
+        <div><b><i class="fa-solid fa-file-pdf" style="color:#ef4a4a"></i> ${name}</b>
+          <div style="font-size:12px;color:#5b6478">${AdminUtils.fmtBytes(size)}</div></div>
+        <div class="upload-pct" style="font-size:12px;color:#5b6478">0%</div>
+      </div>
+      <div class="progress"><span style="width:0%"></span></div>
+      <div class="timeline" style="margin-top:10px"></div>
+    `;
+    const tl = card.querySelector(".timeline");
+    tl.innerHTML = STEPS.map(
+      (s) => `<div class="tl-step" data-step="${s.key}">
+        <div class="dot"><i class="fa-solid fa-circle"></i></div>
+        <div><div class="lbl">${s.label}</div></div>
+      </div>`
+    ).join("");
+    document.getElementById("active-jobs").prepend(card);
+    return card;
+  }
+
+  function setStep(card, status) {
+    const idx = STEP_ORDER.indexOf(status);
+    card.querySelectorAll(".tl-step").forEach((el, i) => {
+      el.classList.remove("done", "active", "error");
+      if (status === "error") {
+        if (i <= idx + 1) el.classList.add("error");
+      } else if (i < idx) el.classList.add("done");
+      else if (i === idx) el.classList.add("active");
+    });
+    if (status === "ready") {
+      card.querySelectorAll(".tl-step").forEach((el) => el.classList.add("done"));
+    }
+  }
+
+  async function processOne(file) {
+    const card = makeJobCard(file.name, file.size);
+    const bar = card.querySelector(".progress > span");
+    const pct = card.querySelector(".upload-pct");
+    setStep(card, "uploaded");
+
+    let cloudResult;
+    try {
+      cloudResult = await CloudinaryUploader.upload(file, "raw", (p) => {
+        bar.style.width = p + "%";
+        pct.textContent = p + "%";
+      });
+    } catch (e) {
+      AdminUtils.toast("Upload Cloudinary lỗi: " + e.message, "error");
+      setStep(card, "error");
+      return;
+    }
+    bar.style.width = "100%";
+    pct.textContent = "100%";
+
+    setStep(card, "extracting");
+    let pdfRow;
+    try {
+      pdfRow = await AdminUtils.api("/api/admin/upload-pdf", {
+        method: "POST",
+        body: {
+          file_name: file.name,
+          file_size: file.size,
+          cloudinary_public_id: cloudResult.public_id,
+          cloudinary_url: cloudResult.secure_url,
+        },
+      });
+    } catch (e) {
+      AdminUtils.toast("Lỗi server: " + e.message, "error");
+      setStep(card, "error");
+      return;
+    }
+
+    // poll status
+    const pdfId = pdfRow.pdf_id;
+    let tries = 0;
+    const poll = setInterval(async () => {
+      tries++;
+      try {
+        const data = await AdminUtils.api("/api/admin/pdfs?id=" + pdfId);
+        const st = data.pdf?.status || "uploaded";
+        setStep(card, st);
+        if (st === "ready" || st === "error" || tries > 120) {
+          clearInterval(poll);
+          if (st === "ready") AdminUtils.toast(`✅ ${file.name}: AI Ready`, "success");
+          loadTable();
+          loadStats();
+        }
+      } catch {}
+    }, 2000);
+  }
+
+  async function loadStats() {
+    try {
+      const s = await AdminUtils.api("/api/admin/stats");
+      const ov = s.overview;
+      const cards = [
+        { l: "Total PDFs", v: ov.totalPdfs, i: "fa-file-pdf", c: "primary" },
+        { l: "Total Chunks", v: ov.totalChunks, i: "fa-cube", c: "success" },
+        { l: "Total Embeddings", v: ov.totalChunks, i: "fa-brain", c: "warn" },
+        { l: "Last Sync", v: s.rag.lastSync ? AdminUtils.timeAgo(s.rag.lastSync) : "—", i: "fa-clock", c: "primary" },
+        { l: "RAG Status", v: s.rag.status === "online" ? "✅ Online" : "⚠️ Empty", i: "fa-bolt", c: "success" },
+      ];
+      document.getElementById("kb-cards").innerHTML = cards
+        .map((k) => `<div class="kpi ${k.c}"><i class="fa-solid ${k.i} icon"></i>
+          <div class="label">${k.l}</div><div class="value" style="font-size:20px">${k.v}</div></div>`)
+        .join("");
+    } catch (e) { /* ignore */ }
+  }
+
+  async function loadTable() {
+    const tbody = document.querySelector("#pdf-table tbody");
+    try {
+      const data = await AdminUtils.api("/api/admin/pdfs");
+      const rows = data.pdfs || [];
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty">Chưa có PDF nào. Hãy upload PDF đầu tiên.</div></td></tr>`;
+        return;
+      }
+      tbody.innerHTML = rows
+        .map(
+          (p) => `<tr>
+            <td><i class="fa-solid fa-file-pdf" style="color:#ef4a4a"></i> ${p.file_name}</td>
+            <td>${AdminUtils.fmtBytes(p.file_size)}</td>
+            <td>${p.chunk_count || 0}</td>
+            <td><span class="tag ${p.status}">${p.status}</span></td>
+            <td style="font-size:12px">${p.uploaded_by_email || "—"}</td>
+            <td style="font-size:12px">${AdminUtils.fmtDate(p.created_at)}</td>
+            <td style="white-space:nowrap;text-align:right">
+              ${p.cloudinary_url ? `<a class="btn" href="${p.cloudinary_url}" target="_blank"><i class="fa-solid fa-eye"></i></a>` : ""}
+              <button class="btn danger" data-del="${p.id}"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>`
+        )
+        .join("");
+      tbody.querySelectorAll("[data-del]").forEach((b) => {
+        b.onclick = async () => {
+          if (!confirm("Xoá PDF này (và toàn bộ chunks RAG)?")) return;
+          await AdminUtils.api("/api/admin/pdfs?id=" + b.dataset.del, { method: "DELETE" });
+          AdminUtils.toast("Đã xoá", "success");
+          loadTable(); loadStats();
+        };
+      });
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty">Lỗi: ${e.message}</div></td></tr>`;
+    }
+  }
+
+  loadStats();
+  loadTable();
+})();
+</script>
+</body>
+</html>
