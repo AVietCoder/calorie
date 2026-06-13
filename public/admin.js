@@ -19,7 +19,7 @@ function fmtBytes(n) {
 }
 function statusBadge(s) {
   const map = {
-    ready: ["Sẵn sàng", "badge"],
+    ready: ["Đã tải", "badge"],
     error: ["Lỗi", "badge bad"],
     uploaded: ["Đã nhận", "badge gray"],
     extracting: ["Trích text…", "badge gray"],
