@@ -100,16 +100,28 @@ async function loadPdfs() {
         .map((p) => {
 const fileLink = p.cloudinary_url
   ? (() => {
-      const filename =
+      // Sanitize the display filename: drop the .pdf extension and any
+      // other characters Cloudinary's fl_attachment flag chokes on
+      // (a literal "." inside fl_attachment:<name> breaks the flag).
+      // Cloudinary re-appends the asset's real extension (.pdf) on
+      // download, so we don't need to add it ourselves.
+      const baseName =
         (p.file_name || "document")
-          .replace(/[^a-zA-Z0-9._-]/g, "_")
-          .replace(/\.pdf$/i, "");
+          .replace(/\.pdf$/i, "")
+          .replace(/[^a-zA-Z0-9_-]/g, "_") || "document";
 
-      const downloadUrl = String(p.cloudinary_url)
-        .replace(
-          "/upload/",
-          `/upload/fl_attachment:${encodeURIComponent(filename)}.pdf/`
-        );
+      // Older uploads may already have "/upload/fl_attachment/" baked
+      // into the stored URL (a previous bug) — strip it before adding
+      // our own, otherwise the two collide into an invalid path.
+      const cleanUrl = String(p.cloudinary_url).replace(
+        /\/upload\/fl_attachment(:[^/]*)?\//,
+        "/upload/"
+      );
+
+      const downloadUrl = cleanUrl.replace(
+        "/upload/",
+        `/upload/fl_attachment:${encodeURIComponent(baseName)}/`
+      );
 
       return `
         <a
@@ -117,7 +129,7 @@ const fileLink = p.cloudinary_url
           href="${downloadUrl}"
           target="_blank"
           rel="noopener"
-          download="${filename}.pdf"
+          download="${baseName}.pdf"
           title="Tải PDF"
         >
           <i class="fa-solid fa-download"></i>
