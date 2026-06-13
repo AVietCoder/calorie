@@ -1,8 +1,28 @@
 {
   "functions": {
-    "api/**/*.js": {
+    "api/index.js": {
       "includeFiles": "api/knowledge/**"
-    }
+    },
+    "api/admin.js": {
+      "includeFiles": "api/knowledge/**",
+      "maxDuration": 60
+    },
+    "api/analyze-food.js": {
+      "maxDuration": 30
+    },
+    "api/auth.js": {},
+    "api/chat-history.js": {},
+    "api/chat.js": {
+      "includeFiles": "api/knowledge/**",
+      "maxDuration": 60
+    },
+    "api/coach-dynamic.js": {
+      "includeFiles": "api/knowledge/**",
+      "maxDuration": 60
+    },
+    "api/diet-info.js": {},
+    "api/setup.js": {},
+    "api/status.js": {}
   },
   "rewrites": [
     {
