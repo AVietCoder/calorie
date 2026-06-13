@@ -100,15 +100,11 @@ async function loadPdfs() {
         .map((p) => {
 const fileLink = p.cloudinary_url
   ? (() => {
-      // Sanitize the display filename: drop the .pdf extension and any
-      // other characters Cloudinary's fl_attachment flag chokes on
-      // (a literal "." inside fl_attachment:<name> breaks the flag).
-      // Cloudinary re-appends the asset's real extension (.pdf) on
-      // download, so we don't need to add it ourselves.
+      // Keep the original filename (including .pdf) and only sanitize
+      // characters that could break the attachment header.
       const baseName =
-        (p.file_name || "document")
-          .replace(/\.pdf$/i, "")
-          .replace(/[^a-zA-Z0-9_-]/g, "_") || "document";
+        (p.file_name || "document.pdf")
+          .replace(/[^a-zA-Z0-9._-]/g, "_") || "document.pdf";
 
       // Older uploads may already have "/upload/fl_attachment/" baked
       // into the stored URL (a previous bug) — strip it before adding
