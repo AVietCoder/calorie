@@ -1,49 +1,69 @@
 /**
  * cloudinary.js — store raw PDF files in Cloudinary.
  *
- * Every PDF an admin uploads is saved to Cloudinary (resource_type "raw") and
- * the resulting secure URL + public_id are kept in the admin_pdfs row. The RAG
- * text/chunks live in Supabase; the original file lives in Cloudinary.
+ * Supports TWO credential styles:
  *
- * Configure with EITHER:
- *   • CLOUDINARY_URL = cloudinary://<api_key>:<api_secret>@<cloud_name>
- *   • or the trio CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET
+ *  1) UNSIGNED (what you have): CLOUDINARY_CLOUD_NAME + CLOUDINARY_UPLOAD_PRESET.
+ *     Uses Cloudinary's unsigned upload endpoint (no API secret needed). This is
+ *     the same mechanism a Vite frontend uses, so the VITE_-prefixed names are
+ *     also accepted: VITE_CLOUDINARY_CLOUD_NAME / VITE_CLOUDINARY_UPLOAD_PRESET.
+ *     NOTE: deleting assets via API is NOT possible without an API secret, so in
+ *     this mode destroyPdf() is a no-op (file stays in Cloudinary on delete).
  *
- * If nothing is configured the helpers no-op gracefully (upload returns null)
- * so the rest of the pipeline still works while you finish setup.
+ *  2) SIGNED (optional, enables delete): CLOUDINARY_CLOUD_NAME + CLOUDINARY_API_KEY
+ *     + CLOUDINARY_API_SECRET (or CLOUDINARY_URL). Uses the signed SDK; supports
+ *     upload AND delete.
+ *
+ * If nothing is configured the helpers no-op (upload returns null) so the rest
+ * of the pipeline still works while you finish setup.
+ *
+ * Uses Node 18+ global fetch/FormData/Blob (available on Vercel) for the
+ * unsigned upload — no extra deps required.
  */
 import { v2 as cloudinary } from "cloudinary";
 
 const FOLDER = process.env.CLOUDINARY_PDF_FOLDER || "calorie-rag-pdfs";
 
-let _configured = null;
-function configure() {
-  if (_configured !== null) return _configured;
-  const { CLOUDINARY_URL, CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } =
-    process.env;
-  if (CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
-    cloudinary.config({
-      cloud_name: CLOUDINARY_CLOUD_NAME,
-      api_key: CLOUDINARY_API_KEY,
-      api_secret: CLOUDINARY_API_SECRET,
-      secure: true,
-    });
-    _configured = true;
-  } else if (CLOUDINARY_URL) {
-    // SDK auto-reads CLOUDINARY_URL; just flip secure on.
-    cloudinary.config({ secure: true });
-    _configured = true;
-  } else {
-    _configured = false;
-  }
-  return _configured;
+function env() {
+  return {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || process.env.VITE_CLOUDINARY_CLOUD_NAME || "",
+    uploadPreset:
+      process.env.CLOUDINARY_UPLOAD_PRESET || process.env.VITE_CLOUDINARY_UPLOAD_PRESET || "",
+    apiKey: process.env.CLOUDINARY_API_KEY || "",
+    apiSecret: process.env.CLOUDINARY_API_SECRET || "",
+    url: process.env.CLOUDINARY_URL || "",
+  };
+}
+
+/** "signed" | "unsigned" | null */
+function mode() {
+  const { cloudName, uploadPreset, apiKey, apiSecret, url } = env();
+  if (url || (cloudName && apiKey && apiSecret)) return "signed";
+  if (cloudName && uploadPreset) return "unsigned";
+  return null;
 }
 
 export function cloudinaryConfigured() {
-  return configure();
+  return mode() !== null;
 }
 
-/** Make a filesystem-safe-ish public id from a filename (no extension). */
+/** True only when we can also DELETE (needs an API secret). */
+export function cloudinaryCanDelete() {
+  return mode() === "signed";
+}
+
+let _signedConfigured = false;
+function configureSigned() {
+  if (_signedConfigured) return;
+  const { cloudName, apiKey, apiSecret, url } = env();
+  if (url) {
+    cloudinary.config({ secure: true }); // SDK auto-reads CLOUDINARY_URL
+  } else {
+    cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret, secure: true });
+  }
+  _signedConfigured = true;
+}
+
 function publicIdFrom(filename) {
   const base = String(filename || "document").replace(/\.[^.]+$/, "");
   return (
@@ -56,16 +76,9 @@ function publicIdFrom(filename) {
   );
 }
 
-/**
- * Upload a PDF buffer to Cloudinary as a raw asset.
- * @param {Buffer} buffer
- * @param {string} filename
- * @returns {Promise<{public_id:string, url:string, bytes:number, format:string}|null>}
- *          null when Cloudinary isn't configured (caller should treat as optional).
- * @throws if Cloudinary IS configured but the upload fails.
- */
-export async function uploadPdf(buffer, filename) {
-  if (!configure()) return null;
+/** Signed upload via SDK (raw asset). */
+async function signedUpload(buffer, filename) {
+  configureSigned();
   const result = await new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
@@ -85,19 +98,70 @@ export async function uploadPdf(buffer, filename) {
     url: result.secure_url || result.url,
     bytes: result.bytes,
     format: result.format || "pdf",
+    resource_type: result.resource_type || "raw",
   };
 }
 
-/** Best-effort delete of a raw asset. Never throws. */
-export async function destroyPdf(publicId) {
-  if (!publicId || !configure()) return false;
+/** Unsigned upload via the public endpoint (cloud_name + upload_preset only). */
+async function unsignedUpload(buffer, filename) {
+  const { cloudName, uploadPreset } = env();
+  const form = new FormData();
+  form.append("file", new Blob([buffer], { type: "application/pdf" }), filename || "document.pdf");
+  form.append("upload_preset", uploadPreset);
+  // "auto" is the most compatible with arbitrary unsigned presets.
+  const endpoint = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
+  const res = await fetch(endpoint, { method: "POST", body: form });
+  const text = await res.text();
+  let json = {};
   try {
-    await cloudinary.uploader.destroy(publicId, { resource_type: "raw" });
-    return true;
-  } catch (err) {
-    console.warn(`⚠️ [cloudinary] destroy failed: ${err.message}`);
-    return false;
+    json = JSON.parse(text);
+  } catch {
+    /* keep text for error */
   }
+  if (!res.ok) {
+    const msg = json?.error?.message || text.slice(0, 200);
+    throw new Error(`Cloudinary upload thất bại (${res.status}): ${msg}`);
+  }
+  return {
+    public_id: json.public_id,
+    url: json.secure_url || json.url,
+    bytes: json.bytes,
+    format: json.format || "pdf",
+    resource_type: json.resource_type || "image",
+  };
 }
 
-export default { cloudinaryConfigured, uploadPdf, destroyPdf };
+/**
+ * Upload a PDF buffer to Cloudinary.
+ * @returns {Promise<{public_id, url, bytes, format, resource_type}|null>}
+ *          null when Cloudinary isn't configured (treat as optional).
+ * @throws if Cloudinary IS configured but the upload fails.
+ */
+export async function uploadPdf(buffer, filename) {
+  const m = mode();
+  if (m === "signed") return signedUpload(buffer, filename);
+  if (m === "unsigned") return unsignedUpload(buffer, filename);
+  return null;
+}
+
+/**
+ * Best-effort delete. Only possible in SIGNED mode (needs API secret).
+ * In unsigned mode this returns false without throwing.
+ */
+export async function destroyPdf(publicId, resourceType) {
+  if (!publicId || mode() !== "signed") return false;
+  configureSigned();
+  // resource_type isn't stored per-asset; try the likely ones.
+  const types = resourceType ? [resourceType] : ["raw", "image"];
+  for (const rt of types) {
+    try {
+      const r = await cloudinary.uploader.destroy(publicId, { resource_type: rt });
+      if (r && r.result === "ok") return true;
+    } catch (err) {
+      console.warn(`⚠️ [cloudinary] destroy (${rt}) failed: ${err.message}`);
+    }
+  }
+  return false;
+}
+
+export default { cloudinaryConfigured, cloudinaryCanDelete, uploadPdf, destroyPdf };

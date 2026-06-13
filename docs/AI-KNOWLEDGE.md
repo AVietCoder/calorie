@@ -56,7 +56,8 @@ Mở **Supabase → SQL Editor**, dán toàn bộ nội dung `migrations/admin.s
 | `SUPABASE_URL`, `SUPABASE_ANON_KEY` | ✅ (đã có) | Như cũ |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ **mới, bắt buộc** | RLS chỉ cho admin/service-role đọc bảng admin → server phải dùng key này. Lấy ở Supabase → Project Settings → API → `service_role`. |
 | `OPENAI_API_KEY` | ⭐ nên có (đã có) | Dùng cho embedding. Thiếu thì vẫn chạy nhưng lớp B chỉ so khớp từ khóa. |
-| `CLOUDINARY_URL` *hoặc* `CLOUDINARY_CLOUD_NAME` + `CLOUDINARY_API_KEY` + `CLOUDINARY_API_SECRET` | ⭐ nên có | Lưu file PDF gốc lên Cloudinary. Thiếu thì upload vẫn chạy nhưng **không** lưu file gốc lên cloud (phần chữ vẫn lưu Supabase). |
+| **Cloudinary (UNSIGNED — khuyến nghị, đơn giản nhất):** `CLOUDINARY_CLOUD_NAME` + `CLOUDINARY_UPLOAD_PRESET` | ⭐ nên có | Lưu file PDF gốc lên Cloudinary bằng upload preset (không cần API secret). Tên có tiền tố `VITE_` cũng được chấp nhận. Thiếu thì upload vẫn chạy nhưng **không** lưu file gốc lên cloud (phần chữ vẫn lưu Supabase). |
+| **Cloudinary (SIGNED — tùy chọn, để BẬT xóa file):** thêm `CLOUDINARY_API_KEY` + `CLOUDINARY_API_SECRET` (hoặc dùng `CLOUDINARY_URL`) | tùy chọn | Unsigned KHÔNG xóa được file qua API. Thêm key/secret để khi xóa tài liệu thì xóa luôn file trên Cloudinary. |
 | `CLOUDINARY_PDF_FOLDER` | tùy chọn | Mặc định `calorie-rag-pdfs`. |
 | `ADMIN_EMAILS` | tùy chọn | Danh sách email admin, phân tách bằng dấu phẩy — dùng để cấp admin nhanh. |
 | `EMBEDDING_MODEL` | tùy chọn | Mặc định `text-embedding-3-small` (1536 chiều). |
@@ -82,7 +83,9 @@ chạy khi deploy).
   4. Tạo embedding (nếu có `OPENAI_API_KEY`).
   5. Lưu các đoạn vào `admin_kb_chunks`, metadata vào `admin_pdfs`.
 - Bảng "Tài liệu đã tải lên" cho xem trạng thái, số đoạn, số embedding, link file
-  Cloudinary, và nút **Xóa** (xóa cả chunk trong DB và file trên Cloudinary).
+  Cloudinary, và nút **Xóa**. Xóa luôn xóa chunk trong Supabase; file trên
+  Cloudinary chỉ bị xóa nếu đang ở chế độ SIGNED (có api_key + api_secret) —
+  ở chế độ unsigned thì file gốc vẫn được giữ lại trên Cloudinary.
 - PDF scan ảnh (không có text) sẽ báo lỗi vì không trích được nội dung.
 
 ---
