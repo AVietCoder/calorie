@@ -64,10 +64,6 @@
           <a href="#plan"><i class="fa-solid fa-calendar-week"></i> <span data-i18n="guide.toc_plan">Lịch 7 ngày</span></a>
           <a href="#tips"><i class="fa-solid fa-lightbulb"></i> <span data-i18n="guide.toc_tips">Mẹo &amp; Lưu ý</span></a>
           <a href="#faq"><i class="fa-solid fa-circle-question"></i> <span data-i18n="guide.toc_faq">Câu hỏi thường gặp</span></a>
-          <!-- Admin link — chỉ hiện khi is_admin = true, được inject bởi guide.js -->
-          <a href="#admin-section" id="toc-admin-link" style="display:none;">
-            <i class="fa-solid fa-shield-halved"></i> <span>Quản trị RAG</span>
-          </a>
         </nav>
 
         <!-- Main -->
@@ -270,32 +266,6 @@
             </details>
           </section>
 
-          <!-- ADMIN SECTION (only visible to admins) -->
-          <section class="guide-section" id="admin-section" style="display:none;">
-            <h2><span class="num" style="background:var(--gold);color:#fff;">★</span> Quản trị tài liệu RAG</h2>
-            <p class="lead">Khu vực dành cho quản trị viên — quản lý tài liệu PDF để AI học và tham khảo.</p>
-
-            <div class="feature-list">
-              <div class="feature-row">
-                <i class="fa-solid fa-cloud-arrow-up" style="color:var(--primary)"></i>
-                <div><strong>Upload PDF</strong><span>Tải tài liệu lên để AI "học" — hệ thống tự động trích văn bản, chia đoạn và tạo embedding.</span></div>
-              </div>
-              <div class="feature-row">
-                <i class="fa-solid fa-database" style="color:var(--primary)"></i>
-                <div><strong>Quản lý kho dữ liệu</strong><span>Xem danh sách tài liệu, số đoạn văn bản và embedding đã lưu vào Supabase.</span></div>
-              </div>
-              <div class="feature-row">
-                <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary)"></i>
-                <div><strong>RAG Pipeline</strong><span>PDF → Cloudinary (lưu file gốc) → trích text → chunk → embed → Supabase. Có hiệu lực ngay, không cần deploy lại.</span></div>
-              </div>
-            </div>
-
-            <div class="tip" style="margin-top:20px;">
-              <a href="admin.html" class="btn-ghost" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;">
-                <i class="fa-solid fa-shield-halved"></i> Mở trang Quản trị
-              </a>
-            </div>
-          </section>
 
         </div>
       </div>
