@@ -98,9 +98,33 @@ async function loadPdfs() {
     } else {
       body.innerHTML = pdfs
         .map((p) => {
-          const fileLink = p.cloudinary_url
-            ? `<a class="btn-ghost" href="${String(p.cloudinary_url).replace('/upload/','/upload/fl_attachment/')}" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i></a>`
-            : '<span class="cross">—</span>';
+const fileLink = p.cloudinary_url
+  ? (() => {
+      const filename =
+        (p.file_name || "document")
+          .replace(/[^a-zA-Z0-9._-]/g, "_")
+          .replace(/\.pdf$/i, "");
+
+      const downloadUrl = String(p.cloudinary_url)
+        .replace(
+          "/upload/",
+          `/upload/fl_attachment:${encodeURIComponent(filename)}.pdf/`
+        );
+
+      return `
+        <a
+          class="btn-ghost"
+          href="${downloadUrl}"
+          target="_blank"
+          rel="noopener"
+          download="${filename}.pdf"
+          title="Tải PDF"
+        >
+          <i class="fa-solid fa-download"></i>
+        </a>
+      `;
+    })()
+  : '<span class="cross">—</span>';
           const emb = p.embedding_count > 0
             ? `<span class="tick"><i class="fa-solid fa-check"></i> ${p.embedding_count}</span>`
             : '<span class="cross">—</span>';
