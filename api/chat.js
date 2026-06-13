@@ -1,8 +1,8 @@
 import { IncomingForm } from "formidable";
 import OpenAI from "openai";
 import fs from "fs";
-import { supabase } from "./lib/supabase.js";
-import { retrieveKnowledge, buildKnowledgeSection } from "./lib/knowledge.js";
+import { supabase } from "../lib/supabase.js";
+import { retrieveKnowledge, buildKnowledgeSection } from "../lib/knowledge.js";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -513,7 +513,7 @@ export default async function handler(req, res) {
     }
 
     // ── RAG: lấy kiến thức dinh dưỡng chuyên môn theo bệnh lý của người dùng ──
-    // Tài liệu được nạp từ api/knowledge/knowledge-base.json (sinh ra từ các PDF
+    // Tài liệu được nạp từ knowledge/knowledge-base.json (sinh ra từ các PDF
     // trong scripts/sources). AI sẽ dựa vào đây để tư vấn sát với bệnh lý.
     const knowledge = await retrieveKnowledge({
       message,

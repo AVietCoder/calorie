@@ -9,11 +9,11 @@ và phần **fix lỗi deploy trên Vercel**.
 
 AI không fine-tune; thay vào đó, mỗi lần chat ta **truy hồi (retrieve)** các đoạn
 tài liệu liên quan rồi chèn vào prompt. Có **2 nguồn kiến thức** ghép lại tự động
-trong `api/lib/knowledge.js`:
+trong `lib/knowledge.js`:
 
 | Lớp | Nguồn | Cách chọn | Quản lý ở đâu |
 |-----|-------|-----------|---------------|
-| **A. Cơ sở theo bệnh lý** (có sẵn) | `api/knowledge/knowledge-base.json` (6 tài liệu: tiểu đường, gút, gan nhiễm mỡ, mỡ máu, thận, tiêu hóa) | Định tuyến theo `profile.disease` của người dùng | Sinh ra từ `scripts/sources/*.pdf` bằng `scripts/build-knowledge-base.py` |
+| **A. Cơ sở theo bệnh lý** (có sẵn) | `knowledge/knowledge-base.json` (6 tài liệu: tiểu đường, gút, gan nhiễm mỡ, mỡ máu, thận, tiêu hóa) | Định tuyến theo `profile.disease` của người dùng | Sinh ra từ `scripts/sources/*.pdf` bằng `scripts/build-knowledge-base.py` |
 | **B. Bổ sung (admin upload)** | Supabase `admin_kb_chunks` | Tương đồng ngữ nghĩa (semantic) với câu hỏi, hoặc trùng từ khóa | Trang **/admin.html**, file gốc lưu trên **Cloudinary** |
 
 > Lớp B **độc lập** với lớp A (đúng như thiết kế trong `migrations/admin.sql`):
@@ -29,7 +29,7 @@ embeddings + Supabase + Cloudinary** thay cho LangChain/Pinecone.
 ## 2. Fix lỗi deploy Vercel (`import.meta`)
 
 **Lỗi:** `SyntaxError: Cannot use 'import.meta' outside a module` tại
-`api/lib/knowledge.js`.
+`lib/knowledge.js`.
 
 **Nguyên nhân:** Vercel biên dịch file ESM (`import/export`) sang CommonJS bằng
 esbuild. Cú pháp `import.meta.url` không có tương đương trong CommonJS nên gây lỗi

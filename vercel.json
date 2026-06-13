@@ -1,10 +1,10 @@
 {
   "functions": {
     "api/index.js": {
-      "includeFiles": "api/knowledge/**"
+      "includeFiles": "knowledge/**"
     },
     "api/admin.js": {
-      "includeFiles": "api/knowledge/**",
+      "includeFiles": "knowledge/**",
       "maxDuration": 60
     },
     "api/analyze-food.js": {
@@ -17,11 +17,11 @@
       "maxDuration": 10
     },
     "api/chat.js": {
-      "includeFiles": "api/knowledge/**",
+      "includeFiles": "knowledge/**",
       "maxDuration": 60
     },
     "api/coach-dynamic.js": {
-      "includeFiles": "api/knowledge/**",
+      "includeFiles": "knowledge/**",
       "maxDuration": 60
     },
     "api/diet-info.js": {

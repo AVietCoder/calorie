@@ -3,7 +3,7 @@
  * ingest-knowledge.mjs — OPTIONAL one-time upgrade.
  *
  * Adds OpenAI embedding vectors to every chunk in
- * api/knowledge/knowledge-base.json. After running this, the app's retrieval
+ * knowledge/knowledge-base.json. After running this, the app's retrieval
  * automatically switches from keyword/disease-routing to full semantic search,
  * which handles free-form questions (e.g. "cá hồi có tốt cho người gút không?")
  * and matches Vietnamese questions against the English source documents.
@@ -24,7 +24,7 @@ import { fileURLToPath } from "url";
 import OpenAI from "openai";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const KB_PATH = path.join(__dirname, "..", "api", "knowledge", "knowledge-base.json");
+const KB_PATH = path.join(__dirname, "..", "knowledge", "knowledge-base.json");
 const MODEL = process.env.EMBEDDING_MODEL || "text-embedding-3-small";
 const BATCH = 64;
 

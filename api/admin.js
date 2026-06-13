@@ -18,11 +18,11 @@
 import { IncomingForm } from "formidable";
 import fs from "fs";
 
-import { requireAdmin } from "./lib/admin-auth.js";
-import { parsePdf } from "./lib/rag/parse-pdf.js";
-import { chunkText } from "./lib/rag/chunker.js";
-import { embedTexts, embeddingsAvailable } from "./lib/rag/embeddings.js";
-import { cloudinaryConfigured, uploadPdf, destroyPdf, testCloudinaryConnection } from "./lib/cloudinary.js";
+import { requireAdmin } from "../lib/admin-auth.js";
+import { parsePdf } from "../lib/rag/parse-pdf.js";
+import { chunkText } from "../lib/rag/chunker.js";
+import { embedTexts, embeddingsAvailable } from "../lib/rag/embeddings.js";
+import { cloudinaryConfigured, uploadPdf, destroyPdf, testCloudinaryConnection } from "../lib/cloudinary.js";
 import {
   adminStoreReady,
   countAdminChunks,
@@ -32,7 +32,7 @@ import {
   insertChunks,
   listPdfs,
   deletePdf,
-} from "./lib/rag/store.js";
+} from "../lib/rag/store.js";
 
 // Multipart upload => disable Vercel's default body parser (same as analyze-food).
 export const config = { api: { bodyParser: false } };
