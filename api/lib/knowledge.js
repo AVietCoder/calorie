@@ -25,11 +25,8 @@
  * flow is never broken by the knowledge layer.
  */
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const fs = require("fs");
+const path = require("path");
 
 /* ----------------------------------------------------------------------- */
 /* Load knowledge base (cached at module level)                            */
@@ -186,7 +183,7 @@ async function embedQuery(text, model) {
  * @param {number}  [opts.maxChars=4500] Soft cap on total injected characters.
  * @returns {Promise<{chunks:Array, usedDiseaseKeys:string[], mode:string}>}
  */
-export async function retrieveKnowledge({
+async function retrieveKnowledge({
   message = "",
   disease = "",
   topK = 6,
@@ -283,7 +280,7 @@ export async function retrieveKnowledge({
  * treat them as authoritative clinical guidance for the user's condition.
  * Returns "" when there is nothing to inject.
  */
-export function buildKnowledgeSection(result) {
+function buildKnowledgeSection(result) {
   const chunks = result?.chunks || [];
   if (!chunks.length) return "";
 
@@ -320,4 +317,7 @@ ${body}
 `.trim();
 }
 
-export default { retrieveKnowledge, buildKnowledgeSection };
+module.exports = {
+  retrieveKnowledge,
+  buildKnowledgeSection,
+};
