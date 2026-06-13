@@ -99,7 +99,7 @@ async function loadPdfs() {
       body.innerHTML = pdfs
         .map((p) => {
           const fileLink = p.cloudinary_url
-            ? `<a class="btn-ghost" href="${p.cloudinary_url}" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i></a>`
+            ? `<a class="btn-ghost" href="${String(p.cloudinary_url).replace('/upload/','/upload/fl_attachment/')}" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i></a>`
             : '<span class="cross">—</span>';
           const emb = p.embedding_count > 0
             ? `<span class="tick"><i class="fa-solid fa-check"></i> ${p.embedding_count}</span>`
