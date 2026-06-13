@@ -26,6 +26,13 @@ create table if not exists public.admin_pdfs (
   updated_at timestamptz not null default now()
 );
 
+-- 2b) Lưu file PDF gốc trong Supabase Storage (nơi lưu CHÍNH, không phụ thuộc Cloudinary).
+--     storage_path = đường dẫn object trong bucket; storage_bucket = tên bucket.
+alter table public.admin_pdfs
+  add column if not exists storage_path text;
+alter table public.admin_pdfs
+  add column if not exists storage_bucket text;
+
 create index if not exists admin_pdfs_created_at_idx
   on public.admin_pdfs (created_at desc);
 
@@ -103,4 +110,16 @@ create policy "admin read all chat_images" on public.chat_images
 -- ============================================================
 -- Cách gán quyền admin cho 1 user:
 --   update public.profiles set is_admin = true where id = '<user-uuid>';
+-- ============================================================
+
+-- ============================================================
+-- LƯU FILE PDF GỐC (Supabase Storage)
+-- App sẽ tự tạo bucket riêng tư tên 'admin-pdfs' khi upload lần đầu
+-- (cần SUPABASE_SERVICE_ROLE_KEY). Nếu muốn tạo trước bằng SQL, chạy:
+--
+--   insert into storage.buckets (id, name, public)
+--   values ('admin-pdfs', 'admin-pdfs', false)
+--   on conflict (id) do nothing;
+--
+-- Bucket để PRIVATE; tải về dùng signed URL ngắn hạn do server cấp.
 -- ============================================================

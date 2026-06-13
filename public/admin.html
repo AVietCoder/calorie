@@ -57,7 +57,7 @@
         <div class="admin-head">
           <div>
             <h1><i class="fa-solid fa-book-medical"></i> Tài liệu RAG cho AI</h1>
-            <p class="muted">Tải tài liệu PDF lên để AI "học" và tham khảo khi tư vấn. Quy trình: lưu file gốc lên <strong>Cloudinary</strong> → trích văn bản → chia đoạn → tạo embedding → lưu vào Supabase. Có hiệu lực ngay, không cần deploy lại.</p>
+            <p class="muted">Tải tài liệu PDF lên để AI "học" và tham khảo khi tư vấn. Quy trình: lưu file gốc vào <strong>Supabase Storage</strong> → trích văn bản → chia đoạn → tạo embedding → lưu vào Supabase. Có hiệu lực ngay, không cần deploy lại.</p>
           </div>
         </div>
 
@@ -66,6 +66,7 @@
           <div class="status-pill skeleton-pill" id="pillStore"><i class="fa-solid fa-database"></i> <span>Đang kiểm tra…</span></div>
           <div class="status-pill skeleton-pill" id="pillPdfs"><i class="fa-solid fa-file-pdf"></i> <span>— tài liệu</span></div>
           <div class="status-pill skeleton-pill" id="pillChunks"><i class="fa-solid fa-layer-group"></i> <span>— đoạn</span></div>
+          <div class="status-pill skeleton-pill" id="pillStorage"><i class="fa-solid fa-box-archive"></i> <span>Lưu file: —</span></div>
           <div class="status-pill skeleton-pill" id="pillCloud"><i class="fa-solid fa-cloud"></i> <span>Cloudinary: —</span></div>
           <div class="status-pill skeleton-pill" id="pillEmbed"><i class="fa-solid fa-wand-magic-sparkles"></i> <span>Embeddings: —</span></div>
         </div>
@@ -86,7 +87,7 @@
               <div class="spinner"></div>
               <span id="progressMsg">Đang xử lý…</span>
             </div>
-            <p class="hint">Lưu ý: PDF dạng scan ảnh (không có text) sẽ không trích được nội dung. Nếu chưa cấu hình Cloudinary, file gốc sẽ không được lưu trên cloud (phần chữ vẫn lưu Supabase).</p>
+            <p class="hint">Lưu ý: PDF dạng scan ảnh (không có text) sẽ không trích được nội dung. File gốc được lưu vào Supabase Storage (cần <code>SUPABASE_SERVICE_ROLE_KEY</code>) và có thể tải lại bất cứ lúc nào.</p>
           </section>
 
           <!-- PDF list card -->

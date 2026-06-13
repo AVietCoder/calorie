@@ -41,7 +41,7 @@ function hidePageLoader() {
 
 /* ---- status pills ---- */
 function setStatusLoading() {
-  ["pillStore","pillPdfs","pillChunks","pillCloud","pillEmbed"].forEach(id => {
+  ["pillStore","pillPdfs","pillChunks","pillStorage","pillCloud","pillEmbed"].forEach(id => {
     const el = $(id);
     if (el) el.classList.add("skeleton-pill");
   });
@@ -65,10 +65,19 @@ function renderStatus(data) {
   pillChunks.classList.remove("skeleton-pill");
   pillChunks.querySelector("span").textContent = `${store.chunks ?? 0} đoạn`;
 
+  const storage = $("pillStorage");
+  if (storage) {
+    storage.classList.remove("skeleton-pill");
+    storage.className = "status-pill " + (data.storage ? "ok" : "bad");
+    storage.querySelector("span").textContent =
+      "Lưu file: " + (data.storage ? "Supabase Storage" : "Chưa cấu hình");
+  }
+
   const cloud = $("pillCloud");
   cloud.classList.remove("skeleton-pill");
-  cloud.className = "status-pill " + (data.cloudinary ? "ok" : "bad");
-  cloud.querySelector("span").textContent = "Cloudinary: " + (data.cloudinary ? "Đã bật" : "Chưa cấu hình");
+  cloud.className = "status-pill " + (data.cloudinary ? "ok" : "");
+  cloud.querySelector("span").textContent =
+    "Cloudinary (tùy chọn): " + (data.cloudinary ? "Đã bật" : "Tắt");
 
   const emb = $("pillEmbed");
   emb.classList.remove("skeleton-pill");
@@ -98,41 +107,26 @@ async function loadPdfs() {
     } else {
       body.innerHTML = pdfs
         .map((p) => {
-const fileLink = p.cloudinary_url
+const fileLink = p.download_url
   ? (() => {
-      // Keep the original filename (including .pdf) and only sanitize
-      // characters that could break the attachment header.
       const baseName =
-        (p.file_name || "document.pdf")
-          .replace(/[^a-zA-Z0-9._-]/g, "_") || "document.pdf";
-
-      // Older uploads may already have "/upload/fl_attachment/" baked
-      // into the stored URL (a previous bug) — strip it before adding
-      // our own, otherwise the two collide into an invalid path.
-      const cleanUrl = String(p.cloudinary_url).replace(
-        /\/upload\/fl_attachment(:[^/]*)?\//,
-        "/upload/"
-      );
-
-      const downloadUrl = cleanUrl.replace(
-        "/upload/",
-        `/upload/fl_attachment:${encodeURIComponent(baseName)}/`
-      );
-
+        (p.file_name || "document.pdf").replace(/[^a-zA-Z0-9._-]/g, "_") || "document.pdf";
+      const titleTxt =
+        p.download_kind === "cloudinary" ? "Tải PDF (Cloudinary)" : "Tải PDF";
       return `
         <a
           class="btn-ghost"
-          href="${downloadUrl}"
+          href="${p.download_url}"
           target="_blank"
           rel="noopener"
-          download="${baseName}.pdf"
-          title="Tải PDF"
+          download="${baseName}"
+          title="${titleTxt}"
         >
           <i class="fa-solid fa-download"></i>
         </a>
       `;
     })()
-  : '<span class="cross">—</span>';
+  : '<span class="cross" title="Chưa có file gốc để tải">—</span>';
           const emb = p.embedding_count > 0
             ? `<span class="tick"><i class="fa-solid fa-check"></i> ${p.embedding_count}</span>`
             : '<span class="cross">—</span>';

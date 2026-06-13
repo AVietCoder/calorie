@@ -1,19 +1,21 @@
 /**
- * /api/admin — admin knowledge-base management (uploads → Cloudinary + RAG).
+ * /api/admin — admin knowledge-base management (uploads → Storage + RAG).
  *
- * Pipeline (mirrors the reference RAG project, adapted to this stack):
- *   PDF → Cloudinary (raw file) → pdf-parse (text) → chunk → embed (OpenAI)
+ * Pipeline:
+ *   PDF → Supabase Storage (raw file, PRIMARY) [+ Cloudinary mirror, OPTIONAL]
+ *       → pdf-parse (text) → chunk → embed (OpenAI)
  *       → store chunks in Supabase admin_kb_chunks (+ metadata in admin_pdfs).
  *
  * Actions (?action=...):
- *   GET  whoami        -> { isAdmin, email, store, cloudinary, embeddings }
- *   GET  list          -> { pdfs:[...], store }
+ *   GET  whoami        -> { isAdmin, email, store, cloudinary, storage, embeddings }
+ *   GET  list          -> { pdfs:[{ ..., download_url, download_kind }], store }
+ *   GET  download&id=  -> 302 redirect to a fresh signed download URL
  *   POST upload        -> multipart (file=PDF): run the full pipeline
- *   POST delete&id=    -> delete a PDF (DB cascade + Cloudinary)
+ *   POST delete&id=    -> delete a PDF (DB cascade + Storage + Cloudinary)
  *
  * Everything except `whoami` requires an admin. Reads/writes use the
  * service-role Supabase client (see store.js / migrations/admin.sql), so
- * SUPABASE_SERVICE_ROLE_KEY must be configured.
+ * SUPABASE_SERVICE_ROLE_KEY must be configured (also required for Storage).
  */
 import { IncomingForm } from "formidable";
 import fs from "fs";
@@ -22,7 +24,14 @@ import { requireAdmin } from "../lib/admin-auth.js";
 import { parsePdf } from "../lib/rag/parse-pdf.js";
 import { chunkText } from "../lib/rag/chunker.js";
 import { embedTexts, embeddingsAvailable } from "../lib/rag/embeddings.js";
-import { cloudinaryConfigured, uploadPdf, destroyPdf, testCloudinaryConnection } from "../lib/cloudinary.js";
+import { cloudinaryConfigured, uploadPdf, destroyPdf } from "../lib/cloudinary.js";
+import {
+  storageConfigured,
+  uploadPdfToStorage,
+  getSignedUrl,
+  deletePdfFromStorage,
+} from "../lib/rag/storage.js";
+import { resetKnowledgeCache } from "../lib/knowledge.js";
 import {
   adminStoreReady,
   countAdminChunks,
@@ -31,6 +40,7 @@ import {
   updatePdf,
   insertChunks,
   listPdfs,
+  getPdf,
   deletePdf,
 } from "../lib/rag/store.js";
 
@@ -74,6 +84,7 @@ export default async function handler(req, res) {
       email: user.email,
       store: await storeSummary(),
       cloudinary: cloudinaryConfigured(),
+      storage: storageConfigured(),
       embeddings: embeddingsAvailable(),
     });
   }
@@ -85,24 +96,68 @@ export default async function handler(req, res) {
   try {
     // ── List uploaded PDFs ────────────────────────────────────────────
     if (req.method === "GET" && action === "list") {
-      const result = await testCloudinaryConnection();
-
       const pdfs = await listPdfs();
+
+      // Attach a ready-to-use download URL for each row. Prefer Supabase
+      // Storage (private bucket → short-lived signed URL, works out of the
+      // box); fall back to the Cloudinary delivery URL for older uploads.
+      const withLinks = await Promise.all(
+        (pdfs || []).map(async (p) => {
+          let download_url = null;
+          let download_kind = null;
+          if (p.storage_path) {
+            const name = (p.file_name || "document.pdf").replace(/[^a-zA-Z0-9._-]/g, "_");
+            download_url = await getSignedUrl(p.storage_path, name);
+            if (download_url) download_kind = "storage";
+          }
+          if (!download_url && p.cloudinary_url) {
+            download_url = p.cloudinary_url;
+            download_kind = "cloudinary";
+          }
+          return { ...p, download_url, download_kind };
+        })
+      );
+
       return res.status(200).json({
         success: true,
-        pdfs,
+        pdfs: withLinks,
         store: await storeSummary(),
         cloudinary: cloudinaryConfigured(),
+        storage: storageConfigured(),
         embeddings: embeddingsAvailable(),
       });
     }
 
-    // ── Delete a PDF (DB cascade + Cloudinary) ────────────────────────
+    // ── Download a PDF (redirect to a fresh signed URL) ───────────────
+    // Robust fallback path: /api/admin?action=download&id=<uuid>
+    if (req.method === "GET" && action === "download") {
+      const id = asText(req.query?.id) || asText(req.query?.docId);
+      if (!id) return res.status(400).json({ success: false, error: "Thiếu id." });
+      const row = await getPdf(id);
+      if (!row) return res.status(404).json({ success: false, error: "Không tìm thấy tài liệu." });
+
+      const name = (row.file_name || "document.pdf").replace(/[^a-zA-Z0-9._-]/g, "_");
+      let url = null;
+      if (row.storage_path) url = await getSignedUrl(row.storage_path, name);
+      if (!url && row.cloudinary_url) url = row.cloudinary_url;
+      if (!url) {
+        return res.status(404).json({
+          success: false,
+          error: "Tài liệu này chưa có file gốc để tải (chỉ có phần văn bản đã trích).",
+        });
+      }
+      res.setHeader("Location", url);
+      return res.status(302).end();
+    }
+
+    // ── Delete a PDF (DB cascade + Storage + Cloudinary) ──────────────
     if (req.method === "POST" && action === "delete") {
       const id = asText(req.query?.id) || asText(req.query?.docId);
       if (!id) return res.status(400).json({ success: false, error: "Thiếu id." });
       const row = await deletePdf(id);
+      if (row?.storage_path) await deletePdfFromStorage(row.storage_path);
       if (row?.cloudinary_public_id) await destroyPdf(row.cloudinary_public_id);
+      resetKnowledgeCache(); // freshly removed doc disappears from retrieval at once
       return res.status(200).json({ success: true, store: await storeSummary() });
     }
 
@@ -141,14 +196,27 @@ export default async function handler(req, res) {
       });
 
       let cloud = null;
+      let storage = null;
       try {
-        // 2) Store the raw PDF in Cloudinary (if configured).
+        // 2) Persist the raw PDF.
+        //    PRIMARY: Supabase Storage (always available with this stack).
+        //    OPTIONAL MIRROR: Cloudinary (kept for backward compatibility).
         const cloudinaryOn = cloudinaryConfigured();
+
+        storage = await uploadPdfToStorage(buffer, filename, pdf.id);
         if (cloudinaryOn) {
-          cloud = await uploadPdf(buffer, filename);
+          try {
+            cloud = await uploadPdf(buffer, filename);
+          } catch (e) {
+            console.warn(`⚠️ [admin] Cloudinary mirror failed (ignored): ${e.message}`);
+            cloud = null;
+          }
         }
+
         await updatePdf(pdf.id, {
           status: "extracting",
+          storage_path: storage?.path || null,
+          storage_bucket: storage?.bucket || null,
           cloudinary_public_id: cloud?.public_id || null,
           cloudinary_url: cloud?.url || null,
         });
@@ -163,9 +231,9 @@ export default async function handler(req, res) {
           });
         }
 
-        // 4) Chunk.
+        // 4) Chunk (tuned: smaller chunks retrieve more precisely for Q&A).
         await updatePdf(pdf.id, { status: "chunking" });
-        const chunks = chunkText(text, { chunkChars: 1200, overlap: 200 });
+        const chunks = chunkText(text, { chunkChars: 1000, overlap: 150 });
         if (!chunks.length) {
           await updatePdf(pdf.id, { status: "error", error_message: "Không tạo được đoạn văn bản." });
           return res.status(422).json({ success: false, error: "Không tạo được đoạn văn bản nào." });
@@ -187,12 +255,29 @@ export default async function handler(req, res) {
         await updatePdf(pdf.id, { status: "saving" });
         const { inserted, embedded } = await insertChunks(pdf.id, chunks, embeddings);
 
-        // 7) Mark ready.
+        // 7) Mark ready + refresh retrieval cache so it's usable immediately.
         await updatePdf(pdf.id, {
           status: "ready",
           chunk_count: inserted,
           embedding_count: embedded,
         });
+        resetKnowledgeCache();
+
+        // Build a download URL for the response (signed Storage URL preferred).
+        let download_url = null;
+        if (storage?.path) {
+          download_url = await getSignedUrl(
+            storage.path,
+            filename.replace(/[^a-zA-Z0-9._-]/g, "_")
+          );
+        }
+        if (!download_url && cloud?.url) download_url = cloud.url;
+
+        const warning = !storage && !cloud
+          ? "Không lưu được file gốc (kiểm tra SUPABASE_SERVICE_ROLE_KEY / Storage). Phần văn bản vẫn được lưu vào Supabase."
+          : !storage && cloud
+          ? "Chưa lưu được vào Supabase Storage — đang dùng Cloudinary để lưu file gốc."
+          : null;
 
         return res.status(200).json({
           success: true,
@@ -202,15 +287,18 @@ export default async function handler(req, res) {
             pages,
             chunk_count: inserted,
             embedding_count: embedded,
-            cloudinary_url: cloud?.url || null,
-            cloudinary: cloudinaryOn,
+            download_url,
+            stored: !!(storage || cloud),
+            storage: !!storage,
+            cloudinary: !!cloud,
           },
           store: await storeSummary(),
-          warning: cloudinaryOn ? null : "Cloudinary chưa được cấu hình — tệp PDF KHÔNG được lưu trên cloud (các đoạn văn bản vẫn lưu vào Supabase).",
+          warning,
         });
       } catch (err) {
         await updatePdf(pdf.id, { status: "error", error_message: String(err?.message || "unknown").slice(0, 500) });
-        if (cloud?.public_id) await destroyPdf(cloud.public_id); // avoid orphaned cloud file
+        if (storage?.path) await deletePdfFromStorage(storage.path); // avoid orphans
+        if (cloud?.public_id) await destroyPdf(cloud.public_id);
         console.error("admin upload error:", err);
         return res.status(500).json({ success: false, error: "Lỗi xử lý tài liệu: " + (err?.message || "unknown") });
       }
