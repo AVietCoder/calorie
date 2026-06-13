@@ -34,6 +34,15 @@
     </header>
 
     <main class="content">
+
+      <!-- Page loading overlay -->
+      <div id="adminPageLoader" class="admin-page-loader">
+        <div class="admin-loader-inner">
+          <div class="admin-loader-spinner"></div>
+          <p>Đang kiểm tra quyền truy cập…</p>
+        </div>
+      </div>
+
       <!-- Access-denied overlay -->
       <div id="denied" class="admin-denied" style="display:none;">
         <i class="fa-solid fa-lock"></i>
@@ -51,13 +60,13 @@
           </div>
         </div>
 
-        <!-- Status bar -->
+        <!-- Status bar với skeleton loading -->
         <div class="status-bar" id="statusBar">
-          <div class="status-pill" id="pillStore"><i class="fa-solid fa-database"></i> <span>Đang kiểm tra…</span></div>
-          <div class="status-pill" id="pillPdfs"><i class="fa-solid fa-file-pdf"></i> <span>— tài liệu</span></div>
-          <div class="status-pill" id="pillChunks"><i class="fa-solid fa-layer-group"></i> <span>— đoạn</span></div>
-          <div class="status-pill" id="pillCloud"><i class="fa-solid fa-cloud"></i> <span>Cloudinary: —</span></div>
-          <div class="status-pill" id="pillEmbed"><i class="fa-solid fa-wand-magic-sparkles"></i> <span>Embeddings: —</span></div>
+          <div class="status-pill skeleton-pill" id="pillStore"><i class="fa-solid fa-database"></i> <span>Đang kiểm tra…</span></div>
+          <div class="status-pill skeleton-pill" id="pillPdfs"><i class="fa-solid fa-file-pdf"></i> <span>— tài liệu</span></div>
+          <div class="status-pill skeleton-pill" id="pillChunks"><i class="fa-solid fa-layer-group"></i> <span>— đoạn</span></div>
+          <div class="status-pill skeleton-pill" id="pillCloud"><i class="fa-solid fa-cloud"></i> <span>Cloudinary: —</span></div>
+          <div class="status-pill skeleton-pill" id="pillEmbed"><i class="fa-solid fa-wand-magic-sparkles"></i> <span>Embeddings: —</span></div>
         </div>
 
         <div class="admin-grid">
@@ -87,7 +96,13 @@
                 <button class="btn-ghost" id="refreshBtn"><i class="fa-solid fa-rotate"></i> Làm mới</button>
               </div>
             </div>
-            <div class="table-wrap">
+            <!-- Skeleton loading for table -->
+            <div id="tableLoader" class="table-skeleton">
+              <div class="skeleton-row"><div class="sk sk-full"></div></div>
+              <div class="skeleton-row"><div class="sk sk-full"></div></div>
+              <div class="skeleton-row"><div class="sk sk-full"></div></div>
+            </div>
+            <div class="table-wrap" id="tableWrap" style="display:none;">
               <table class="docs-table">
                 <thead>
                   <tr><th>Tệp</th><th>Kích thước</th><th>Trạng thái</th><th>Đoạn</th><th>Embed</th><th>File</th><th></th></tr>

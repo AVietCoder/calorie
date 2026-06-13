@@ -22,7 +22,7 @@ import { requireAdmin } from "./lib/admin-auth.js";
 import { parsePdf } from "./lib/rag/parse-pdf.js";
 import { chunkText } from "./lib/rag/chunker.js";
 import { embedTexts, embeddingsAvailable } from "./lib/rag/embeddings.js";
-import { cloudinaryConfigured, uploadPdf, destroyPdf } from "./lib/cloudinary.js";
+import { cloudinaryConfigured, uploadPdf, destroyPdf, testCloudinaryConnection } from "./lib/cloudinary.js";
 import {
   adminStoreReady,
   countAdminChunks,
@@ -85,6 +85,8 @@ export default async function handler(req, res) {
   try {
     // ── List uploaded PDFs ────────────────────────────────────────────
     if (req.method === "GET" && action === "list") {
+      const result = await testCloudinaryConnection();
+
       const pdfs = await listPdfs();
       return res.status(200).json({
         success: true,

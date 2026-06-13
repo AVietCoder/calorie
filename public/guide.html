@@ -27,27 +27,27 @@
     <header class="header">
       <a href="chat.html" class="logo"><i class="fa-solid fa-leaf"></i> Calorie AI</a>
       <div class="header-tools">
-  <div class="user-profile-nav" id="siu" onclick="location.href='diet-details.html'" title="Quay lại Dashboard">
-    <span class="user-name">
-      <i class="fa-solid fa-arrow-left"></i>
-      <strong data-i18n="guide.back_dashboard">Về Dashboard</strong>
-    </span>
-  </div>
+        <div class="user-profile-nav" id="siu" onclick="location.href='diet-details.html'" title="Quay lại Dashboard">
+          <span class="user-name">
+            <i class="fa-solid fa-arrow-left"></i>
+            <strong data-i18n="guide.back_dashboard">Về Dashboard</strong>
+          </span>
+        </div>
 
-  <!-- Nút đăng nhập -->
-  <div 
-    class="user-profile-nav" 
-    id="login-note"
-    onclick="location.href='signin.html'"
-    title="Đăng nhập"
-    style="display:none;"
-  >
-    <span class="user-name">
-      <i class="fa-solid fa-right-to-bracket"></i>
-      <strong data-i18n="guide.login_to_continue">Đăng nhập để tiếp tục</strong>
-    </span>
-  </div>
-</div>
+        <!-- Nút đăng nhập -->
+        <div
+          class="user-profile-nav"
+          id="login-note"
+          onclick="location.href='signin.html'"
+          title="Đăng nhập"
+          style="display:none;"
+        >
+          <span class="user-name">
+            <i class="fa-solid fa-right-to-bracket"></i>
+            <strong data-i18n="guide.login_to_continue">Đăng nhập để tiếp tục</strong>
+          </span>
+        </div>
+      </div>
     </header>
 
     <main class="content">
@@ -62,8 +62,12 @@
           <a href="#dashboard"><i class="fa-solid fa-chart-pie"></i> <span data-i18n="guide.toc_dashboard">Dashboard Diet</span></a>
           <a href="#chat"><i class="fa-solid fa-comments"></i> <span data-i18n="guide.toc_chat">Trò chuyện AI</span></a>
           <a href="#plan"><i class="fa-solid fa-calendar-week"></i> <span data-i18n="guide.toc_plan">Lịch 7 ngày</span></a>
-          <a href="#tips"><i class="fa-solid fa-lightbulb"></i> <span data-i18n="guide.toc_tips">Mẹo & Lưu ý</span></a>
+          <a href="#tips"><i class="fa-solid fa-lightbulb"></i> <span data-i18n="guide.toc_tips">Mẹo &amp; Lưu ý</span></a>
           <a href="#faq"><i class="fa-solid fa-circle-question"></i> <span data-i18n="guide.toc_faq">Câu hỏi thường gặp</span></a>
+          <!-- Admin link — chỉ hiện khi is_admin = true, được inject bởi guide.js -->
+          <a href="#admin-section" id="toc-admin-link" style="display:none;">
+            <i class="fa-solid fa-shield-halved"></i> <span>Quản trị RAG</span>
+          </a>
         </nav>
 
         <!-- Main -->
@@ -79,10 +83,10 @@
               <span class="chip"><i class="fa-solid fa-leaf"></i> <span data-i18n="guide.chip_beginner">Phù hợp người mới</span></span>
               <span class="chip"><i class="fa-solid fa-shield-halved"></i> <span data-i18n="guide.chip_updated">Cập nhật liên tục</span></span>
             </div>
-             <div class="feature-list">
+            <div class="feature-list">
               <div class="feature-row">
                 <i class="fa-solid fa-bolt"></i>
-                <div><strong data-i18n="guide.feat_auto_t">Tính toán tự động</strong><span data-i18n="guide.feat_auto_d">BMR, TDEE, mục tiêu calo & macro theo công thức chuẩn.</span></div>
+                <div><strong data-i18n="guide.feat_auto_t">Tính toán tự động</strong><span data-i18n="guide.feat_auto_d">BMR, TDEE, mục tiêu calo &amp; macro theo công thức chuẩn.</span></div>
               </div>
               <div class="feature-row">
                 <i class="fa-solid fa-comment-dots"></i>
@@ -200,7 +204,7 @@
             <p class="lead" data-i18n-html="guide.plan_lead">Trang <strong>schedule.html</strong> hiển thị thực đơn dạng bảng theo ngày × bữa.</p>
 
             <ul>
-              <li data-i18n="guide.plan_li1">Mỗi ô là một bữa được AI gợi ý phù hợp với mục tiêu calo & macro.</li>
+              <li data-i18n="guide.plan_li1">Mỗi ô là một bữa được AI gợi ý phù hợp với mục tiêu calo &amp; macro.</li>
               <li data-i18n-html="guide.plan_li2">Bấm <strong>"Sinh lại lịch"</strong> để AI tạo phương án mới.</li>
               <li data-i18n="guide.plan_li3">Kéo thanh bên dưới để xem các phản hồi/giải thích từ AI về kế hoạch.</li>
             </ul>
@@ -264,6 +268,33 @@
               <summary><i class="fa-solid fa-circle-question"></i> <span data-i18n="guide.faq_q4">Lịch 7 ngày có thay đổi mỗi tuần không?</span><i class="fa-solid fa-chevron-down chev"></i></summary>
               <p data-i18n="guide.faq_a4">Bạn có thể bấm "Sinh lại" bất kỳ lúc nào để có thực đơn mới phù hợp khẩu vị/mùa.</p>
             </details>
+          </section>
+
+          <!-- ADMIN SECTION (only visible to admins) -->
+          <section class="guide-section" id="admin-section" style="display:none;">
+            <h2><span class="num" style="background:var(--gold);color:#fff;">★</span> Quản trị tài liệu RAG</h2>
+            <p class="lead">Khu vực dành cho quản trị viên — quản lý tài liệu PDF để AI học và tham khảo.</p>
+
+            <div class="feature-list">
+              <div class="feature-row">
+                <i class="fa-solid fa-cloud-arrow-up" style="color:var(--primary)"></i>
+                <div><strong>Upload PDF</strong><span>Tải tài liệu lên để AI "học" — hệ thống tự động trích văn bản, chia đoạn và tạo embedding.</span></div>
+              </div>
+              <div class="feature-row">
+                <i class="fa-solid fa-database" style="color:var(--primary)"></i>
+                <div><strong>Quản lý kho dữ liệu</strong><span>Xem danh sách tài liệu, số đoạn văn bản và embedding đã lưu vào Supabase.</span></div>
+              </div>
+              <div class="feature-row">
+                <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary)"></i>
+                <div><strong>RAG Pipeline</strong><span>PDF → Cloudinary (lưu file gốc) → trích text → chunk → embed → Supabase. Có hiệu lực ngay, không cần deploy lại.</span></div>
+              </div>
+            </div>
+
+            <div class="tip" style="margin-top:20px;">
+              <a href="admin.html" class="btn-ghost" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;">
+                <i class="fa-solid fa-shield-halved"></i> Mở trang Quản trị
+              </a>
+            </div>
           </section>
 
         </div>

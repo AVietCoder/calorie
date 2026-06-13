@@ -10,8 +10,12 @@
     "api/analyze-food.js": {
       "maxDuration": 30
     },
-    "api/auth.js": {},
-    "api/chat-history.js": {},
+    "api/auth.js": {
+      "maxDuration": 10
+    },
+    "api/chat-history.js": {
+      "maxDuration": 10
+    },
     "api/chat.js": {
       "includeFiles": "api/knowledge/**",
       "maxDuration": 60
@@ -20,9 +24,15 @@
       "includeFiles": "api/knowledge/**",
       "maxDuration": 60
     },
-    "api/diet-info.js": {},
-    "api/setup.js": {},
-    "api/status.js": {}
+    "api/diet-info.js": {
+      "maxDuration": 10
+    },
+    "api/setup.js": {
+      "maxDuration": 10
+    },
+    "api/status.js": {
+      "maxDuration": 10
+    }
   },
   "rewrites": [
     {

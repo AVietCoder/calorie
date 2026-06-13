@@ -164,4 +164,80 @@ export async function destroyPdf(publicId, resourceType) {
   return false;
 }
 
-export default { cloudinaryConfigured, cloudinaryCanDelete, uploadPdf, destroyPdf };
+export async function testCloudinaryConnection() {
+  try {
+    const m = mode();
+
+    console.log("=================================");
+    console.log("☁️ CLOUDINARY CONNECTION TEST");
+    console.log("=================================");
+
+    console.log("Mode:", process.env.CLOUDINARY_CLOUD_NAME);
+
+    console.log("Environment:");
+    console.log({
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME || "(missing)",
+      uploadPreset: process.env.CLOUDINARY_UPLOAD_PRESET || "(missing)",
+      hasApiKey: !!process.env.CLOUDINARY_API_KEY,
+      hasApiSecret: !!process.env.CLOUDINARY_API_SECRET,
+      hasCloudinaryUrl: !!process.env.CLOUDINARY_URL,
+      folder: FOLDER,
+    });
+
+    if (!m) {
+      console.error("❌ Cloudinary chưa được cấu hình");
+
+      return {
+        success: false,
+        mode: null,
+        details: "Missing Cloudinary environment variables",
+      };
+    }
+
+    if (m === "signed") {
+      configureSigned();
+
+      const ping = await cloudinary.api.ping();
+
+      console.log("✅ Cloudinary SIGNED connection successful");
+      console.log("Ping response:", ping);
+
+      return {
+        success: true,
+        mode: "signed",
+        details: ping,
+      };
+    }
+
+    // unsigned mode
+    console.log("✅ Cloudinary UNSIGNED configuration detected");
+
+    const testBuffer = Buffer.from("Cloudinary test file");
+    const testFilename = `test-${Date.now()}.pdf`;
+
+    const uploadResult = await unsignedUpload(
+      testBuffer,
+      testFilename
+    );
+
+    console.log("✅ Test upload successful");
+    console.log(uploadResult);
+
+    return {
+      success: true,
+      mode: "unsigned",
+      details: uploadResult,
+    };
+  } catch (error) {
+    console.error("❌ Cloudinary connection failed");
+    console.error(error);
+
+    return {
+      success: false,
+      mode: mode(),
+      details: error.message,
+    };
+  }
+}
+
+export default { cloudinaryConfigured, cloudinaryCanDelete, uploadPdf, destroyPdf, testCloudinaryConnection };

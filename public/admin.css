@@ -142,3 +142,87 @@
 .admin-denied i { font-size: 46px; color: var(--gold); }
 .admin-denied h2 { margin: 18px 0 8px; font-size: 22px; color: var(--text-main); }
 .admin-denied p { color: var(--text-sub); margin: 0 0 22px; }
+
+/* ── Page loader overlay ───────────────────────────────────────── */
+.admin-page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(244,247,244,0.90);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 18px;
+  transition: opacity .25s;
+}
+.admin-loader-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.admin-loader-inner p {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-sub);
+  margin: 0;
+}
+.admin-loader-spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid var(--sage-100);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin .9s linear infinite;
+}
+
+/* ── Skeleton status pills ─────────────────────────────────────── */
+.status-pill.skeleton-pill {
+  position: relative;
+  overflow: hidden;
+  color: transparent !important;
+  background: var(--sage-100);
+  border-color: var(--sage-100);
+}
+.status-pill.skeleton-pill i { opacity: 0; }
+.status-pill.skeleton-pill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 30%, rgba(255,255,255,0.55) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+/* ── Table skeleton loader ─────────────────────────────────────── */
+.table-skeleton {
+  padding: 8px 0;
+  transition: opacity .2s;
+}
+.skeleton-row {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.skeleton-row:last-child { border-bottom: none; }
+.sk {
+  height: 16px;
+  border-radius: 6px;
+  background: var(--sage-100);
+  position: relative;
+  overflow: hidden;
+}
+.sk::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 30%, rgba(255,255,255,0.55) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+.sk-full { width: 100%; }

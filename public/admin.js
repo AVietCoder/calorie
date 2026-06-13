@@ -31,22 +31,47 @@ function statusBadge(s) {
   return `<span class="${cls}">${label}</span>`;
 }
 
+/* ---- page loader ---- */
+function hidePageLoader() {
+  const el = $("adminPageLoader");
+  if (!el) return;
+  el.style.opacity = "0";
+  setTimeout(() => { el.style.display = "none"; }, 250);
+}
+
 /* ---- status pills ---- */
+function setStatusLoading() {
+  ["pillStore","pillPdfs","pillChunks","pillCloud","pillEmbed"].forEach(id => {
+    const el = $(id);
+    if (el) el.classList.add("skeleton-pill");
+  });
+}
+
 function renderStatus(data) {
   const store = data.store || {};
+
   const pillStore = $("pillStore");
+  pillStore.classList.remove("skeleton-pill");
   pillStore.className = "status-pill " + (store.ready ? "ok" : "bad");
   pillStore.querySelector("span").textContent = store.ready
     ? "Kho dữ liệu sẵn sàng"
     : "Chưa tạo bảng Supabase";
-  $("pillPdfs").querySelector("span").textContent = `${store.pdfs ?? 0} tài liệu`;
-  $("pillChunks").querySelector("span").textContent = `${store.chunks ?? 0} đoạn`;
+
+  const pillPdfs = $("pillPdfs");
+  pillPdfs.classList.remove("skeleton-pill");
+  pillPdfs.querySelector("span").textContent = `${store.pdfs ?? 0} tài liệu`;
+
+  const pillChunks = $("pillChunks");
+  pillChunks.classList.remove("skeleton-pill");
+  pillChunks.querySelector("span").textContent = `${store.chunks ?? 0} đoạn`;
 
   const cloud = $("pillCloud");
+  cloud.classList.remove("skeleton-pill");
   cloud.className = "status-pill " + (data.cloudinary ? "ok" : "bad");
   cloud.querySelector("span").textContent = "Cloudinary: " + (data.cloudinary ? "Đã bật" : "Chưa cấu hình");
 
   const emb = $("pillEmbed");
+  emb.classList.remove("skeleton-pill");
   emb.className = "status-pill " + (data.embeddings ? "ok" : "");
   emb.querySelector("span").textContent = "Embeddings: " + (data.embeddings ? "Đã bật" : "Tắt (chỉ từ khóa)");
 }
@@ -54,6 +79,13 @@ function renderStatus(data) {
 /* ---- load PDF list ---- */
 async function loadPdfs() {
   const body = $("pdfsBody");
+  const tableLoader = $("tableLoader");
+  const tableWrap = $("tableWrap");
+
+  // Show skeleton, hide actual table
+  if (tableLoader) tableLoader.style.display = "block";
+  if (tableWrap) tableWrap.style.display = "none";
+
   try {
     const res = await fetch(`${API}?action=list`, { headers: authHeaders() });
     const data = await res.json();
@@ -63,34 +95,46 @@ async function loadPdfs() {
     const pdfs = data.pdfs || [];
     if (!pdfs.length) {
       body.innerHTML = `<tr><td colspan="7" class="empty">Chưa có tài liệu nào. Hãy tải PDF lên.</td></tr>`;
-      return;
-    }
-    body.innerHTML = pdfs
-      .map((p) => {
-        const fileLink = p.cloudinary_url
-          ? `<a class="btn-ghost" href="${p.cloudinary_url}" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i></a>`
-          : '<span class="cross">—</span>';
-        const emb = p.embedding_count > 0
-          ? `<span class="tick"><i class="fa-solid fa-check"></i> ${p.embedding_count}</span>`
-          : '<span class="cross">—</span>';
-        const errTitle = p.status === "error" && p.error_message ? ` title="${String(p.error_message).replace(/"/g, "&quot;")}"` : "";
-        return `<tr>
-          <td class="doc-name">${escapeHtml(p.file_name)}</td>
-          <td>${fmtBytes(p.file_size)}</td>
-          <td${errTitle}>${statusBadge(p.status)}</td>
-          <td class="chip-count">${p.chunk_count ?? 0}</td>
-          <td>${emb}</td>
-          <td>${fileLink}</td>
-          <td><button class="icon-btn" title="Xóa" data-id="${p.id}"><i class="fa-solid fa-trash"></i></button></td>
-        </tr>`;
-      })
-      .join("");
+    } else {
+      body.innerHTML = pdfs
+        .map((p) => {
+          const fileLink = p.cloudinary_url
+            ? `<a class="btn-ghost" href="${p.cloudinary_url}" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i></a>`
+            : '<span class="cross">—</span>';
+          const emb = p.embedding_count > 0
+            ? `<span class="tick"><i class="fa-solid fa-check"></i> ${p.embedding_count}</span>`
+            : '<span class="cross">—</span>';
+          const errTitle = p.status === "error" && p.error_message ? ` title="${String(p.error_message).replace(/"/g, "&quot;")}"` : "";
+          return `<tr>
+            <td class="doc-name">${escapeHtml(p.file_name)}</td>
+            <td>${fmtBytes(p.file_size)}</td>
+            <td${errTitle}>${statusBadge(p.status)}</td>
+            <td class="chip-count">${p.chunk_count ?? 0}</td>
+            <td>${emb}</td>
+            <td>${fileLink}</td>
+            <td><button class="icon-btn" title="Xóa" data-id="${p.id}"><i class="fa-solid fa-trash"></i></button></td>
+          </tr>`;
+        })
+        .join("");
 
-    body.querySelectorAll("button[data-id]").forEach((btn) => {
-      btn.onclick = () => deletePdf(btn.getAttribute("data-id"), btn);
-    });
+      body.querySelectorAll("button[data-id]").forEach((btn) => {
+        btn.onclick = () => deletePdf(btn.getAttribute("data-id"), btn);
+      });
+    }
   } catch (err) {
     body.innerHTML = `<tr><td colspan="7" class="empty">${escapeHtml(err.message)}</td></tr>`;
+  } finally {
+    // Hide skeleton, show table
+    if (tableLoader) {
+      tableLoader.style.opacity = "0";
+      setTimeout(() => {
+        tableLoader.style.display = "none";
+        tableLoader.style.opacity = "1";
+        if (tableWrap) tableWrap.style.display = "block";
+      }, 200);
+    } else if (tableWrap) {
+      tableWrap.style.display = "block";
+    }
   }
 }
 
@@ -205,6 +249,9 @@ async function init() {
       return;
     }
     const data = await res.json();
+
+    hidePageLoader();
+
     if (!data.isAdmin) {
       $("deniedMsg").textContent = `Tài khoản ${data.email || ""} chưa có quyền quản trị. Liên hệ quản trị viên để được cấp quyền (đặt is_admin = true).`;
       $("denied").style.display = "block";
@@ -219,6 +266,7 @@ async function init() {
     $("refreshBtn").onclick = loadPdfs;
     await loadPdfs();
   } catch (err) {
+    hidePageLoader();
     toast("Lỗi kết nối: " + err.message, "error");
   }
 }
