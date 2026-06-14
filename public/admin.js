@@ -1,13 +1,9 @@
-/* admin.js — RAG document manager (admin only).
- * Talks to /api/admin. Auth via the same calorie_ai_token used across the app. */
-
 const API = "/api/admin";
 const token = localStorage.getItem("calorie_ai_token");
 
 const $ = (id) => document.getElementById(id);
 const toast = (msg, type) => (window.showToast ? showToast(msg, type) : console.log(type, msg));
 
-/* ---- helpers ---- */
 function authHeaders(extra = {}) {
   return { Authorization: `Bearer ${token}`, ...extra };
 }
@@ -39,7 +35,6 @@ function hidePageLoader() {
   setTimeout(() => { el.style.display = "none"; }, 250);
 }
 
-/* ---- status pills ---- */
 function setStatusLoading() {
   ["pillStore","pillPdfs","pillChunks","pillStorage","pillCloud","pillEmbed"].forEach(id => {
     const el = $(id);
@@ -85,13 +80,11 @@ function renderStatus(data) {
   emb.querySelector("span").textContent = "Embeddings: " + (data.embeddings ? "Đã bật" : "Tắt (chỉ từ khóa)");
 }
 
-/* ---- load PDF list ---- */
 async function loadPdfs() {
   const body = $("pdfsBody");
   const tableLoader = $("tableLoader");
   const tableWrap = $("tableWrap");
 
-  // Show skeleton, hide actual table
   if (tableLoader) tableLoader.style.display = "block";
   if (tableWrap) tableWrap.style.display = "none";
 
@@ -150,7 +143,6 @@ const fileLink = p.download_url
   } catch (err) {
     body.innerHTML = `<tr><td colspan="7" class="empty">${escapeHtml(err.message)}</td></tr>`;
   } finally {
-    // Hide skeleton, show table
     if (tableLoader) {
       tableLoader.style.opacity = "0";
       setTimeout(() => {

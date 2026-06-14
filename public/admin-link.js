@@ -1,6 +1,4 @@
-/* admin-link.js — injects an "ADMIN" item into the side-nav, but only for
- * users whose account is an admin. Safe to include on every page; it no-ops
- * for guests and non-admins. Result is cached per session to avoid repeat calls. */
+
 (function () {
   try {
     var token = localStorage.getItem("calorie_ai_token");
@@ -29,6 +27,6 @@
         sessionStorage.setItem("calorie_is_admin", isAdmin ? "true" : "false");
         if (isAdmin) inject();
       })
-      .catch(function () { /* ignore */ });
-  } catch (e) { /* ignore */ }
+      .catch(function () {});
+  } catch (e) {}
 })();

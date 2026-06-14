@@ -1,5 +1,3 @@
-/* admin.css — styles for the RAG document manager (uses both.css variables) */
-
 .content { padding: 28px 34px 60px; }
 
 .admin-head { margin-bottom: 18px; }
@@ -10,7 +8,6 @@
 .admin-head h1 i { color: var(--primary); }
 .muted { color: var(--text-sub); margin: 0; max-width: 760px; }
 
-/* Status bar */
 .status-bar { display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0 22px; }
 .status-pill {
   display: inline-flex; align-items: center; gap: 8px;
@@ -23,7 +20,6 @@
 .status-pill.bad { color: var(--danger); }
 .status-pill.bad i { color: var(--danger); }
 
-/* Layout */
 .admin-grid {
   display: grid; grid-template-columns: minmax(360px, 460px) 1fr; gap: 22px;
   align-items: start;
@@ -57,7 +53,6 @@
   border-color: var(--primary); box-shadow: 0 0 0 3px var(--sage-100);
 }
 
-/* Dropzone */
 .dropzone {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 8px; padding: 26px; border: 2px dashed var(--sage-300);
@@ -69,7 +64,6 @@
 .dropzone i { font-size: 30px; color: var(--primary); }
 .dropzone.has-file { border-style: solid; border-color: var(--primary); color: var(--text-main); }
 
-/* Buttons */
 .btn-primary {
   width: 100%; margin-top: 18px; padding: 13px; border: none;
   border-radius: var(--radius-sm); font-size: 15px; font-weight: 700; cursor: pointer;
@@ -100,7 +94,6 @@
 
 .hint { font-size: 12.5px; color: var(--text-dim); margin: 14px 0 0; line-height: 1.5; }
 
-/* Docs table */
 .card-head-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
 .card-head-row h2 { margin: 0; }
 .card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -143,7 +136,6 @@
 .admin-denied h2 { margin: 18px 0 8px; font-size: 22px; color: var(--text-main); }
 .admin-denied p { color: var(--text-sub); margin: 0 0 22px; }
 
-/* ── Page loader overlay ───────────────────────────────────────── */
 .admin-page-loader {
   position: fixed;
   inset: 0;
@@ -178,7 +170,6 @@
   animation: spin .9s linear infinite;
 }
 
-/* ── Skeleton status pills ─────────────────────────────────────── */
 .status-pill.skeleton-pill {
   position: relative;
   overflow: hidden;
@@ -200,7 +191,6 @@
   100% { background-position:  200% 0; }
 }
 
-/* ── Table skeleton loader ─────────────────────────────────────── */
 .table-skeleton {
   padding: 8px 0;
   transition: opacity .2s;
