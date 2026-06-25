@@ -355,6 +355,7 @@ const callAIForPlan = async ({ systemPrompt, userPayload, traceId }) => {
       model: MODEL,
       messages,
       response_format: { type: "json_object" },
+      temperature: 0.2,
     });
   } catch (err) {
     log.error(`${traceId} | OpenAI`, err);
@@ -431,6 +432,7 @@ Chỉ trả JSON hợp lệ, không markdown, không giải thích.`;
     model: MODEL,
     messages: [{ role: "system", content: sys }],
     response_format: { type: "json_object" },
+    temperature: 0.2,
   });
   const raw = completion.choices?.[0]?.message?.content ?? "";
   log.info(`${traceId} | estimateOneFood`, { food, preview: raw.slice(0, 160) });

@@ -45,15 +45,67 @@ const safeJsonParse = (text) => {
   }
 };
 
+// Tolerant nutrition extractor.
+// Local models (Qwen2.5-VL) don't always wrap the JSON in <data>...</data> the
+// way gpt-4.1 did — they may use ```json fences or emit a bare object. This
+// finds the nutrition object in any of those shapes so the meal card keeps working.
 const extractDataBlock = (text = "") => {
-  const match = String(text).match(/<data>([\s\S]*?)<\/data>/i);
-  if (!match) return null;
-  try {
-    return JSON.parse(match[1]);
-  } catch {
-    return null;
+  const s = String(text);
+  const tryParse = (raw) => {
+    if (!raw) return null;
+    const cleaned = raw.trim().replace(/,\s*([}\]])/g, "$1"); // tolerate trailing commas
+    try {
+      return JSON.parse(cleaned);
+    } catch {
+      return null;
+    }
+  };
+
+  // 1) <data>...</data>
+  let m = s.match(/<data>([\s\S]*?)<\/data>/i);
+  if (m) {
+    const parsed = tryParse(m[1]);
+    if (parsed) return parsed;
   }
+  // 2) ```json ... ``` (or plain ``` ... ```)
+  m = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (m) {
+    const parsed = tryParse(m[1]);
+    if (parsed && ("calories" in parsed || "description" in parsed)) return parsed;
+  }
+  // 3) bare {...} that looks like a nutrition object
+  const objects = s.match(/\{[\s\S]*?\}/g) || [];
+  for (const obj of objects) {
+    if (/["']?calories["']?\s*:/.test(obj)) {
+      const parsed = tryParse(obj);
+      if (parsed) return parsed;
+    }
+  }
+  return null;
 };
+
+// Build a single, clean <data> tag from a nutrition object so the frontend
+// always receives a consistent, parseable block regardless of model formatting.
+const buildDataTag = (n = {}) => {
+  const clean = {
+    calories: n.calories ?? 0,
+    protein: n.protein ?? "0g",
+    fat: n.fat ?? "0g",
+    carbs: n.carbs ?? "0g",
+    fiber: n.fiber ?? "0g",
+    sugar: n.sugar ?? "0g",
+    sodium: n.sodium ?? "0mg",
+    description: n.description ?? "Món ăn",
+  };
+  return `<data>${JSON.stringify(clean)}</data>`;
+};
+
+// Remove any data blocks / code fences from a reply before we re-append a clean one.
+const stripDataBlocks = (text = "") =>
+  String(text)
+    .replace(/<data>[\s\S]*?<\/data>/gi, "")
+    .replace(/```(?:json)?[\s\S]*?```/gi, "")
+    .trim();
 
 const MEAL_TIME_REGEX = /\b(sáng|trưa|chiều|tối|bữa phụ|bua phu|ăn lúc|lúc nào|mấy giờ)\b/i;
 const FOLLOW_UP_MEAL_TIME_QUESTION =
@@ -321,7 +373,8 @@ Trả về JSON hợp lệ với các trường sau:
   "action": "update_plan" | "analyze_only" | "ask_clarify",
   "needsClarification": true/false,
   "clarifyQuestion": "...",
-  "newPlan": [...]
+  "newPlan": [...],
+  "mealData": null hoặc { "calories": số, "protein": "số + g", "fat": "số + g", "carbs": "số + g", "fiber": "số + g", "sugar": "số + g", "sodium": "số + mg", "description": "tên món tiếng Việt" }
 }
 
 QUY TẮC CHO TỪNG TRƯỜNG:
@@ -339,6 +392,10 @@ QUY TẮC CHO TỪNG TRƯỜNG:
 - newPlan:
   - nếu action = update_plan thì trả về thực đơn 7 ngày đã cập nhật ĐẦY ĐỦ
   - nếu action = analyze_only hoặc ask_clarify thì phải giữ nguyên thực đơn cũ
+- mealData (RẤT QUAN TRỌNG để hiện thẻ xác nhận bữa ăn):
+  - CHỈ điền khi action = "analyze_only" VÀ người dùng nhắc tới MỘT MÓN ĂN CỤ THỂ họ vừa ăn hoặc đang định ăn (vd: "tôi vừa ăn phở bò", "1 tô bún bò bao nhiêu calo").
+  - Khi điền: PHẢI đủ 8 trường (calories, protein, fat, carbs, fiber, sugar, sodium, description). description là tên món tiếng Việt có dấu.
+  - Để null khi: chỉ hỏi kiến thức chung không có món cụ thể, hoặc action = update_plan / ask_clarify.
 
 NHIỆM VỤ CỤ THỂ
 
@@ -373,6 +430,9 @@ D. Nếu người dùng muốn đổi món cụ thể và đã nói rõ ngày/b�
 
 CHỈ TRẢ VỀ JSON, KHÔNG THÊM BẤT KỲ VĂN BẢN NÀO KHÁC.
 isQueryOnly = ${isQueryOnly ? "true" : "false"}
+
+VÍ DỤ MẪU (người dùng nhắn: "tôi vừa ăn 1 tô phở bò"):
+{"reply":"Một tô phở bò khoảng 450 kcal, khá cân bằng. Bạn ăn vào bữa nào để mình ghi nhận nhé?","action":"analyze_only","needsClarification":false,"clarifyQuestion":"","newPlan":[<giữ nguyên thực đơn 7 ngày hiện tại>],"mealData":{"calories":450,"protein":"30g","fat":"12g","carbs":"55g","fiber":"3g","sugar":"5g","sodium":"900mg","description":"Phở bò"}}
 `;
 
   if (isDeadlinePassed) {
@@ -446,6 +506,12 @@ Ví dụ khi không phải thức ăn (chỉ khi người dùng gửi ảnh khô
 
 Ví dụ khi là thức ăn:
 <data>{"calories": 250, "protein": "15g", "fat": "10g", "carbs": "30g", "fiber": "2g", "sugar": "5g", "sodium": "400mg", "description": "Phở bò Việt Nam"}</data>
+
+QUY TẮC ĐỊNH DẠNG (BẮT BUỘC TUÂN THỦ TUYỆT ĐỐI):
+- Khối dữ liệu dinh dưỡng PHẢI nằm trong thẻ <data>...</data> và đặt ở CUỐI câu trả lời.
+- TUYỆT ĐỐI KHÔNG bọc JSON trong \`\`\`json hay markdown. Chỉ dùng đúng thẻ <data>.
+- JSON chỉ gồm đúng 8 trường nêu trên, viết trên MỘT dòng, đúng cú pháp JSON.
+- Sau thẻ </data> KHÔNG viết thêm bất kỳ ký tự nào.
 `;
 };
 
@@ -585,6 +651,7 @@ export default async function handler(req, res) {
         model: LLM_VISION_MODEL,
         messages,
         max_tokens: 1000,
+        temperature: 0.3,
       });
 
       let aiReply = completion.choices[0]?.message?.content || "";
@@ -615,6 +682,10 @@ export default async function handler(req, res) {
           await saveFoodRecord(nutritionData);
           console.log(`➕ Món "${nutritionData.description}" mới, đã lưu vào DB.`);
         }
+
+        // Chuẩn hoá: luôn gắn lại MỘT thẻ <data> sạch ở cuối câu trả lời để
+        // frontend hiện thẻ chọn buổi/ngày, bất kể model định dạng thế nào.
+        aiReply = `${stripDataBlocks(aiReply)}\n${buildDataTag(nutritionData)}`;
       }
 
       const userEntry = {
@@ -691,6 +762,7 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
       model: LLM_MODEL,
       messages: coachMessages,
       response_format: { type: "json_object" },
+      temperature: 0.2,
     });
 
     const raw = chatCompletion.choices[0]?.message?.content || "{}";
@@ -705,6 +777,25 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
       aiReply = appendMealTimeFollowUp(aiReply, finalMessage);
     } else if (action === "ask_clarify" && !clarifyQuestion) {
       aiReply = appendMealTimeFollowUp(aiReply, finalMessage);
+    }
+
+    // ─── Hiện thẻ "Xác nhận bữa ăn" cho tin nhắn văn bản ───────────────────
+    // Local model trả về món ăn qua trường có cấu trúc `mealData` (đáng tin hơn
+    // việc bắt model tự chèn thẻ <data>). Backend dựng lại thẻ <data> sạch để
+    // frontend mở thẻ chọn buổi/ngày — chỉ khi đang phân tích một món cụ thể.
+    if (action === "analyze_only" && !isMealFollowup) {
+      let mealData =
+        result.mealData && typeof result.mealData === "object"
+          ? result.mealData
+          : null;
+      // Phòng khi model chèn thẳng vào reply thay vì điền mealData
+      if (!mealData || !mealData.description) {
+        const inline = extractDataBlock(aiReply);
+        if (inline && inline.description) mealData = inline;
+      }
+      if (mealData && mealData.description) {
+        aiReply = `${stripDataBlocks(aiReply)}\n${buildDataTag(mealData)}`;
+      }
     }
 
     // ─── [MỚI] Lưu toàn bộ thực đơn mới vào bảng foods khi update_plan ──────

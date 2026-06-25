@@ -45,3 +45,36 @@ LLM_VISION_MODEL=qwen2.5-vl
 ```
 
 (Cùng với các biến Supabase đã có sẵn của dự án.)
+
+---
+
+## Cập nhật: sửa thẻ "Xác nhận bữa ăn" + prompt cho model local
+
+### Vì sao thẻ chọn bữa ăn biến mất khi đổi sang local
+Thẻ này chỉ hiện khi câu trả lời của bot chứa khối `<data>{...}</data>`. GPT-4.1 tuân
+thủ rất tốt yêu cầu chèn thẻ này; Qwen2.5-VL-7B (model nhỏ hơn) thì hay quên, hoặc
+bọc JSON trong ```json, hoặc trả object trần → frontend không bắt được → mất thẻ.
+
+### Cách sửa (đã áp dụng trong `api/chat.js`)
+1. **Trường có cấu trúc `mealData`**: coach prompt giờ yêu cầu model điền `mealData`
+   (object dinh dưỡng) khi `action="analyze_only"` và người dùng nhắc một món cụ thể.
+   Dựa vào trường JSON đáng tin hơn nhiều so với bắt model tự chèn thẻ `<data>`.
+2. **Backend tự dựng thẻ `<data>` sạch** từ `mealData` (đường văn bản) và chuẩn hoá lại
+   thẻ ở đường ảnh → frontend luôn nhận đúng một thẻ `<data>` hợp lệ. **Không phải sửa frontend.**
+3. **`extractDataBlock` khoan dung**: đọc được cả `<data>`, ```json fences, lẫn object trần,
+   và bỏ qua dấu phẩy thừa — phòng các kiểu định dạng lệch của model nhỏ.
+
+### Điều chỉnh prompt engineering cho Qwen so với OpenAI
+- **Nhiệt độ thấp** (`temperature: 0.2–0.3`) cho mọi tác vụ JSON/số liệu: model nhỏ cần
+  nhiệt độ thấp để giữ đúng format và con số ổn định (trước đây không set → mặc định cao).
+- **Chỉ thị định dạng tường minh + ví dụ mẫu**: thêm câu lệnh "BẮT BUỘC", cấm dùng ```json,
+  và một ví dụ JSON đầy đủ đặt ở CUỐI prompt (model nhỏ bám ví dụ gần cuối tốt hơn).
+- **Đừng phụ thuộc model tự bọc thẻ**: ưu tiên trường JSON có cấu trúc rồi để backend xử lý.
+- **`response_format: json_object`** vLLM chỉ đảm bảo JSON *hợp lệ cú pháp*, không ép schema.
+  Vì vậy phải nêu rõ schema + ví dụ; backend luôn parse phòng thủ (`safeJsonParse`, fallback).
+- Tiếng Việt và nhận diện ảnh: Qwen2.5-VL xử lý tốt, không cần đổi.
+
+### Không còn dùng token OpenAI
+Mọi lệnh gọi sinh văn bản/ảnh đều qua `lib/llm.js` → vLLM. Embeddings chỉ gọi OpenAI nếu
+bạn **chủ động** đặt `OPENAI_API_KEY`. Không đặt biến đó ⇒ 0 token OpenAI; RAG dùng tìm kiếm
+từ khoá (hoặc server embedding local nếu bạn bật `EMBEDDING_BASE_URL`).

@@ -154,6 +154,7 @@ export default async function handler(req, res) {
     const completion = await openai.chat.completions.create({
       model: LLM_VISION_MODEL,
       max_tokens: 600,
+      temperature: 0.3,
       messages: [
         { role: "system", content: buildPhotoPrompt() },
         { role: "user", content: userContent },
