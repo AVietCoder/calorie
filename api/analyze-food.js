@@ -1,9 +1,8 @@
 import { IncomingForm } from "formidable";
-import OpenAI from "openai";
 import fs from "fs";
 import { supabase } from "../lib/supabase.js";
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Local LLM (vLLM) via OpenAI-compatible client. See lib/llm.js.
+import { llm as openai, LLM_VISION_MODEL } from "../lib/llm.js";
 
 // Formidable cần tự xử lý body (multipart) -> tắt bodyParser mặc định của Vercel.
 export const config = {
@@ -153,7 +152,7 @@ export default async function handler(req, res) {
     });
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4.1",
+      model: LLM_VISION_MODEL,
       max_tokens: 600,
       messages: [
         { role: "system", content: buildPhotoPrompt() },

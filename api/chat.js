@@ -1,10 +1,9 @@
 import { IncomingForm } from "formidable";
-import OpenAI from "openai";
 import fs from "fs";
 import { supabase } from "../lib/supabase.js";
 import { retrieveKnowledge, buildKnowledgeSection } from "../lib/knowledge.js";
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Local LLM (vLLM) via OpenAI-compatible client. See lib/llm.js.
+import { llm as openai, LLM_MODEL, LLM_VISION_MODEL } from "../lib/llm.js";
 
 export const config = {
   api: {
@@ -583,7 +582,7 @@ export default async function handler(req, res) {
       ];
 
       const completion = await openai.chat.completions.create({
-        model: "gpt-4.1",
+        model: LLM_VISION_MODEL,
         messages,
         max_tokens: 1000,
       });
@@ -689,7 +688,7 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
     ];
 
     const chatCompletion = await openai.chat.completions.create({
-      model: "gpt-4.1",
+      model: LLM_MODEL,
       messages: coachMessages,
       response_format: { type: "json_object" },
     });

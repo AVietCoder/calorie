@@ -8,9 +8,26 @@ const KB_PATH = path.join(__dirname, "..", "knowledge", "knowledge-base.json");
 const MODEL = process.env.EMBEDDING_MODEL || "text-embedding-3-small";
 const BATCH = 64;
 
+// Build an OpenAI-compatible client. Prefer a self-hosted embedding server
+// (a dedicated vLLM instance) via EMBEDDING_BASE_URL; otherwise use OpenAI cloud.
+function makeClient() {
+  if (process.env.EMBEDDING_BASE_URL) {
+    return new OpenAI({
+      baseURL: process.env.EMBEDDING_BASE_URL,
+      apiKey: process.env.EMBEDDING_API_KEY || process.env.LLM_API_KEY || "EMPTY",
+    });
+  }
+  if (process.env.OPENAI_API_KEY) {
+    return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return null;
+}
+
 async function main() {
-  if (!process.env.OPENAI_API_KEY) {
-    console.error("❌ Missing OPENAI_API_KEY environment variable.");
+  const openai = makeClient();
+  if (!openai) {
+    console.error("❌ No embedding backend configured.");
+    console.error("   Set EMBEDDING_BASE_URL (self-hosted vLLM) or OPENAI_API_KEY.");
     process.exit(1);
   }
   if (!fs.existsSync(KB_PATH)) {
@@ -23,7 +40,6 @@ async function main() {
   const chunks = kb.chunks || [];
   console.log(`📚 Loaded ${chunks.length} chunks. Embedding with ${MODEL}...`);
 
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   let done = 0;
 
   for (let i = 0; i < chunks.length; i += BATCH) {

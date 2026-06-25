@@ -1,10 +1,9 @@
-import OpenAI from "openai";
 import { supabase } from "../lib/supabase.js";
 import { retrieveKnowledge, buildKnowledgeSection } from "../lib/knowledge.js";
+// Local LLM (vLLM) via OpenAI-compatible client. See lib/llm.js.
+import { llm as openai, LLM_MODEL } from "../lib/llm.js";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-const MODEL = "gpt-4o";
+const MODEL = LLM_MODEL;
 const DEBUG =
   process.env.DEBUG_COACH === "1" || process.env.NODE_ENV !== "production";
 
