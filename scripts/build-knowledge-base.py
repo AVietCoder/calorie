@@ -15,9 +15,6 @@ import sys
 SRC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sources")
 OUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "api", "knowledge", "knowledge-base.json")
 
-# Map each source PDF -> disease metadata.
-# `labels` are the keywords (VN + EN, lowercase, no accents handled separately)
-# used to match against the user's profile.disease string.
 DISEASE_MAP = {
     "Diet for Diabetic Patients_ Recommended Foods, Foods to Avoid, and Dietary Targets.pdf": {
         "disease_key": "diabetes",
@@ -64,9 +61,8 @@ DISEASE_MAP = {
     },
 }
 
-CHUNK_WORDS = 260      # target words per chunk
-OVERLAP_WORDS = 40     # overlap between consecutive chunks within a section
-
+CHUNK_WORDS = 260    
+OVERLAP_WORDS = 40   
 
 def extract_text(path):
     """Extract text; prefer pdfplumber, fall back to pdftotext."""
@@ -88,16 +84,13 @@ def extract_text(path):
 
 
 def clean_text(text):
-    text = text.replace("\x0c", "\n")          # form feeds
+    text = text.replace("\x0c", "\n")       
     text = text.replace("\u201c", '"').replace("\u201d", '"')
     text = text.replace("\u2018", "'").replace("\u2019", "'")
     text = re.sub(r"[ \t]+", " ", text)
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
 
-
-# Inline citation patterns to remove from narrative (they add tokens, no value
-# for the model). We keep measurement parentheticals like "(up to 30%)".
 _CITE_PATTERNS = [
     r"\((?:[A-ZÀ-Ỹ][\wÀ-ỹ.''\-]*\.?)(?:\s+(?:et al\.?|and|&)\s*[\wÀ-ỹ.''\-]*)?(?:_\d+)?,?\s*\d{4}[a-z]?\)",
     r"\(\s*\d+\s*sources?\s*\)",
@@ -109,7 +102,6 @@ _CITE_PATTERNS = [
 def strip_citations(text):
     for pat in _CITE_PATTERNS:
         text = re.sub(pat, "", text)
-    # collapse leftover " ." / doubled spaces / orphan parens
     text = re.sub(r"\(\s*\)", "", text)
     text = re.sub(r"\s+([.,;:])", r"\1", text)
     text = re.sub(r"[ \t]{2,}", " ", text)
@@ -158,11 +150,9 @@ def split_sections(text):
         if ln == "":
             j += 1
             continue
-        # body begins once the first heading reappears
         if toc_titles and ln == toc_titles[0]:
             body_start = j
             break
-        # heuristic: ToC headings are short; a long/prose line means body began
         if len(ln.split()) > 14 or ln.endswith("."):
             body_start = j
             break
@@ -174,13 +164,10 @@ def split_sections(text):
     if not toc_titles:
         return [("Nội dung", text)]
 
-    # IMPORTANT: search for headings only in the BODY (after the ToC), so that
-    # the heading strings inside the ToC itself are not matched as boundaries.
     body = "\n".join(lines[body_start:])
 
-    # Collect boundaries: first occurrence of each heading + all "Evidence".
-    markers = []  # (pos, kind, title)
-    for title in dict.fromkeys(toc_titles):           # preserve order, dedupe
+    markers = []  
+    for title in dict.fromkeys(toc_titles):         
         m = re.search(r"(?m)^\s*" + re.escape(title) + r"\s*$", body)
         if m:
             markers.append((m.start(), "toc", title))
@@ -194,7 +181,7 @@ def split_sections(text):
     sections = []
     for idx, (start, kind, title) in enumerate(markers):
         if kind != "toc":
-            continue  # drop Evidence blocks entirely
+            continue 
         end = markers[idx + 1][0] if idx + 1 < len(markers) else len(body)
         seg = body[start:end]
         seg = re.sub(r"^\s*" + re.escape(title) + r"\s*\n?", "", seg, count=1)
@@ -250,7 +237,6 @@ def build():
                     "section": sec_title,
                     "text": text,
                     "word_count": len(w),
-                    # embeddings get filled in later by scripts/ingest-knowledge.mjs
                     "embedding": None,
                 })
                 cid += 1
@@ -263,7 +249,7 @@ def build():
 
     kb = {
         "version": 1,
-        "embedding_model": None,   # set by ingest script when embeddings added
+        "embedding_model": None, 
         "generated_chunks": len(chunks),
         "documents": doc_summaries,
         "chunks": chunks,

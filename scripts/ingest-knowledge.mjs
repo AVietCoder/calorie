@@ -1,23 +1,3 @@
-#!/usr/bin/env node
-/**
- * ingest-knowledge.mjs — OPTIONAL one-time upgrade.
- *
- * Adds OpenAI embedding vectors to every chunk in
- * knowledge/knowledge-base.json. After running this, the app's retrieval
- * automatically switches from keyword/disease-routing to full semantic search,
- * which handles free-form questions (e.g. "cá hồi có tốt cho người gút không?")
- * and matches Vietnamese questions against the English source documents.
- *
- * The app works WITHOUT running this (disease routing already injects the right
- * document). Run it only when you want smarter, question-level retrieval.
- *
- * Usage:
- *   OPENAI_API_KEY=sk-... node scripts/ingest-knowledge.mjs
- *
- * Re-run it any time you regenerate the knowledge base
- * (python scripts/build-knowledge-base.py) or add new documents.
- */
-
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
