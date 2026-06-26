@@ -271,7 +271,7 @@ async function init() {
     hidePageLoader();
 
     if (!data.isAdmin) {
-      $("deniedMsg").textContent = `Tài khoản ${data.email || ""} chưa có quyền quản trị. Liên hệ quản trị viên để được cấp quyền (đặt is_admin = true).`;
+      $("deniedMsg").textContent = `Tài khoản ${data.email || ""} chưa có quyền quản trị. Liên hệ quản trị viên để được cấp quyền.`;
       $("denied").style.display = "block";
       $("adminBody").style.display = "none";
       return;
