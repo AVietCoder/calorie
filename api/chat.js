@@ -309,26 +309,29 @@ const buildNutritionPrompt = (foodsDB = [], knowledgeBlock = "") => {
     : "";
 
   return `Bạn là chuyên gia dinh dưỡng AI, am hiểu sâu ẩm thực Việt Nam 3 miền.
-Nhiệm vụ: Phân tích thực phẩm từ ảnh hoặc văn bản.
+Nhiệm vụ: nhìn ảnh/đọc mô tả và phân tích MÓN ĂN.
 
-QUY TẮC NHẬN DIỆN MÓN VIỆT:
-- Mặc định coi là món Việt Nam trừ khi rõ ràng là món nước ngoài.
+QUY TẮC NHẬN DIỆN (NHÌN KỸ TRƯỚC KHI KẾT LUẬN — đừng đoán ẩu):
+- Quan sát kết cấu, màu sắc, thành phần trước khi đặt tên món.
+- Phân biệt MẶN vs NGỌT: cháo (gạo nấu nhừ, MẶN, thường có thịt/hành) ≠ chè (đồ NGỌT, đậu/nước cốt dừa). canh ≠ súp ≠ lẩu.
 - Phân biệt: phở bò (bánh phở dẹt, nước trong) ≠ bún bò Huế (bún tròn, nước đỏ cay) ≠ bún riêu ≠ hủ tiếu.
-- Ước tính theo khẩu phần thực tế Việt (1 tô phở ~400-500g, 1 đĩa cơm tấm ~1 phần đầy đủ).
-- "description" = tên món Việt cụ thể, có dấu (vd: "Bún bò Huế", "Cơm tấm sườn bì chả").
+- Mặc định là món Việt trừ khi rõ ràng món nước ngoài. Ước theo khẩu phần Việt thực tế (1 tô ~400-500g).
 ${foodsSection}${knowledgeBlock ? "\n" + knowledgeBlock + "\n" : ""}
-KIỂM TRA ẢNH: Nếu ảnh KHÔNG phải thực phẩm → trả <error>mô tả thứ nhìn thấy</error>.
+NẾU ẢNH KHÔNG PHẢI MÓN ĂN / ĐỒ UỐNG:
+- Trả về ĐÚNG: <error>mô tả ngắn thứ nhìn thấy</error>
+- KHÔNG kèm <data>, KHÔNG phân tích dinh dưỡng.
 
-QUY TẮC TRẢ VỀ (khi là thực phẩm):
-1. Nhận xét ngắn gọn, thân thiện.
-2. BẮT BUỘC chèn <data>JSON</data> ở CUỐI. Không dùng \`\`\`json.
-3. JSON: {"calories":số,"protein":"Xg","fat":"Xg","carbs":"Xg","fiber":"Xg","sugar":"Xg","sodium":"Xmg","description":"tên món"}
-4. Sau </data> KHÔNG viết thêm gì.
+NẾU LÀ MÓN ĂN — TRẢ VỀ ĐÚNG ĐỊNH DẠNG NÀY, KHÔNG GÌ KHÁC:
+1. Một hoặc hai câu nhận xét NGẮN GỌN, thân thiện. KHÔNG viết dài.
+2. TUYỆT ĐỐI KHÔNG dùng markdown: không "###", không gạch đầu dòng, không "**in đậm**", không liệt kê.
+3. KHÔNG hỏi "bạn ăn vào bữa nào" — giao diện đã có nút chọn buổi/ngày riêng.
+4. Kết thúc bằng ĐÚNG MỘT thẻ <data>JSON</data> (KHÔNG dùng \`\`\`json). JSON trên MỘT dòng, đủ 8 trường:
+   {"calories":số,"protein":"Xg","fat":"Xg","carbs":"Xg","fiber":"Xg","sugar":"Xg","sodium":"Xmg","description":"tên món tiếng Việt"}
+5. Sau </data> KHÔNG viết thêm gì.
 
-Nếu chỉ gửi ảnh không nói bữa → hỏi thêm: "Bạn ăn vào sáng, trưa, tối hay bữa phụ?"
-
-Ví dụ: Phở bò ngon quá! Một tô khoảng 450 kcal, giàu protein.
-<data>{"calories":450,"protein":"30g","fat":"12g","carbs":"55g","fiber":"3g","sugar":"5g","sodium":"900mg","description":"Phở bò"}</data>
+Ví dụ (đúng — ngắn gọn):
+Canh bí đao nhồi thịt khá thanh đạm, ít calo, hợp với chế độ giảm cân.
+<data>{"calories":225,"protein":"22g","fat":"7g","carbs":"18g","fiber":"4g","sugar":"3g","sodium":"350mg","description":"Bí đao nhồi thịt"}</data>
 
 /no_think`;
 };
@@ -414,14 +417,21 @@ export default async function handler(req, res) {
           ...history.slice(-6),  // FIX C: ít turn hơn → nhanh hơn
           { role: "user", content: userContent },
         ],
-        max_tokens: 600,         // FIX D: hard cap — reply + <data> ≤ 600 token
+        max_tokens: 1200,        // đủ chỗ cho nhận xét ngắn + thẻ <data> đầy đủ (tránh cụt)
         temperature: 0.3,
         // FIX E: tắt thinking qua vLLM extra_body (hoạt động mọi version Qwen-VL)
         extra_body: { chat_template_kwargs: { enable_thinking: false } },
       });
 
       let aiReply = stripThinkBlocks(completion.choices[0]?.message?.content || "");
-      aiReply = appendMealTimeFollowUp(aiReply, message);
+
+      // Ảnh KHÔNG phải món ăn -> xin lỗi nhẹ nhàng, KHÔNG hiện thẻ chọn bữa.
+      const errMatch = aiReply.match(/<error>([\s\S]*?)<\/error>/i);
+      if (errMatch) {
+        const seen = errMatch[1].trim();
+        const reply = `Xin lỗi, đây không phải là món ăn nên mình không phân tích dinh dưỡng được${seen ? ` (mình thấy: ${seen})` : ""}. Bạn gửi giúp mình ảnh món ăn nhé!`;
+        return res.status(200).json({ reply, username: profile.username });
+      }
 
       let nutritionData = extractDataBlock(aiReply);
       if (nutritionData?.description) {
@@ -481,7 +491,7 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
           { role: "user", content: finalMessage },
         ],
         response_format: { type: "json_object" },
-        max_tokens: 400,         // FIX D: reply + mealData ≤ 400 token
+        max_tokens: 700,         // reply ngắn + mealData, tránh cụt
         temperature: 0.2,
         // FIX E: tắt thinking
         extra_body: { chat_template_kwargs: { enable_thinking: false } },
@@ -509,7 +519,7 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
           { role: "user", content: finalMessage },
         ],
         response_format: { type: "json_object" },
-        max_tokens: 2500,        // FIX D: update_plan với 7 ngày cần ~1500-2000 token
+        max_tokens: 6000,        // update_plan 7 ngày đầy đủ, tránh JSON cụt
         temperature: 0.2,
         // FIX E: tắt thinking
         extra_body: { chat_template_kwargs: { enable_thinking: false } },

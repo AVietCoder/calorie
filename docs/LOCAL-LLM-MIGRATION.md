@@ -78,3 +78,31 @@ bọc JSON trong ```json, hoặc trả object trần → frontend không bắt �
 Mọi lệnh gọi sinh văn bản/ảnh đều qua `lib/llm.js` → vLLM. Embeddings chỉ gọi OpenAI nếu
 bạn **chủ động** đặt `OPENAI_API_KEY`. Không đặt biến đó ⇒ 0 token OpenAI; RAG dùng tìm kiếm
 từ khoá (hoặc server embedding local nếu bạn bật `EMBEDDING_BASE_URL`).
+
+---
+
+## Bản hoàn chỉnh: sửa phân tích ảnh + thực đơn bị cụt
+
+### 1) Thực đơn 7 ngày bị lỗi parse (`Expected ',' or ']'`)
+- Nguyên nhân: JSON thực đơn bị **cắt giữa chừng** vì `max_tokens` quá nhỏ (3000).
+- Sửa: nâng `max_tokens` lên **6000** ở coach-dynamic.js (sinh plan) và đường update_plan
+  trong chat.js. Parser thực đơn thêm khoan dung dấu phẩy thừa.
+
+### 2) Phân tích ảnh: prose dài + hỏi "ăn vào bữa nào" + thẻ 0 kcal
+- Nguyên nhân: prompt cũ cho phép markdown dài VÀ tự bảo model hỏi bữa ăn; `max_tokens`
+  600 khiến phần `<data>` bị cắt → thẻ hiện 0 kcal.
+- Sửa prompt ảnh (`buildNutritionPrompt`):
+  + Bắt buộc nhận xét NGẮN 1–2 câu, CẤM markdown (###, gạch đầu dòng, in đậm).
+  + CẤM hỏi "bạn ăn vào bữa nào" — giao diện đã có nút chọn buổi/ngày.
+  + Nhấn mạnh nhìn kỹ để **phân biệt cháo (mặn) vs chè (ngọt)**, phở vs bún bò…
+- Bỏ `appendMealTimeFollowUp` ở đường ảnh; nâng `max_tokens` ảnh lên **1200** (đủ chỗ cho
+  nhận xét ngắn + thẻ `<data>` đầy đủ, không bị cụt).
+
+### 3) Ảnh KHÔNG phải món ăn
+- Model trả `<error>…</error>` → backend hiện câu xin lỗi "đây không phải món ăn…",
+  KHÔNG hiện thẻ chọn bữa. (Trước đây hỏi nhầm "ăn vào bữa nào".)
+
+### Lưu ý
+- Sinh thực đơn 7 ngày bằng 32B vẫn khá lâu (~80–100s) vì model lớn + đầu ra dài.
+  Muốn nhận diện ảnh nét hơn (giảm nhầm món): tăng `max_pixels` khi chạy vLLM
+  (vd `'{"max_pixels": 1605632}'`), đổi lại ảnh xử lý chậm hơn một chút.

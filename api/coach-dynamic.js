@@ -81,7 +81,17 @@ const safeParseAIJson = (raw) => {
     return JSON.parse(cleaned);
   } catch {
     const m = cleaned.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
-    if (m) return JSON.parse(m[0]);
+    if (m) {
+      try {
+        return JSON.parse(m[0]);
+      } catch {
+        try {
+          return JSON.parse(m[0].replace(/,\s*([}\]])/g, "$1"));
+        } catch {
+          /* rơi xuống throw */
+        }
+      }
+    }
     throw new Error("AI JSON không hợp lệ. Preview: " + cleaned.slice(0, 300));
   }
 };
@@ -356,7 +366,7 @@ const callAIForPlan = async ({ systemPrompt, userPayload, traceId }) => {
       messages,
       response_format: { type: "json_object" },
       temperature: 0.2,
-      max_tokens: 3000,  // 7-day plan JSON ≈ 1500-2500 token
+      max_tokens: 6000,  // 7-day plan đầy đủ, tránh JSON bị cụt (gây lỗi parse)
       extra_body: { chat_template_kwargs: { enable_thinking: false } },
     });
   } catch (err) {
