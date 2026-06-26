@@ -354,9 +354,8 @@ const callAIForPlan = async ({ systemPrompt, userPayload, traceId }) => {
     completion = await openai.chat.completions.create({
       model: MODEL,
       messages,
-      // bỏ response_format json_object (tránh 400 ở vLLM 0.8.5); prompt + parser lo phần JSON
+      response_format: { type: "json_object" },
       temperature: 0.2,
-      max_tokens: 6000,
     });
   } catch (err) {
     log.error(`${traceId} | OpenAI`, err);
@@ -432,9 +431,8 @@ Chỉ trả JSON hợp lệ, không markdown, không giải thích.`;
   const completion = await openai.chat.completions.create({
     model: MODEL,
     messages: [{ role: "system", content: sys }],
-    // bỏ response_format json_object (tránh 400 ở vLLM 0.8.5)
+    response_format: { type: "json_object" },
     temperature: 0.2,
-    max_tokens: 500,
   });
   const raw = completion.choices?.[0]?.message?.content ?? "";
   log.info(`${traceId} | estimateOneFood`, { food, preview: raw.slice(0, 160) });

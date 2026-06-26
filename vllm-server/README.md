@@ -23,7 +23,7 @@ Qwen3-VL (xem mục 8).
 
 - 1× NVIDIA H100 80GB (bạn đang có — quá dư cho model 8B).
 - CUDA 12.4, driver 550.x (server của bạn đã có sẵn).
-- Một thư mục **network-volume** đã mount (lưu weight model). Cần ~50GB trống cho bản 72B-AWQ.
+- Một thư mục **network-volume** đã mount (để lưu weight model cho khỏi tải lại).
 - Cổng public: bạn nói `103.73.232.112:3333` và `:4444` đã public.
   → Ta sẽ chạy model chat ở **4444**, (tuỳ chọn) embeddings ở **3333**.
 
@@ -199,52 +199,35 @@ giờ chạy bằng model local trên H100 của bạn.
 
 ## 7. (TUỲ CHỌN) Bật RAG ngữ nghĩa bằng embeddings
 
-App vẫn chạy tốt nếu **không** làm bước này (RAG tự lùi về tìm kiếm từ khoá, đủ tốt
-cho kho 63 đoạn có định tuyến theo bệnh). Chỉ bật nếu muốn tìm kiếm theo ngữ nghĩa.
+App vẫn chạy tốt nếu **không** làm bước này (RAG tự lùi về tìm kiếm từ khoá).
+Nếu muốn tìm kiếm "thông minh" theo ngữ nghĩa trên kho kiến thức bệnh lý:
 
-**Vì GPU đã đầy vì model chat 32B (~79/81GB), chạy embedding TRÊN CPU** (không đụng GPU):
-
-1. Bật embedding server trên CPU (cổng 3333), chạy nền:
+1. Hạ bộ nhớ cho model chat để chừa chỗ cho model embedding (sửa ở bước 4):
+   `--gpu-memory-utilization 0.75`
+2. Chạy thêm server embedding (cổng 3333):
    ```bash
-   export NETWORK_VOLUME=/network-volume
-   export VLLM_API_KEY=656261a19e127d69f618267d7b47123045603fb5d0cc6c5f
-   nohup bash vllm-server/start-embeddings-cpu.sh > $NETWORK_VOLUME/embed.log 2>&1 &
-   tail -f $NETWORK_VOLUME/embed.log     # chờ thấy "[embed] ready."
+   source $NETWORK_VOLUME/vllm-venv/bin/activate
+   bash vllm-server/start-embeddings.sh      # phục vụ BAAI/bge-m3
    ```
-   Lần đầu nó tải bge-m3 (~2GB) và tạo venv CPU riêng (tách biệt, không ảnh hưởng vLLM).
-
-2. (Khuyên làm) Nhúng sẵn 63 đoạn kiến thức MỘT LẦN để khỏi nhúng lúc chạy:
-   ```bash
-   # chạy trong thư mục app, khi embedding server đang chạy
-   EMBEDDING_BASE_URL=http://localhost:3333/v1    EMBEDDING_API_KEY=$VLLM_API_KEY    EMBEDDING_MODEL=bge-m3    node scripts/ingest-knowledge.mjs
-   ```
-   Lệnh này ghi vector bge-m3 vào `knowledge/knowledge-base.json` (rồi deploy lại).
-
 3. Thêm vào `.env` của app:
-   ```
+   ```bash
    EMBEDDING_BASE_URL=http://103.73.232.112:3333/v1
-   EMBEDDING_API_KEY=656261a19e127d69f618267d7b47123045603fb5d0cc6c5f
+   EMBEDDING_API_KEY=DÁN_API_KEY
    EMBEDDING_MODEL=bge-m3
    ```
+4. (Tuỳ chọn) Nhúng sẵn kho kiến thức gốc để chính xác hơn:
+   ```bash
+   # chạy ở thư mục app
+   node scripts/ingest-knowledge.mjs
+   ```
 
-> Muốn chạy embedding trên GPU thay vì CPU: chỉ khả thi khi GPU còn trống (vd đổi
-> chat model sang 72B-AWQ ~40GB sẽ dư chỗ) — khi đó dùng `start-embeddings.sh`.
+---
 
 ## 8. Mẹo & xử lý lỗi thường gặp
 
-- **Model mạnh (mặc định hiện tại): Qwen2.5-VL-72B-Instruct-AWQ.** Bản nén 4-bit
-  (~40GB) — model MẠNH NHẤT dòng Qwen2.5-VL chạy được trên 1× H100 80GB, còn dư
-  bộ nhớ cho KV cache. Cùng dòng nên app không phải sửa.
-  + 72B chậm hơn 7B (vài giây ~ chục giây mỗi ảnh). Muốn nhanh hơn: hạ
-    `--max-model-len` (vd 8192), hoặc giảm độ phân giải ảnh — đặt biến môi trường
-    khi serve: `VLLM_QWEN2_VL_MAX_PIXELS` nhỏ hơn (vd `1003520`), hoặc resize ảnh
-    phía client trước khi gửi.
-  + Nếu vLLM không tự nhận AWQ: thêm `--quantization awq_marlin` (hoặc `--quantization awq`).
-- **Bản 32B (BF16):** `Qwen/Qwen2.5-VL-32B-Instruct` ~64GB, RẤT sát trần 80GB, dễ
-  OOM khi xử lý ảnh và KHÔNG có bản AWQ chính thức → không khuyến nghị trên 1 card.
-- **Quay lại 7B (nhẹ, nhanh):** đặt
-  `MODEL_REPO=Qwen/Qwen2.5-VL-7B-Instruct MODEL_DIR=/network-volume/models/qwen2.5-vl-7b bash vllm-server/prepare-model.sh`
-  rồi serve `MODEL_ID=/network-volume/models/qwen2.5-vl-7b ... --dtype bfloat16`.
+- **Muốn chất lượng cao hơn (trên stack CUDA 12.4 này)?** Đổi `MODEL_ID` sang
+  `Qwen/Qwen2.5-VL-32B-Instruct` (vẫn vừa 1 H100 80GB). Nếu thiếu VRAM, giảm
+  `--max-model-len` xuống `16384` hoặc hạ `--gpu-memory-utilization`.
 - **Muốn dùng Qwen3-VL?** Cần driver mới hơn (≥ 570 / CUDA 12.8). Xin nền tảng
   thuê máy đổi image driver mới, rồi cài vLLM mới nhất:
   `uv pip install -U vllm --torch-backend=auto` và đổi `MODEL_ID` thành
@@ -257,10 +240,6 @@ cho kho 63 đoạn có định tuyến theo bệnh). Chỉ bật nếu muốn t�
   thiếu setuptools mà Triton cần. Sửa: `uv pip install setuptools wheel`.
 - **`Qwen2Tokenizer has no attribute all_special_tokens_extended`:** transformers
   5.x quá mới cho vLLM 0.8.5. Sửa: `uv pip install "transformers==4.51.3"`.
-- **`CUDA out of memory` / GPU gần như không còn trống (vài MB free):** tiến trình
-  vLLM cũ còn sót đang giữ VRAM. Sửa: `pkill -9 -f vllm; pkill -9 -f EngineCore` rồi
-  `nvidia-smi` kiểm tra GPU đã trống chưa, sau đó chạy lại. Thêm
-  `export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` để giảm phân mảnh.
 - **OOM (hết VRAM):** giảm `--max-model-len` và/hoặc `--gpu-memory-utilization`.
 - **Lỗi không nhận `response_format: json_object`:** vLLM bản mới hỗ trợ sẵn; hãy
   `pip install -U vllm` để cập nhật.

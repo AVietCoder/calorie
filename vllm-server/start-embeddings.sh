@@ -11,9 +11,6 @@
 # =============================================================================
 set -euo pipefail
 
-# ⚠️ LƯU Ý: nếu GPU đã đầy vì model chat (vd 32B chiếm ~79GB) thì KHÔNG chạy được
-# bản GPU này. Hãy dùng bản CHẠY CPU thay thế: vllm-server/start-embeddings-cpu.sh
-
 export NETWORK_VOLUME="${NETWORK_VOLUME:-/workspace/network-volume}"
 export HF_HOME="${HF_HOME:-$NETWORK_VOLUME/huggingface}"
 mkdir -p "$HF_HOME"

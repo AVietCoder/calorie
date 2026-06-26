@@ -17,10 +17,7 @@ function makeClient() {
       apiKey: process.env.EMBEDDING_API_KEY || process.env.LLM_API_KEY || "EMPTY",
     });
   }
-  if (
-    (process.env.EMBEDDING_PROVIDER || "").toLowerCase() === "openai" &&
-    process.env.OPENAI_API_KEY
-  ) {
+  if (process.env.OPENAI_API_KEY) {
     return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   }
   return null;
