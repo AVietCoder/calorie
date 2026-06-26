@@ -38,11 +38,40 @@ const truncateHistory = (history, max = 20) => {
 };
 
 const safeJsonParse = (text) => {
-  try {
-    return JSON.parse(text);
-  } catch {
-    return null;
+  if (text == null) return null;
+  const s = String(text);
+  const candidates = [s];
+
+  // ```json ... ``` (or plain ``` ... ```)
+  const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fence) candidates.push(fence[1]);
+
+  // First balanced {...} object in the text
+  const start = s.indexOf("{");
+  if (start !== -1) {
+    let depth = 0;
+    for (let i = start; i < s.length; i++) {
+      if (s[i] === "{") depth++;
+      else if (s[i] === "}") {
+        depth--;
+        if (depth === 0) {
+          candidates.push(s.slice(start, i + 1));
+          break;
+        }
+      }
+    }
   }
+
+  for (const cand of candidates) {
+    if (!cand) continue;
+    const cleaned = cand.trim().replace(/,\s*([}\]])/g, "$1"); // tolerate trailing commas
+    try {
+      return JSON.parse(cleaned);
+    } catch {
+      /* try next candidate */
+    }
+  }
+  return null;
 };
 
 // Tolerant nutrition extractor.
@@ -761,7 +790,8 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
     const chatCompletion = await openai.chat.completions.create({
       model: LLM_MODEL,
       messages: coachMessages,
-      response_format: { type: "json_object" },
+      // NOTE: không dùng response_format json_object (vLLM 0.8.5/xgrammar có thể trả
+      // 400). Prompt đã ép "CHỈ TRẢ VỀ JSON" + safeJsonParse khoan dung là đủ.
       temperature: 0.2,
       max_tokens: 4000,
     });

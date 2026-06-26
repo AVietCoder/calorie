@@ -113,3 +113,30 @@ nên thẻ này hiện ổn định hơn. Không phải sửa frontend.
 ### Giữ nguyên tính năng cũ
 Mọi luồng (phân tích ảnh món ăn, chat dinh dưỡng có RAG, sinh & cập nhật thực đơn 7
 ngày, thẻ chọn bữa/ngày) giữ nguyên hành vi — các thay đổi chỉ là cấu hình & tinh chỉnh.
+
+---
+
+## RAG: có cần model riêng không?
+
+- **Generation** (đọc kiến thức → trả lời): Qwen2.5-VL-32B làm tốt, KHÔNG cần model riêng.
+- **Retrieval ngữ nghĩa** (embeddings): model chat KHÔNG tạo embeddings được → cần model
+  embedding riêng (bge-m3). Nhưng **tìm kiếm từ khoá thì không cần model** và đủ tốt
+  cho kho 63 đoạn có định tuyến theo bệnh.
+- **GPU đã đầy vì 32B** → nếu muốn semantic, chạy embedding **trên CPU**
+  (`vllm-server/start-embeddings-cpu.sh`, venv CPU riêng, không đụng GPU, không đụng
+  bản transformers của vLLM). Pre-bake bằng `scripts/ingest-knowledge.mjs`.
+- Embeddings vẫn tôn trọng quy tắc 0-token-OpenAI: chỉ là một server local khác.
+
+---
+
+## Sửa lỗi 400 BadRequest (response_format json_object)
+
+vLLM 0.8.5 dùng backend `xgrammar` thường **trả 400** với `response_format:
+{type:"json_object"}` (không kèm schema). Sửa:
+- **Bỏ `response_format: json_object`** ở cả 3 lệnh gọi (chat coach + 2 lệnh coach-dynamic).
+- Prompt vốn đã ép "CHỈ TRẢ VỀ JSON" + ví dụ mẫu.
+- **`safeJsonParse` khoan dung**: tự bóc ```json fences, lấy object {...} cân bằng dấu
+  ngoặc đầu tiên, bỏ qua dấu phẩy thừa. Nên kể cả model thêm chữ quanh JSON vẫn parse được.
+
+Nhờ vậy app KHÔNG còn phụ thuộc tính năng json_object của vLLM. (Muốn ép JSON cứng
+hơn có thể chạy vLLM với `--guided-decoding-backend outlines`, nhưng không bắt buộc.)

@@ -354,7 +354,7 @@ const callAIForPlan = async ({ systemPrompt, userPayload, traceId }) => {
     completion = await openai.chat.completions.create({
       model: MODEL,
       messages,
-      response_format: { type: "json_object" },
+      // bỏ response_format json_object (tránh 400 ở vLLM 0.8.5); prompt + parser lo phần JSON
       temperature: 0.2,
       max_tokens: 6000,
     });
@@ -432,7 +432,7 @@ Chỉ trả JSON hợp lệ, không markdown, không giải thích.`;
   const completion = await openai.chat.completions.create({
     model: MODEL,
     messages: [{ role: "system", content: sys }],
-    response_format: { type: "json_object" },
+    // bỏ response_format json_object (tránh 400 ở vLLM 0.8.5)
     temperature: 0.2,
     max_tokens: 500,
   });

@@ -23,6 +23,9 @@
 # =============================================================================
 set -euo pipefail
 
+# Giảm phân mảnh bộ nhớ CUDA (giúp model lớn vừa khít hơn, tránh OOM lặt vặt)
+export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
+
 export NETWORK_VOLUME="${NETWORK_VOLUME:-/network-volume}"
 export HF_HOME="${HF_HOME:-$NETWORK_VOLUME/huggingface}"
 mkdir -p "$HF_HOME"
