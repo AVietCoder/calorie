@@ -62,6 +62,12 @@ const extractJson = (text = "") => {
   return null;
 };
 
+// Strip <think>...</think> blocks emitted by Qwen2.5-VL-32B-Instruct before JSON.
+const stripThinkBlocks = (text = "") =>
+  String(text)
+    .replace(/<think>[\s\S]*?<\/think>/gi, "")
+    .trim();
+
 const buildPhotoPrompt = () => `
 Bạn là chuyên gia dinh dưỡng AI, am hiểu sâu ẩm thực Việt Nam 3 miền Bắc - Trung - Nam.
 Nhiệm vụ: nhìn ẢNH (kèm ghi chú nếu có) và nhận diện MÓN ĂN/ĐỒ UỐNG rồi ước tính dinh dưỡng.
@@ -94,6 +100,7 @@ KIỂM TRA ẢNH:
   "sugar": "<số + g>",
   "sodium": "<số + mg>"
 }
+/no_think
 `;
 
 export default async function handler(req, res) {
@@ -161,7 +168,8 @@ export default async function handler(req, res) {
       ],
     });
 
-    const raw = completion.choices?.[0]?.message?.content ?? "";
+    const rawContent = completion.choices?.[0]?.message?.content ?? "";
+    const raw = stripThinkBlocks(rawContent);
     const obj = extractJson(raw);
 
     if (!obj) {

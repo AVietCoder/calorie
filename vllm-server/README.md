@@ -247,3 +247,40 @@ Nếu muốn tìm kiếm "thông minh" theo ngữ nghĩa trên kho kiến thức
   chưa, và cổng bạn bind có đúng là cổng đã public không.
 - **Giữ server chạy nền:** dùng `tmux` (như bước 4) hoặc `nohup bash vllm-server/start-llm.sh > vllm.log 2>&1 &`.
 - **Bảo mật:** luôn đặt `--api-key`. Endpoint đang public, không nên để trống.
+
+---
+
+## 9. Sử dụng Qwen2.5-VL-32B-Instruct (model bạn đang dùng)
+
+Khi chạy **Qwen2.5-VL-32B-Instruct** (thay vì 7B), cần lưu ý thêm:
+
+### Lệnh khởi động cho 32B
+```bash
+vllm serve Qwen/Qwen2.5-VL-32B-Instruct \
+  --served-model-name Qwen2.5-VL-32B-Instruct \
+  --host 0.0.0.0 \
+  --port 4444 \
+  --api-key "$VLLM_API_KEY" \
+  --dtype bfloat16 \
+  --max-model-len 16384 \
+  --gpu-memory-utilization 0.92 \
+  --trust-remote-code
+```
+> 32B cần ~65GB VRAM; H100 80GB vừa đủ với `--gpu-memory-utilization 0.92`.
+> Nếu báo OOM, giảm `--max-model-len` xuống `8192`.
+
+### Cấu hình .env
+```
+LLM_MODEL=Qwen2.5-VL-32B-Instruct
+LLM_VISION_MODEL=Qwen2.5-VL-32B-Instruct
+```
+> Tên phải KHỚP CHÍNH XÁC với `--served-model-name` bạn truyền vào lệnh `vllm serve`.
+
+### Vì sao 32B hay "quên" hiện thẻ xác nhận bữa ăn
+Model 32B Instruct kích hoạt **thinking mode** (sinh ra `<think>...</think>` trước JSON).
+Điều này khiến `JSON.parse` thất bại → toàn bộ `mealData` bị mất → thẻ chọn bữa không hiện.
+
+**Đã xử lý trong code (v8+):**
+1. `stripThinkBlocks()` — loại bỏ `<think>...</think>` trước khi parse JSON (trong `api/chat.js` và `api/analyze-food.js`).
+2. Prompt kết thúc bằng `/no_think` — token đặc biệt trong chat template của Qwen, ra lệnh cho model bỏ qua thinking mode.
+3. `newPlan` prompt rule — model được nhắc rõ PHẢI giữ nguyên plan cũ khi `analyze_only`/`ask_clarify` (không trả `[]`).

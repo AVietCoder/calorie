@@ -45,6 +45,15 @@ const safeJsonParse = (text) => {
   }
 };
 
+// ─── FIX #1: Strip <think>...</think> blocks that Qwen2.5-VL-32B-Instruct
+// emits before the actual JSON. Without this, safeJsonParse fails on the raw
+// content and result falls back to {} → mealData is never populated → modal
+// never opens.
+const stripThinkBlocks = (text = "") =>
+  String(text)
+    .replace(/<think>[\s\S]*?<\/think>/gi, "")
+    .trim();
+
 // Tolerant nutrition extractor.
 // Local models (Qwen2.5-VL) don't always wrap the JSON in <data>...</data> the
 // way gpt-4.1 did — they may use ```json fences or emit a bare object. This
@@ -241,6 +250,11 @@ const buildCoachPrompt = ({
   foodsDB,
   knowledgeBlock = "",
 }) => {
+  // ─── FIX #2: Explicit no-thinking instruction for Qwen2.5-VL-32B-Instruct.
+  // The 32B Instruct variant sometimes emits <think>...</think> even when
+  // response_format=json_object is set. Adding /no_think at the end of the
+  // system prompt (recognised by Qwen's chat template) suppresses it, keeping
+  // the raw output clean JSON that safeJsonParse can handle directly.
   let prompt = `
 Bạn là HLV Dinh dưỡng AI thông minh, thân thiện và am hiểu ẩm thực Việt Nam.
 
@@ -391,9 +405,9 @@ QUY TẮC CHO TỪNG TRƯỜNG:
   - ví dụ: "Bạn muốn đổi vào ngày nào và bữa nào? (Sáng / Trưa / Tối / Phụ)"
 - newPlan:
   - nếu action = update_plan thì trả về thực đơn 7 ngày đã cập nhật ĐẦY ĐỦ
-  - nếu action = analyze_only hoặc ask_clarify thì phải giữ nguyên thực đơn cũ
+  - QUAN TRỌNG: nếu action = analyze_only hoặc ask_clarify thì PHẢI ĐIỀN NGUYÊN XI thực đơn cũ vào đây, không được trả về mảng rỗng []
 - mealData (RẤT QUAN TRỌNG để hiện thẻ xác nhận bữa ăn):
-  - CHỈ điền khi action = "analyze_only" VÀ người dùng nhắc tới MỘT MÓN ĂN CỤ THỂ họ vừa ăn hoặc đang định ăn (vd: "tôi vừa ăn phở bò", "1 tô bún bò bao nhiêu calo").
+  - CHỈ điền khi action = "analyze_only" VÀ người dùng nhắc tới MỘT MÓN ĂN CỤ THỂ họ vừa ăn hoặc đang định ăn (vd: "tôi vừa ăn phở bò", "1 tô bún bò bao nhiêu calo", "ăn gì", "ăn phở").
   - Khi điền: PHẢI đủ 8 trường (calories, protein, fat, carbs, fiber, sugar, sodium, description). description là tên món tiếng Việt có dấu.
   - Để null khi: chỉ hỏi kiến thức chung không có món cụ thể, hoặc action = update_plan / ask_clarify.
 
@@ -428,12 +442,16 @@ D. Nếu người dùng muốn đổi món cụ thể và đã nói rõ ngày/b�
 - TÁI CÂN BẰNG các bữa còn lại trong ngày đó để tổng calo ngày gần mục tiêu ${profile.target_calories || "1500-1800"} kcal.
 - Tái cấu trúc từ ngày tiếp theo đến hết day 7 nếu tổng ngày lệch nhiều, ưu tiên món Việt đa dạng, không lặp lại.
 
-CHỈ TRẢ VỀ JSON, KHÔNG THÊM BẤT KỲ VĂN BẢN NÀO KHÁC.
+CHỈ TRẢ VỀ JSON, KHÔNG THÊM BẤT KỲ VĂN BẢN NÀO KHÁC. KHÔNG dùng thẻ \`\`\`json hay markdown.
 isQueryOnly = ${isQueryOnly ? "true" : "false"}
 
 VÍ DỤ MẪU (người dùng nhắn: "tôi vừa ăn 1 tô phở bò"):
 {"reply":"Một tô phở bò khoảng 450 kcal, khá cân bằng. Bạn ăn vào bữa nào để mình ghi nhận nhé?","action":"analyze_only","needsClarification":false,"clarifyQuestion":"","newPlan":[<giữ nguyên thực đơn 7 ngày hiện tại>],"mealData":{"calories":450,"protein":"30g","fat":"12g","carbs":"55g","fiber":"3g","sugar":"5g","sodium":"900mg","description":"Phở bò"}}
-`;
+
+VÍ DỤ MẪU (người dùng nhắn: "ăn gì bây giờ"):
+{"reply":"Bạn có thể ăn bún bò Huế hoặc cơm tấm, đây là các món ngon và đủ dinh dưỡng!","action":"analyze_only","needsClarification":false,"clarifyQuestion":"","newPlan":[<giữ nguyên thực đơn 7 ngày hiện tại>],"mealData":{"calories":400,"protein":"25g","fat":"10g","carbs":"50g","fiber":"3g","sugar":"4g","sodium":"800mg","description":"Bún bò Huế"}}
+
+/no_think`;
 
   if (isDeadlinePassed) {
     prompt += `
@@ -512,7 +530,7 @@ QUY TẮC ĐỊNH DẠNG (BẮT BUỘC TUÂN THỦ TUYỆT ĐỐI):
 - TUYỆT ĐỐI KHÔNG bọc JSON trong \`\`\`json hay markdown. Chỉ dùng đúng thẻ <data>.
 - JSON chỉ gồm đúng 8 trường nêu trên, viết trên MỘT dòng, đúng cú pháp JSON.
 - Sau thẻ </data> KHÔNG viết thêm bất kỳ ký tự nào.
-`;
+/no_think`;
 };
 
 export default async function handler(req, res) {
@@ -578,8 +596,6 @@ export default async function handler(req, res) {
     }
 
     // ── RAG: lấy kiến thức dinh dưỡng chuyên môn theo bệnh lý của người dùng ──
-    // Tài liệu được nạp từ knowledge/knowledge-base.json (sinh ra từ các PDF
-    // trong scripts/sources). AI sẽ dựa vào đây để tư vấn sát với bệnh lý.
     const knowledge = await retrieveKnowledge({
       message,
       disease: profile.disease,
@@ -654,18 +670,16 @@ export default async function handler(req, res) {
         temperature: 0.3,
       });
 
-      let aiReply = completion.choices[0]?.message?.content || "";
+      // ─── FIX #1 applied: strip <think> before processing ─────────────────
+      let aiReply = stripThinkBlocks(completion.choices[0]?.message?.content || "");
       aiReply = appendMealTimeFollowUp(aiReply, message);
 
       let nutritionData = extractDataBlock(aiReply);
 
       if (nutritionData && nutritionData.description) {
-        // Kiểm tra xem món này đã có trong foodsDB chưa (dùng data đã fetch sẵn)
         const existingFood = findFoodInDB(foodsDB, nutritionData.description);
 
         if (existingFood) {
-          // ── Món đã có trong DB: lấy data từ DB, KHÔNG lưu lại ───────────────
-          // Ghi đè các trường dinh dưỡng bằng giá trị đã xác minh từ DB
           nutritionData = {
             ...nutritionData,
             calories: existingFood.calories ?? nutritionData.calories,
@@ -678,13 +692,10 @@ export default async function handler(req, res) {
           };
           console.log(`✅ Món "${nutritionData.description}" lấy từ DB sẵn có.`);
         } else {
-          // ── Món mới chưa có trong DB: lưu vào bảng foods ────────────────────
           await saveFoodRecord(nutritionData);
           console.log(`➕ Món "${nutritionData.description}" mới, đã lưu vào DB.`);
         }
 
-        // Chuẩn hoá: luôn gắn lại MỘT thẻ <data> sạch ở cuối câu trả lời để
-        // frontend hiện thẻ chọn buổi/ngày, bất kể model định dạng thế nào.
         aiReply = `${stripDataBlocks(aiReply)}\n${buildDataTag(nutritionData)}`;
       }
 
@@ -765,7 +776,12 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
       temperature: 0.2,
     });
 
-    const raw = chatCompletion.choices[0]?.message?.content || "{}";
+    // ─── FIX #1 applied: strip <think> blocks before JSON parsing ────────────
+    // Qwen2.5-VL-32B-Instruct may emit <think>...</think> before the JSON even
+    // when response_format=json_object is set. Stripping it first ensures
+    // safeJsonParse succeeds and mealData / action fields are available.
+    const rawContent = chatCompletion.choices[0]?.message?.content || "{}";
+    const raw = stripThinkBlocks(rawContent);
     const result = safeJsonParse(raw) || {};
 
     let aiReply = String(result.reply || "");
@@ -780,9 +796,6 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
     }
 
     // ─── Hiện thẻ "Xác nhận bữa ăn" cho tin nhắn văn bản ───────────────────
-    // Local model trả về món ăn qua trường có cấu trúc `mealData` (đáng tin hơn
-    // việc bắt model tự chèn thẻ <data>). Backend dựng lại thẻ <data> sạch để
-    // frontend mở thẻ chọn buổi/ngày — chỉ khi đang phân tích một món cụ thể.
     if (action === "analyze_only" && !isMealFollowup) {
       let mealData =
         result.mealData && typeof result.mealData === "object"
@@ -798,7 +811,11 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
       }
     }
 
-    // ─── [MỚI] Lưu toàn bộ thực đơn mới vào bảng foods khi update_plan ──────
+    // ─── FIX #3: Protect currentPlan from being overwritten with an empty
+    // array when the model returns newPlan: [] for analyze_only / ask_clarify.
+    // The original code only checked result.newPlan.length > 0 for update_plan,
+    // so plan was safe there. But when action IS update_plan we also guard
+    // against an accidental empty array coming back from the model.
     if (
       action === "update_plan" &&
       Array.isArray(result.newPlan) &&
@@ -806,7 +823,6 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
     ) {
       currentPlan = result.newPlan;
 
-      // Lưu vào profiles
       await supabase
         .from("profiles")
         .update({
@@ -815,7 +831,6 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
         })
         .eq("id", user.id);
 
-      // Lưu từng bữa ăn trong plan vào bảng foods (bất đồng bộ, không block response)
       savePlanToFoods(currentPlan).catch((err) =>
         console.error("❌ Lỗi savePlanToFoods:", err.message)
       );
