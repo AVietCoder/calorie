@@ -23,7 +23,7 @@ Qwen3-VL (xem mục 8).
 
 - 1× NVIDIA H100 80GB (bạn đang có — quá dư cho model 8B).
 - CUDA 12.4, driver 550.x (server của bạn đã có sẵn).
-- Một thư mục **network-volume** đã mount (để lưu weight model cho khỏi tải lại).
+- Một thư mục **network-volume** đã mount (lưu weight model). Cần ~50GB trống cho bản 72B-AWQ.
 - Cổng public: bạn nói `103.73.232.112:3333` và `:4444` đã public.
   → Ta sẽ chạy model chat ở **4444**, (tuỳ chọn) embeddings ở **3333**.
 
@@ -225,9 +225,19 @@ Nếu muốn tìm kiếm "thông minh" theo ngữ nghĩa trên kho kiến thức
 
 ## 8. Mẹo & xử lý lỗi thường gặp
 
-- **Muốn chất lượng cao hơn (trên stack CUDA 12.4 này)?** Đổi `MODEL_ID` sang
-  `Qwen/Qwen2.5-VL-32B-Instruct` (vẫn vừa 1 H100 80GB). Nếu thiếu VRAM, giảm
-  `--max-model-len` xuống `16384` hoặc hạ `--gpu-memory-utilization`.
+- **Model mạnh (mặc định hiện tại): Qwen2.5-VL-72B-Instruct-AWQ.** Bản nén 4-bit
+  (~40GB) — model MẠNH NHẤT dòng Qwen2.5-VL chạy được trên 1× H100 80GB, còn dư
+  bộ nhớ cho KV cache. Cùng dòng nên app không phải sửa.
+  + 72B chậm hơn 7B (vài giây ~ chục giây mỗi ảnh). Muốn nhanh hơn: hạ
+    `--max-model-len` (vd 8192), hoặc giảm độ phân giải ảnh — đặt biến môi trường
+    khi serve: `VLLM_QWEN2_VL_MAX_PIXELS` nhỏ hơn (vd `1003520`), hoặc resize ảnh
+    phía client trước khi gửi.
+  + Nếu vLLM không tự nhận AWQ: thêm `--quantization awq_marlin` (hoặc `--quantization awq`).
+- **Bản 32B (BF16):** `Qwen/Qwen2.5-VL-32B-Instruct` ~64GB, RẤT sát trần 80GB, dễ
+  OOM khi xử lý ảnh và KHÔNG có bản AWQ chính thức → không khuyến nghị trên 1 card.
+- **Quay lại 7B (nhẹ, nhanh):** đặt
+  `MODEL_REPO=Qwen/Qwen2.5-VL-7B-Instruct MODEL_DIR=/network-volume/models/qwen2.5-vl-7b bash vllm-server/prepare-model.sh`
+  rồi serve `MODEL_ID=/network-volume/models/qwen2.5-vl-7b ... --dtype bfloat16`.
 - **Muốn dùng Qwen3-VL?** Cần driver mới hơn (≥ 570 / CUDA 12.8). Xin nền tảng
   thuê máy đổi image driver mới, rồi cài vLLM mới nhất:
   `uv pip install -U vllm --torch-backend=auto` và đổi `MODEL_ID` thành

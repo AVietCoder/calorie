@@ -19,15 +19,15 @@ set -euo pipefail
 
 export NETWORK_VOLUME="${NETWORK_VOLUME:-/network-volume}"
 export HF_HOME="${HF_HOME:-$NETWORK_VOLUME/huggingface}"
-export MODEL_REPO="${MODEL_REPO:-Qwen/Qwen2.5-VL-7B-Instruct}"
-export MODEL_DIR="${MODEL_DIR:-$NETWORK_VOLUME/models/qwen2.5-vl-7b}"
+export MODEL_REPO="${MODEL_REPO:-Qwen/Qwen2.5-VL-32B-Instruct}"
+export MODEL_DIR="${MODEL_DIR:-$NETWORK_VOLUME/models/qwen2.5-vl-32b}"
 
 source "$NETWORK_VOLUME/vllm-venv/bin/activate" 2>/dev/null || true
 
 echo "▶ Disk space on $NETWORK_VOLUME:"; df -h "$NETWORK_VOLUME" | tail -1
 echo "▶ Target dir: $MODEL_DIR"; mkdir -p "$MODEL_DIR"
 
-echo "▶ Downloading $MODEL_REPO  (first time ~16GB; reuses cache if present)..."
+echo "▶ Downloading $MODEL_REPO  (first time ~64GB cho bản 32B; reuses cache if present)..."
 python - <<'PYEOF'
 import os
 from huggingface_hub import snapshot_download

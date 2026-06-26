@@ -763,6 +763,7 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
       messages: coachMessages,
       response_format: { type: "json_object" },
       temperature: 0.2,
+      max_tokens: 4000,
     });
 
     const raw = chatCompletion.choices[0]?.message?.content || "{}";

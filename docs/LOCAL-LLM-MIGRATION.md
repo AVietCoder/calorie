@@ -78,3 +78,38 @@ bọc JSON trong ```json, hoặc trả object trần → frontend không bắt �
 Mọi lệnh gọi sinh văn bản/ảnh đều qua `lib/llm.js` → vLLM. Embeddings chỉ gọi OpenAI nếu
 bạn **chủ động** đặt `OPENAI_API_KEY`. Không đặt biến đó ⇒ 0 token OpenAI; RAG dùng tìm kiếm
 từ khoá (hoặc server embedding local nếu bạn bật `EMBEDDING_BASE_URL`).
+
+---
+
+## Bản tối ưu cho Qwen2.5-VL-32B-Instruct (chat / ảnh / RAG / tốc độ)
+
+### 1) Thẻ "Xác nhận bữa ăn" (đã sửa, giữ nguyên ở bản này)
+Dùng trường JSON `mealData` + backend tự dựng thẻ `<data>` sạch + `extractDataBlock`
+khoan dung (đọc cả ```json fences / object trần). 32B tuân thủ format tốt hơn 7B
+nên thẻ này hiện ổn định hơn. Không phải sửa frontend.
+
+### 2) Tốc độ — bật ở vLLM (xem vllm-server/start-llm.sh)
+- **`--enable-prefix-caching`**: prompt hệ thống dài & tĩnh được cache → các lượt sau
+  bỏ qua prefill → giảm mạnh độ trễ token đầu. (Lợi nhất cho app này.)
+- **`--kv-cache-dtype fp8`**: KV cache 8-bit → tiết kiệm VRAM (32B rất sát 80GB) →
+  cho context dài hơn và nhiều request song song hơn.
+- **`--mm-processor-kwargs '{"max_pixels":1003520}'`**: giới hạn token ảnh (~1280
+  thay vì tới ~16k) → nhận diện ảnh nhanh hơn nhiều, vẫn đủ nét cho món ăn.
+
+### 3) Tốc độ — phía app
+- **`temperature` thấp (0.2–0.3)** cho mọi tác vụ JSON/số liệu: ổn định format + nhanh hơn.
+- **`max_tokens` có trần**: chat coach 4000, sinh thực đơn 6000, ước tính món 500 →
+  chặn sinh lan man, độ trễ dự đoán được (vẫn đủ chỗ cho thực đơn 7 ngày).
+- RAG giữ top-k hợp lý (6) để cân bằng chất lượng và độ dài prompt.
+
+### 4) Đảm bảo 0 token OpenAI (đã siết trong code)
+- Embeddings giờ **chỉ** gọi OpenAI khi đặt **cả** `EMBEDDING_PROVIDER=openai` **và**
+  `OPENAI_API_KEY`. Không đặt `EMBEDDING_PROVIDER=openai` ⇒ **không bao giờ** gọi OpenAI,
+  dù còn sót `OPENAI_API_KEY` trong môi trường.
+- Chat/ảnh luôn qua `lib/llm.js` → `LLM_BASE_URL` (server local). Không chạm OpenAI.
+- RAG ngữ nghĩa local: bật server bge-m3 (start-embeddings.sh) + đặt `EMBEDDING_BASE_URL`.
+  Không bật thì RAG dùng keyword (vẫn tốt với 63 đoạn có định tuyến theo bệnh).
+
+### Giữ nguyên tính năng cũ
+Mọi luồng (phân tích ảnh món ăn, chat dinh dưỡng có RAG, sinh & cập nhật thực đơn 7
+ngày, thẻ chọn bữa/ngày) giữ nguyên hành vi — các thay đổi chỉ là cấu hình & tinh chỉnh.
