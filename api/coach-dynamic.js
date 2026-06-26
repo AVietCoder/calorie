@@ -356,6 +356,8 @@ const callAIForPlan = async ({ systemPrompt, userPayload, traceId }) => {
       messages,
       response_format: { type: "json_object" },
       temperature: 0.2,
+      max_tokens: 3000,  // 7-day plan JSON ≈ 1500-2500 token
+      extra_body: { chat_template_kwargs: { enable_thinking: false } },
     });
   } catch (err) {
     log.error(`${traceId} | OpenAI`, err);
@@ -433,6 +435,8 @@ Chỉ trả JSON hợp lệ, không markdown, không giải thích.`;
     messages: [{ role: "system", content: sys }],
     response_format: { type: "json_object" },
     temperature: 0.2,
+    max_tokens: 200,   // single-food nutrition JSON ≤ 150 token
+    extra_body: { chat_template_kwargs: { enable_thinking: false } },
   });
   const raw = completion.choices?.[0]?.message?.content ?? "";
   log.info(`${traceId} | estimateOneFood`, { food, preview: raw.slice(0, 160) });

@@ -162,6 +162,7 @@ export default async function handler(req, res) {
       model: LLM_VISION_MODEL,
       max_tokens: 600,
       temperature: 0.3,
+      extra_body: { chat_template_kwargs: { enable_thinking: false } },
       messages: [
         { role: "system", content: buildPhotoPrompt() },
         { role: "user", content: userContent },
