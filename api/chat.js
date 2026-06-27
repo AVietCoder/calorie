@@ -445,6 +445,104 @@ Món này khá đầy đủ dưỡng chất, phù hợp bữa trưa năng độn
 /no_think`;
 };
 
+
+// ─── MEAL PLAN HELPERS ──────────────────────────────────────────────────────
+
+/**
+ * Áp trực tiếp một món ăn đã xác nhận vào đúng ngày/bữa trong weekly_plan.
+ * Dùng làm fallback khi AI coach không tự update plan (trả analyze_only).
+ * 
+ * @param {{ plan, mealData, mealTime, mealDayText, dayOfWeek }} args
+ * @returns {Array|null} plan mới hoặc null nếu không xác định được ngày/bữa
+ */
+const MEAL_LABEL_MAP = {
+  sáng: "Sáng", sang: "Sáng",
+  trưa: "Trưa", trua: "Trưa",
+  tối: "Tối", toi: "Tối", chiều: "Tối", chieu: "Tối",
+  "bữa phụ": "Phụ", "bua phu": "Phụ", phụ: "Phụ", phu: "Phụ",
+};
+
+const normalizeMealLabel = (label = "") => {
+  const l = label.toLowerCase().trim();
+  return MEAL_LABEL_MAP[l] || null;
+};
+
+/**
+ * Xác định dayIndex (1-7) từ mealDayText hoặc dayOfWeek hiện tại.
+ * mealDayText có thể là: "hôm nay", "ngày DD/MM/YYYY", "thứ 2"...
+ */
+const resolveDayIndex = (mealDayText, dayOfWeek) => {
+  if (!mealDayText || mealDayText === "hôm nay") {
+    // Dùng ngày hiện tại (dayOfWeek: 0=CN, 1=T2, ..., 6=T7)
+    return dayOfWeek === 0 ? 7 : dayOfWeek; // CN → 7
+  }
+  // Thứ 2..7, Chủ Nhật
+  const dayNameMap = {
+    "thứ 2": 1, "thứ hai": 1,
+    "thứ 3": 2, "thứ ba": 2,
+    "thứ 4": 3, "thứ tư": 3,
+    "thứ 5": 4, "thứ năm": 4,
+    "thứ 6": 5, "thứ sáu": 5,
+    "thứ 7": 6, "thứ bảy": 6,
+    "chủ nhật": 7,
+  };
+  const lower = String(mealDayText).toLowerCase();
+  for (const [k, v] of Object.entries(dayNameMap)) {
+    if (lower.includes(k)) return v;
+  }
+  return null; // Không xác định được
+};
+
+const applyMealToPlan = ({ plan, mealData, mealTime, mealDayText, dayOfWeek }) => {
+  if (!Array.isArray(plan) || plan.length === 0) return null;
+  const mealLabel = normalizeMealLabel(mealTime);
+  if (!mealLabel) {
+    console.warn(`[applyMealToPlan] Không nhận diện được bữa: "${mealTime}"`);
+    return null;
+  }
+  const dayIdx = resolveDayIndex(mealDayText, dayOfWeek);
+  if (!dayIdx) {
+    console.warn(`[applyMealToPlan] Không xác định được ngày từ: "${mealDayText}"`);
+    return null;
+  }
+
+  // Clone sâu plan
+  const next = plan.map((d) => ({
+    day: d.day,
+    meals: Array.isArray(d.meals) ? d.meals.map((m) => ({ ...m })) : [],
+  }));
+
+  // Tìm ngày tương ứng (grouped plan: {day, meals:[...]})
+  let dayEntry = next.find((d) => Number(d.day) === dayIdx);
+  if (!dayEntry) {
+    // Nếu plan là flat array [{day, meal, food, ...}]
+    // thì không thể áp grouped — trả null, để chat.js tiếp tục bình thường
+    return null;
+  }
+
+  const updatedMeal = {
+    meal: mealLabel,
+    food: mealData.description || mealData.food || "Món ăn",
+    amount: mealData.amount || "1 phần",
+    calories: mealData.calories ?? 0,
+    protein: mealData.protein || "0g",
+    fat: mealData.fat || "0g",
+    carbs: mealData.carbs || "0g",
+    fiber: mealData.fiber || "0g",
+    sugar: mealData.sugar || "0g",
+    sodium: mealData.sodium || "0mg",
+    isActuallyEaten: true, // Đánh dấu đây là món user thực sự ăn (không phải gợi ý)
+  };
+
+  const idx = dayEntry.meals.findIndex((m) => m.meal === mealLabel);
+  if (idx !== -1) {
+    dayEntry.meals[idx] = { ...dayEntry.meals[idx], ...updatedMeal };
+  } else {
+    dayEntry.meals.push(updatedMeal);
+  }
+  return next;
+};
+
 // ─── MAIN HANDLER ─────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
@@ -562,6 +660,8 @@ export default async function handler(req, res) {
 
       // Mặc định / fallback: Qwen (mô tả hội thoại + <data>)
       if (aiReply === undefined) {
+        const QWEN_MIN_PIXELS = parseInt(process.env.QWEN_MIN_PIXELS || "200704", 10);
+        const QWEN_MAX_PIXELS = parseInt(process.env.QWEN_MAX_PIXELS || "2007040", 10);
         const completion = await openai.chat.completions.create({
           model: LLM_VISION_MODEL,
           messages: [
@@ -572,7 +672,13 @@ export default async function handler(req, res) {
           max_tokens: 1200,
           temperature: 0,
           top_p: 1,
-          extra_body: { chat_template_kwargs: { enable_thinking: false } },
+          extra_body: {
+            chat_template_kwargs: { enable_thinking: false },
+            mm_processor_kwargs: {
+              min_pixels: QWEN_MIN_PIXELS,
+              max_pixels: QWEN_MAX_PIXELS,
+            },
+          },
         });
 
         aiReply = stripCJK(stripThinkBlocks(completion.choices[0]?.message?.content || ""));
@@ -632,9 +738,21 @@ export default async function handler(req, res) {
     const isMealFollowup = followupType === "meal_time_update" && pendingMealData && mealTime;
 
     if (isMealFollowup) {
-      finalMessage = `Bạn đã ăn ${pendingMealData.description || "món ăn"} vào buổi ${mealTime}, ngày ${resolvedDayText}.
-Thông tin: Calories: ${pendingMealData.calories || "N/A"} kcal | Protein: ${pendingMealData.protein || "N/A"} | Fat: ${pendingMealData.fat || "N/A"} | Carbs: ${pendingMealData.carbs || "N/A"} | Fiber: ${pendingMealData.fiber || "N/A"} | Sugar: ${pendingMealData.sugar || "N/A"} | Sodium: ${pendingMealData.sodium || "N/A"}
-Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp lý nếu cần.`;
+      // Xác định dayIndex (1-7) để AI coach biết chính xác ngày cần update trong plan
+      const followupDayIndex = dayOfWeek === 0 ? 7 : dayOfWeek; // CN=0 -> 7
+      const mealLabelNorm = {
+        sáng: "Sáng", trưa: "Trưa", tối: "Tối", chiều: "Tối",
+        "bữa phụ": "Phụ", phụ: "Phụ",
+      }[String(mealTime).toLowerCase().trim()] || mealTime;
+
+      finalMessage = `[XÁC NHẬN BỮA ĂN THỰC TẾ]
+Người dùng đã ăn: "${pendingMealData.description || "món ăn"}"
+Bữa: ${mealLabelNorm} | Ngày trong tuần: day ${followupDayIndex} (${currentDayName}) | Ngày: ${resolvedDayText}
+Calories: ${pendingMealData.calories ?? "N/A"} kcal | Protein: ${pendingMealData.protein || "N/A"} | Fat: ${pendingMealData.fat || "N/A"} | Carbs: ${pendingMealData.carbs || "N/A"} | Fiber: ${pendingMealData.fiber || "N/A"} | Sugar: ${pendingMealData.sugar || "N/A"} | Sodium: ${pendingMealData.sodium || "N/A"}
+
+YÊU CẦU: Cập nhật đúng bữa ${mealLabelNorm} ngày ${followupDayIndex} trong thực đơn với món người dùng vừa ăn thực tế.
+Sau đó tái cân bằng các bữa còn lại trong ngày để tổng calo ~ ${profile.target_calories || "1500-1800"} kcal.
+action PHẢI là "update_plan" và trả về newPlan đầy đủ 7 ngày.`;
     }
 
     const intent = isMealFollowup
@@ -725,6 +843,27 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
         currentPlan = result.newPlan;
         await supabase.from("profiles").update({ weekly_plan: currentPlan, plan_updated_at: now }).eq("id", user.id);
         savePlanToFoods(currentPlan).catch((e) => console.error("❌ savePlanToFoods:", e.message));
+        console.log(`[chat] ✅ Đã cập nhật weekly_plan (${currentPlan.length} ngày) sau coach update_plan`);
+      }
+
+      // ── FIX: Nếu isMealFollowup=true nhưng AI trả analyze_only (không tự update plan),
+      //         ta tự áp món vừa ăn vào đúng ngày/bữa tương ứng trong plan hiện tại.
+      //         Điều này đảm bảo thời khóa biểu LUÔN được cập nhật sau khi user xác nhận bữa.
+      if (isMealFollowup && action !== "update_plan" && pendingMealData && mealTime) {
+        const updatedPlan = applyMealToPlan({
+          plan: currentPlan,
+          mealData: pendingMealData,
+          mealTime,
+          mealDayText,
+          dayOfWeek,
+        });
+        if (updatedPlan) {
+          currentPlan = updatedPlan;
+          await supabase.from("profiles").update({ weekly_plan: currentPlan, plan_updated_at: now }).eq("id", user.id);
+          savePlanToFoods(currentPlan).catch((e) => console.error("❌ savePlanToFoods (fallback):", e.message));
+          console.log(`[chat] ✅ Fallback: Đã áp món "${pendingMealData.description}" vào bữa ${mealTime} ngày ${mealDayText}`);
+          action = "update_plan";
+        }
       }
 
       resultMealData = (result.mealData && typeof result.mealData === "object") ? result.mealData : null;
@@ -737,7 +876,8 @@ Hãy cập nhật thực đơn 7 ngày tương ứng và điều chỉnh hợp l
       }
     }
 
-    if (intent !== "casual" && (action === "analyze_only" || (!needsClarification && action === "ask_clarify"))) {
+    // Chỉ hỏi bữa ăn khi CHƯA xác nhận bữa (không phải meal followup response)
+    if (!isMealFollowup && intent !== "casual" && (action === "analyze_only" || (!needsClarification && action === "ask_clarify"))) {
       aiReply = appendMealTimeFollowUp(aiReply, finalMessage);
     }
 

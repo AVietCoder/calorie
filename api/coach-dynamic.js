@@ -307,7 +307,19 @@ Ví dụ:
 Chỉ trả về JSON hợp lệ, không markdown, không giải thích.
 `;
 
-const buildCreatePlanPrompt = (profile, foodsDB, knowledgeBlock = "") => `
+const buildCreatePlanPrompt = (profile, foodsDB, knowledgeBlock = "", calorieDeviation = null) => {
+  let deviationNote = "";
+  if (calorieDeviation && Math.abs(calorieDeviation.deviation) > 100) {
+    const over = calorieDeviation.deviation > 0;
+    deviationNote = `
+LƯU Ý QUAN TRỌNG — ĐIỀU CHỈNH DỰA TRÊN LỊCH SỬ THỰC TẾ:
+Tuần trước người dùng ăn thực tế trung bình ${calorieDeviation.avgActualPerDay} kcal/ngày,
+${over ? "vượt" : "thấp hơn"} mục tiêu ${Math.abs(calorieDeviation.deviation)} kcal/ngày.
+Hãy ${over ? "GIẢM nhẹ calo của thực đơn tuần này" : "TĂNG nhẹ khẩu phần tuần này"} để bù lại,
+nhưng vẫn hướng về mục tiêu ${profile.target_calories || "1500-1800"} kcal/ngày.
+`;
+  }
+  return `
 Bạn là chuyên gia dinh dưỡng và am hiểu sâu ẩm thực Việt Nam 3 miền Bắc - Trung - Nam.
 
 ${buildProfileSection(profile)}
@@ -321,7 +333,8 @@ YÊU CẦU:
 - Tránh các món ảnh hưởng bệnh lý (nếu có), và ưu tiên các món hỗ trợ bệnh lý theo TÀI LIỆU CHUYÊN MÔN ở trên (nếu có).
 ${buildFoodsSection(foodsDB)}
 ${PLAN_FORMAT_SPEC}
-`;
+${deviationNote}`.trim() + "\n";
+};
 
 const buildRebalancePrompt = (profile, anchors, foodsDB, knowledgeBlock = "") => `
 Bạn là chuyên gia dinh dưỡng AI.
@@ -711,9 +724,52 @@ export default async function handler(req, res) {
       ? (now - lastUpdated) / (1000 * 60 * 60 * 24)
       : Infinity;
     const isMonday = now.getDay() === 1;
+
+    // Logic tái sinh thực đơn:
+    // 1) Chưa có plan → tạo mới
+    // 2) Plan > 7 ngày tuổi → tạo mới (chu kỳ tuần)
+    // 3) Đầu tuần mới (Thứ 2) và plan > 1 ngày tuổi → tạo mới
+    // 4) User yêu cầu tường minh (force_regenerate)
+    const forceRegenerate = req.body.force_regenerate === true;
     const needsNewPlan =
       !isDeadlinePassed &&
-      (currentPlan.length === 0 || diffDays >= 7 || (isMonday && diffDays >= 1));
+      (forceRegenerate ||
+       currentPlan.length === 0 ||
+       diffDays >= 7 ||
+       (isMonday && diffDays >= 1));
+
+    // Tính toán calo thực tế từ các bữa "isActuallyEaten" (user đã xác nhận ăn thực tế)
+    // để so sánh với mục tiêu và điều chỉnh thực đơn những ngày còn lại
+    const computeActualVsTarget = (plan, targetCalories) => {
+      if (!Array.isArray(plan)) return null;
+      const now = new Date();
+      const todayDayOfWeek = now.getDay() === 0 ? 7 : now.getDay(); // 1-7
+
+      let totalActual = 0;
+      let totalTarget = 0;
+      let actualDays = 0;
+
+      for (const day of plan) {
+        const dayNum = Number(day.day);
+        if (dayNum > todayDayOfWeek) break; // Chưa đến ngày này
+        const meals = Array.isArray(day.meals) ? day.meals : [];
+        const dayActual = meals.filter((m) => m.isActuallyEaten).reduce((s, m) => s + (Number(m.calories) || 0), 0);
+        const dayTarget = meals.reduce((s, m) => s + (Number(m.calories) || 0), 0);
+        if (dayActual > 0) {
+          totalActual += dayActual;
+          totalTarget += dayTarget;
+          actualDays++;
+        }
+      }
+      if (actualDays === 0) return null;
+      return {
+        avgActualPerDay: Math.round(totalActual / actualDays),
+        avgTargetPerDay: Math.round(totalTarget / actualDays),
+        targetCalories: Number(targetCalories) || 1600,
+        deviation: Math.round(totalActual / actualDays) - (Number(targetCalories) || 1600),
+        daysTracked: actualDays,
+      };
+    };
 
     log.info(`${traceId} | decision`, {
       hasPlan: currentPlan.length > 0,
@@ -742,8 +798,17 @@ export default async function handler(req, res) {
         });
       }
 
+      // ── Tính toán deviation calo thực tế vs mục tiêu (nếu đã có plan cũ) ──
+      let calorieDeviation = null;
+      if (currentPlan.length > 0 && !forceRegenerate) {
+        calorieDeviation = computeActualVsTarget(currentPlan, profile.target_calories);
+        if (calorieDeviation) {
+          log.info(`${traceId} | calorie_deviation`, calorieDeviation);
+        }
+      }
+
       const newFlatPlan = await callAIForPlan({
-        systemPrompt: buildCreatePlanPrompt(profile, foodsDB, knowledgeBlock),
+        systemPrompt: buildCreatePlanPrompt(profile, foodsDB, knowledgeBlock, calorieDeviation),
         traceId,
       });
       currentPlan = groupPlanByDay(newFlatPlan);
@@ -763,7 +828,16 @@ export default async function handler(req, res) {
           supabaseError: updateErr.message,
         });
       }
-      aiReply = "Chào tuần mới! HLV AI đã thiết kế xong lộ trình 7 ngày cho bạn.";
+
+      // Thông báo thông minh dựa trên lý do tái sinh
+      if (forceRegenerate) {
+        aiReply = "HLV AI đã tạo lại thực đơn mới cho bạn theo yêu cầu!";
+      } else if (calorieDeviation && Math.abs(calorieDeviation.deviation) > 150) {
+        const overUnder = calorieDeviation.deviation > 0 ? "vượt" : "thiếu";
+        aiReply = `Tuần mới bắt đầu! HLV AI nhận thấy tuần trước bạn ${overUnder} mục tiêu calo khoảng ${Math.abs(calorieDeviation.deviation)} kcal/ngày, nên đã điều chỉnh thực đơn tuần này cho phù hợp hơn.`;
+      } else {
+        aiReply = "Chào tuần mới! HLV AI đã thiết kế xong lộ trình 7 ngày cho bạn.";
+      }
     } else if (isDeadlinePassed) {
       aiReply =
         "Chúc mừng bạn đã hoàn thành lộ trình! Hãy đặt một mục tiêu mới để tiếp tục nhé 🎉";
