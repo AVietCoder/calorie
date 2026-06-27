@@ -255,8 +255,17 @@ Giới tính: ${profile.gender ?? "N/A"} | Năm sinh: ${profile.birth_year ?? "N
 Mục tiêu: ${profile.goal ?? "N/A"} | Bệnh lý: ${profile.disease || "Không có"} | Macro ưu tiên: ${profile.focus_macro ?? "N/A"}
 Calo mục tiêu/ngày: ${profile.target_calories || "1500-1800"} kcal | Lý do: ${profile.reason || "N/A"}
 ${knowledgeBlock ? "\n" + knowledgeBlock + "\n" : ""}
-THỰC ĐƠN 7 NGÀY HIỆN TẠI
-${JSON.stringify(currentPlan)}
+THỰC ĐƠN 7 NGÀY HIỆN TẠI (dạng gọn)
+${JSON.stringify((currentPlan || []).map(d => ({
+  day: d.day,
+  meals: (d.meals || []).map(m => ({
+    meal: m.meal,
+    food: m.food,
+    calories: m.calories,
+  }))
+})))}
+
+LƯU Ý: Khi cập nhật (action=update_plan), newPlan PHẢI trả về ĐẦY ĐỦ 7 ngày, mỗi bữa ĐỦ 10 trường: meal, food, amount, calories, protein, fat, carbs, fiber, sugar, sodium.
 
 KHOÁ MÓN ĂN CÓ SẴN (FOODS DATABASE)
 ${formatFoodsForPrompt(foodsDB)}
