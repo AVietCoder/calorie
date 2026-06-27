@@ -403,9 +403,9 @@ NẾU KHÔNG PHẢI MÓN ĂN: trả về <error>mô tả ngắn thứ nhìn th�
 
 NẾU LÀ MÓN ĂN — VIẾT REPLY THEO ĐÚNG CẤU TRÚC NÀY:
 
-[Tên món] — [1 câu mô tả hương vị / đặc điểm nổi bật]
+**[Tên món]** — [1 câu mô tả hương vị / đặc điểm nổi bật]
 
-Dinh dưỡng ước tính:
+**Dinh dưỡng ước tính:**
 Năng lượng: [X] kcal
 Protein: [X]g | Chất béo: [X]g | Carbs: [X]g
 Chất xơ: [X]g | Đường: [X]g | Natri: [X]mg
@@ -416,15 +416,15 @@ Chất xơ: [X]g | Đường: [X]g | Natri: [X]mg
 
 QUY TẮC QUAN TRỌNG:
 - KHÔNG in tiêu đề "Bước", "QUAN SÁT", "NHẬN DIỆN", "ĐẦU RA" hay bất kỳ nhãn quy trình nào
-- KHÔNG dùng markdown (không **, không ##, không - gạch đầu dòng)
+- CHỈ dùng in đậm (**...**) cho TÊN MÓN và dòng "Dinh dưỡng ước tính:" — KHÔNG dùng ## hay gạch đầu dòng
 - KHÔNG hỏi về bữa ăn trong phần reply ảnh
 - Sau </data> KHÔNG viết thêm gì
 
 VÍ DỤ ĐẦU RA:
 
-Khổ qua nhồi thịt — món canh thanh mát, dân dã với vị đắng nhẹ đặc trưng của khổ qua.
+**Khổ qua nhồi thịt** — món canh thanh mát, dân dã với vị đắng nhẹ đặc trưng của khổ qua.
 
-Dinh dưỡng ước tính:
+**Dinh dưỡng ước tính:**
 Năng lượng: 200 kcal
 Protein: 18g | Chất béo: 8g | Carbs: 12g
 Chất xơ: 3g | Đường: 2g | Natri: 400mg
@@ -432,9 +432,9 @@ Chất xơ: 3g | Đường: 2g | Natri: 400mg
 Món này ít calo, giàu vitamin C và rất hợp với chế độ giảm cân. Bạn có thể ăn thoải mái mà không lo vượt mức nhé!
 <data>{"calories":200,"protein":"18g","fat":"8g","carbs":"12g","fiber":"3g","sugar":"2g","sodium":"400mg","description":"Khổ qua nhồi thịt"}</data>
 
-Cơm tấm sườn trứng — bữa ăn đậm đà, no lâu với lớp sườn nướng thơm lừng.
+**Cơm tấm sườn trứng** — bữa ăn đậm đà, no lâu với lớp sườn nướng thơm lừng.
 
-Dinh dưỡng ước tính:
+**Dinh dưỡng ước tính:**
 Năng lượng: 680 kcal
 Protein: 35g | Chất béo: 22g | Carbs: 82g
 Chất xơ: 3g | Đường: 6g | Natri: 850mg
@@ -545,8 +545,15 @@ export default async function handler(req, res) {
               sodium: food.sodium,
               description: food.food,
             };
-            const kcal = food.calories ? `khoảng ${food.calories} kcal` : "đang ước tính";
-            aiReply = `${food.food} — ${kcal}.${food.amount ? ` Khẩu phần ước tính: ${food.amount}.` : ""}`;
+            const dd = (v) => (v && String(v).trim() ? v : "?");
+            aiReply = [
+              `**${food.food}**${food.amount ? ` (${food.amount})` : ""}`,
+              ``,
+              `**Dinh dưỡng ước tính:**`,
+              `Năng lượng: ${food.calories || "?"} kcal`,
+              `Protein: ${dd(food.protein)} | Chất béo: ${dd(food.fat)} | Carbs: ${dd(food.carbs)}`,
+              `Chất xơ: ${dd(food.fiber)} | Đường: ${dd(food.sugar)} | Natri: ${dd(food.sodium)}`,
+            ].join("\n");
           }
         } catch (e) {
           console.error("[chat-image] vision lỗi, dùng Qwen:", e.message);
