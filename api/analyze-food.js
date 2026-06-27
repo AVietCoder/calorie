@@ -3,6 +3,7 @@ import fs from "fs";
 import { supabase } from "../lib/supabase.js";
 // Local LLM (vLLM) via OpenAI-compatible client. See lib/llm.js.
 import { llm as openai, LLM_VISION_MODEL } from "../lib/llm.js";
+import { analyzeFoodImage } from "../lib/vision.js";
 
 // Formidable cần tự xử lý body (multipart) -> tắt bodyParser mặc định của Vercel.
 export const config = {
@@ -169,21 +170,16 @@ export default async function handler(req, res) {
       image_url: { url: `data:${mimetype};base64,${base64Image}` },
     });
 
-    const completion = await openai.chat.completions.create({
-      model: LLM_VISION_MODEL,
-      max_tokens: 700,
-      temperature: 0,   // greedy = ổn định, cùng ảnh cho cùng kết quả
-      top_p: 1,
-      extra_body: { chat_template_kwargs: { enable_thinking: false } },
-      messages: [
-        { role: "system", content: buildPhotoPrompt() },
-        { role: "user", content: userContent },
-      ],
-    });
-
-    const rawContent = completion.choices?.[0]?.message?.content ?? "";
-    const raw = stripThinkBlocks(rawContent);
-    const obj = extractJson(raw);
+    // Nhận diện qua module hybrid: Gemini (nếu có GEMINI_API_KEY) -> fallback Qwen.
+    let obj;
+    try {
+      obj = await analyzeFoodImage({ base64: base64Image, mimeType: mimetype, note });
+    } catch (e) {
+      console.error("[analyze-food] vision lỗi:", e.message);
+      return res
+        .status(502)
+        .json({ success: false, error: "Không đọc được kết quả phân tích. Vui lòng thử lại." });
+    }
 
     if (!obj) {
       return res

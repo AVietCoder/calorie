@@ -135,3 +135,31 @@ từ khoá (hoặc server embedding local nếu bạn bật `EMBEDDING_BASE_URL`
 - Đây là GIỚI HẠN CỦA MODEL vision, prompt đã ép phân biệt kỹ. Muốn chính xác hơn:
   tăng độ phân giải ảnh khi chạy vLLM: `--mm-processor-kwargs '{"max_pixels": 1605632}'`
   (hoặc 2007040) — nét hơn, đổi lại chậm hơn một chút.
+
+---
+
+## "lỡ ăn" chậm + nhận diện ảnh tốt hơn
+
+### 1) "lỡ ăn / lỡ ăn mất rồi" suy nghĩ rất lâu
+- Nguyên nhân: "lỡ ăn" nằm trong `UPDATE_RE` → bị định tuyến vào nhánh **coach** (nặng,
+  có thể sinh lại thực đơn 7 ngày ~80s). Câu "sáng tôi ăn..." không khớp → nhánh analyze (nhanh).
+- Sửa: bỏ "lỡ ăn / vừa ăn / sáng nay / trưa nay / tối nay / hôm nay ăn / ghi nhận" khỏi
+  `UPDATE_RE`. Giờ "lỡ ăn hủ tiếu" chạy y hệt "sáng tôi ăn hủ tiếu": nhanh + hỏi lại bữa.
+
+### 2) Nhận diện ảnh sai nhiều → 2 hướng
+**A. Tăng độ chính xác cho Qwen (MIỄN PHÍ, ưu tiên) — chỉnh ở server vLLM:**
+- vLLM hạ ảnh xuống `max_pixels` trước khi model "nhìn". Đang đặt 1003520 (~1MP) là khá thấp.
+  Tăng lên để nét hơn:
+  `--mm-processor-kwargs '{"min_pixels": 200704, "max_pixels": 2007040}'`  (~2MP)
+  (muốn nét hơn nữa: 2611200 ~ 2.6MP; đổi lại ảnh xử lý chậm hơn + tốn VRAM hơn).
+- App đã gửi ảnh full resolution (không nén nhỏ) nên nút thắt là ở `max_pixels` này.
+
+**B. Phối hợp API mạnh hơn (BẬT khi cần) — Google Gemini Flash:**
+- Vì sao Gemini: VLM tổng quát mạnh, nhận diện món VIỆT tốt hơn hẳn các API "food" chuyên
+  dụng phương Tây (LogMeal, Calorie Mama… vốn train chủ yếu món Âu Mỹ), lại rẻ + có bậc miễn phí.
+- Đã tích hợp sẵn `lib/vision.js`: đặt `GEMINI_API_KEY` => ảnh nhận diện bằng Gemini, LỖI
+  thì TỰ fallback về Qwen. Không đặt key => giữ 100% Qwen local. Áp dụng cho cả chat ảnh
+  lẫn "thêm món ngoài thực đơn" (analyze-food).
+- Lấy key miễn phí: https://aistudio.google.com/apikey . Model mặc định gemini-2.0-flash.
+
+> Gợi ý: thử (A) trước (miễn phí). Nếu vẫn chưa đủ chính xác thì bật (B).

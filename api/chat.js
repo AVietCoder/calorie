@@ -3,6 +3,7 @@ import fs from "fs";
 import { supabase } from "../lib/supabase.js";
 import { retrieveKnowledge, buildKnowledgeSection } from "../lib/knowledge.js";
 import { llm as openai, LLM_MODEL, LLM_VISION_MODEL } from "../lib/llm.js";
+import { analyzeFoodImage, visionProvider } from "../lib/vision.js";
 
 export const config = {
   api: { bodyParser: false },
@@ -186,7 +187,9 @@ const findFoodInDB = (foods, name = "") => {
 // ─── INTENT DETECTION ────────────────────────────────────────────────────────
 
 const FOOD_MENTION_RE = /\b(ăn|uống|món|tô|bát|đĩa|ly|cốc|miếng|phần|gram|kg|kcal|calo|bữa|phở|bún|cơm|bánh|thịt|cá|rau|trái|quả|sữa|trứng|đậu|gà|heo|bò|tôm|mực|ốc|canh|lẩu|xôi|cháo|mì|hủ tiếu|pizza|burger|kfc|sandwich|salad|yogurt|yến mạch|oats|protein|smoothie|sinh tố)\b/i;
-const UPDATE_RE = /\b(đổi|sửa|thay|cập nhật|ghi nhận|lỡ ăn|vừa ăn vào|sáng nay|trưa nay|tối nay|hôm nay ăn|thứ [2-7]|chủ nhật|ngày mai|thực đơn)\b/i;
+// Chỉ những câu THỰC SỰ muốn đổi thực đơn mới vào nhánh coach (nặng). Các câu kiểu
+// "lỡ ăn / vừa ăn" là GHI NHẬN món -> để nhánh analyze (nhanh) xử lý + hỏi lại bữa.
+const UPDATE_RE = /\b(đổi|sửa|thay|cập nhật|thứ [2-7]|chủ nhật|ngày mai|thực đơn|kế hoạch ăn)\b/i;
 const CASUAL_RE = /\b(thời tiết|bóng đá|phim|nhạc|code|lập trình|chính trị|kinh tế|đầu tư|crypto|game|trò chơi|học|thi|công việc|tình yêu|yêu|hẹn hò|du lịch|vui|buồn|chán|stress|mệt|ngủ)\b/i;
 
 const detectIntent = (message = "") => {
@@ -516,36 +519,71 @@ export default async function handler(req, res) {
       const base64Image = fs.readFileSync(imageFile.filepath).toString("base64");
       userContent.push({ type: "image_url", image_url: { url: `data:${imageFile.mimetype};base64,${base64Image}` } });
 
-      const completion = await openai.chat.completions.create({
-        model: LLM_VISION_MODEL,
-        messages: [
-          { role: "system", content: buildNutritionPrompt(foodsDB, knowledgeBlock) },
-          ...history.slice(-6),
-          { role: "user", content: userContent },
-        ],
-        max_tokens: 1200,
-        temperature: 0,
-        top_p: 1,
-        extra_body: { chat_template_kwargs: { enable_thinking: false } },
-      });
+      let aiReply;
+      let nutritionData = null;
 
-      let aiReply = stripCJK(stripThinkBlocks(completion.choices[0]?.message?.content || ""));
-
-      // Ảnh không phải món ăn
-      const errMatch = aiReply.match(/<error>([\s\S]*?)<\/error>/i);
-      if (errMatch) {
-        const seen = errMatch[1].trim();
-        const reply = `Ảnh này mình không nhận ra là món ăn${seen ? ` (mình thấy: ${seen})` : ""}. Bạn gửi giúp mình ảnh món ăn hoặc đồ uống nhé!`;
-        return res.status(200).json({ reply, username: profile.username });
+      // Ưu tiên provider mạnh hơn (Gemini) nếu được cấu hình; lỗi -> tự về Qwen.
+      if (visionProvider() === "gemini") {
+        try {
+          const food = await analyzeFoodImage({
+            base64: base64Image,
+            mimeType: imageFile.mimetype,
+            note: message,
+          });
+          if (food && food.is_food === false) {
+            const reply = `Ảnh này mình không nhận ra là món ăn${food.reason ? ` (mình thấy: ${food.reason})` : ""}. Bạn gửi giúp mình ảnh món ăn hoặc đồ uống nhé!`;
+            return res.status(200).json({ reply, username: profile.username });
+          }
+          if (food && food.food) {
+            nutritionData = {
+              calories: food.calories,
+              protein: food.protein,
+              fat: food.fat,
+              carbs: food.carbs,
+              fiber: food.fiber,
+              sugar: food.sugar,
+              sodium: food.sodium,
+              description: food.food,
+            };
+            const kcal = food.calories ? `khoảng ${food.calories} kcal` : "đang ước tính";
+            aiReply = `${food.food} — ${kcal}.${food.amount ? ` Khẩu phần ước tính: ${food.amount}.` : ""}`;
+          }
+        } catch (e) {
+          console.error("[chat-image] vision lỗi, dùng Qwen:", e.message);
+        }
       }
 
-      // Strip các tiêu đề bước nội tâm lọt ra ngoài
-      aiReply = stripInternalSteps(aiReply);
+      // Mặc định / fallback: Qwen (mô tả hội thoại + <data>)
+      if (aiReply === undefined) {
+        const completion = await openai.chat.completions.create({
+          model: LLM_VISION_MODEL,
+          messages: [
+            { role: "system", content: buildNutritionPrompt(foodsDB, knowledgeBlock) },
+            ...history.slice(-6),
+            { role: "user", content: userContent },
+          ],
+          max_tokens: 1200,
+          temperature: 0,
+          top_p: 1,
+          extra_body: { chat_template_kwargs: { enable_thinking: false } },
+        });
 
-      let nutritionData = extractDataBlock(aiReply);
-      if (nutritionData?.description) {
-        nutritionData.description = stripCJK(String(nutritionData.description));
-        nutritionData = correctCommonMisidentification(aiReply, nutritionData);
+        aiReply = stripCJK(stripThinkBlocks(completion.choices[0]?.message?.content || ""));
+
+        // Ảnh không phải món ăn
+        const errMatch = aiReply.match(/<error>([\s\S]*?)<\/error>/i);
+        if (errMatch) {
+          const seen = errMatch[1].trim();
+          const reply = `Ảnh này mình không nhận ra là món ăn${seen ? ` (mình thấy: ${seen})` : ""}. Bạn gửi giúp mình ảnh món ăn hoặc đồ uống nhé!`;
+          return res.status(200).json({ reply, username: profile.username });
+        }
+
+        aiReply = stripInternalSteps(aiReply);
+        nutritionData = extractDataBlock(aiReply);
+        if (nutritionData?.description) {
+          nutritionData.description = stripCJK(String(nutritionData.description));
+          nutritionData = correctCommonMisidentification(aiReply, nutritionData);
+        }
       }
       if (nutritionData?.description) {
         const existing = findFoodInDB(foodsDB, nutritionData.description);
