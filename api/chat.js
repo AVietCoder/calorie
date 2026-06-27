@@ -416,7 +416,7 @@ Gọi tên bằng tiếng Việt (hoặc tên quốc tế nếu không có bản
 Tteokbokki | Ramen | Sushi | Pasta | Pizza | Burger | Pad Thai | Dim Sum | Steak...
 
 QUY TRÌNH NHẬN DIỆN (nghĩ trong đầu, KHÔNG viết ra):
-1. Xác định nền ẩm thực (Việt / Hàn / Nhật / Ý / Trung / Thái / Ân...).
+1. Xác định nền ẩm thực (Việt / Hàn / Nhật / Ý / Trung / Thái / Ấn...).
 2. Xác định LOẠI THỰC PHẨM chính: sợi, cơm, bánh, bánh mì, thịt, hải sản, rau/củ, tráng miệng...
 3. Quan sát SỐT/MÀU/NƯỚC dùng: trong/trắng, đỏ cay, vàng curry, nâu sốt đậm, xanh herb...
 4. Quan sát PHỤ GIA: trứng, giá, rau thơm, đậu phụ, nấm, hành phi...
@@ -588,6 +588,25 @@ const applyMealToPlan = ({ plan, mealData, mealTime, mealDayText, dayOfWeek }) =
   return next;
 };
 
+// Gọi LLM an toàn: nếu endpoint trả 400 do không hỗ trợ response_format/extra_body (một số vLLM cũ)
+// thì tự động retry không các tham số đó.
+async function safeChatCreate(openai, payload) {
+  try {
+    return await openai.chat.completions.create(payload);
+  } catch (err) {
+    const status = err?.status || err?.response?.status || err?.statusCode;
+    const noBody = !err?.error && !err?.message?.includes("{");
+    if (status === 400 && (payload.response_format || payload.extra_body)) {
+      console.warn(`[safeChatCreate] LLM trả 400, thử lại không response_format/extra_body...`);
+      const fallback = { ...payload };
+      delete fallback.response_format;
+      delete fallback.extra_body;
+      return await openai.chat.completions.create(fallback);
+    }
+    throw err;
+  }
+}
+
 // ─── MAIN HANDLER ─────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
@@ -702,7 +721,7 @@ export default async function handler(req, res) {
       if (aiReply === undefined) {
         const QWEN_MIN_PIXELS = parseInt(process.env.QWEN_MIN_PIXELS || "200704", 10);
         const QWEN_MAX_PIXELS = parseInt(process.env.QWEN_MAX_PIXELS || "2007040", 10);
-        const completion = await openai.chat.completions.create({
+        const completion = await safeChatCreate(openai, {
           model: LLM_VISION_MODEL,
           messages: [
             { role: "system", content: buildNutritionPrompt(foodsDB, knowledgeBlock) },
@@ -796,7 +815,7 @@ export default async function handler(req, res) {
         "bữa phụ": "Phụ", phụ: "Phụ",
       }[String(mealTime).toLowerCase().trim()] || mealTime;
 
-      finalMessage = `[XÁC NHẬN BỮA ĂN THỰC TẾ — BẮT BUỘC UPDATE PLAN]
+      finalMessage = `[XÁC NHẬN BỮA ĂN THỰC TẾ - BẮT BUỘC UPDATE PLAN]
 Người dùng đã ăn: "${pendingMealData.description || "món ăn"}"
 Bữa: ${mealLabelNorm} | Ngày trong tuần: day ${followupDayIndex} (${currentDayName}) | Ngày: ${resolvedDayText}
 Calories: ${pendingMealData.calories ?? "N/A"} kcal | Protein: ${pendingMealData.protein || "N/A"} | Fat: ${pendingMealData.fat || "N/A"} | Carbs: ${pendingMealData.carbs || "N/A"} | Fiber: ${pendingMealData.fiber || "N/A"} | Sugar: ${pendingMealData.sugar || "N/A"} | Sodium: ${pendingMealData.sodium || "N/A"}
@@ -804,7 +823,7 @@ Calories: ${pendingMealData.calories ?? "N/A"} kcal | Protein: ${pendingMealData
 YÊU CẦU BẮT BUỘC:
 1. action PHẢI LÀ "update_plan".
 2. Thay thế ĐÚNG bữa ${mealLabelNorm} của ngày ${followupDayIndex} (${currentDayName}) bằng món người dùng vừa ăn.
-3. Tái cân bằng các bữa còn lại trong ngày để tổng calo ~ ${profile.target_calories || "1500-1800"} kcal (±150 kcal).
+3. Tái cân bằng các bữa còn lại trong ngày để tổng calo ~ ${profile.target_calories || "1500-1800"} kcal (+/-150 kcal).
 4. Trả về newPlan ĐẦY ĐỦ 7 ngày, KHÔNG để mảng rỗng.
 Nếu không thể update thì trả về analyze_only và newPlan=[].`;
     }
@@ -825,7 +844,7 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
 
     // ── CASUAL PATH ────────────────────────────────────────────────────────────
     if (intent === "casual") {
-      const casualCompletion = await openai.chat.completions.create({
+      const casualCompletion = await safeChatCreate(openai, {
         model: LLM_MODEL,
         messages: [
           { role: "system", content: buildCasualPrompt(profile) },
@@ -845,7 +864,7 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
 
     // ── ANALYZE PATH ──────────────────────────────────────────────────────────
     } else if (intent === "analyze") {
-      const analyzeCompletion = await openai.chat.completions.create({
+      const analyzeCompletion = await safeChatCreate(openai, {
         model: LLM_MODEL,
         messages: [
           { role: "system", content: buildAnalyzePrompt({ profile, foodsDB, knowledgeBlock }) },
@@ -866,7 +885,7 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
 
     // ── COACH PATH ────────────────────────────────────────────────────────────
     } else {
-      const coachCompletion = await openai.chat.completions.create({
+      const coachCompletion = await safeChatCreate(openai, {
         model: LLM_MODEL,
         messages: [
           {
