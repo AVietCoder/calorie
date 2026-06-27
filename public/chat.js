@@ -38,6 +38,46 @@
     chatWindow.scrollTop = chatWindow.scrollHeight;
   }
 
+  function escapeHtml(s) {
+    return String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+  // Markdown nội dòng: **đậm**, *nghiêng*, `code`
+  function inlineMd(s) {
+    return s
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>');
+  }
+  // Chuyển markdown của model (###, **, gạch đầu dòng) thành HTML an toàn.
+  function renderMarkdown(text) {
+    const lines = escapeHtml(text).split('\n');
+    const out = [];
+    let inList = false;
+    const closeList = () => { if (inList) { out.push('</ul>'); inList = false; } };
+    for (const line of lines) {
+      const h = line.match(/^\s*(#{1,6})\s+(.+?)\s*$/);
+      const li = line.match(/^\s*[-*•]\s+(.+?)\s*$/);
+      if (h) {
+        closeList();
+        const lvl = h[1].length;
+        out.push(`<h${lvl} class="md-h">${inlineMd(h[2])}</h${lvl}>`);
+      } else if (li) {
+        if (!inList) { out.push('<ul class="md-ul">'); inList = true; }
+        out.push(`<li>${inlineMd(li[1])}</li>`);
+      } else if (line.trim() === '') {
+        closeList();
+      } else {
+        closeList();
+        out.push(`<div class="md-p">${inlineMd(line)}</div>`);
+      }
+    }
+    closeList();
+    return out.join('');
+  }
+
   function renderMessage(role, text) {
     const chatWindow = document.getElementById('chat-window');
     if (!chatWindow) return;
@@ -61,7 +101,8 @@
       displayContent = (prefix === suffix || suffix === '') ? prefix : suffix;
     }
     displayContent = displayContent.replace(/\n{3,}/g, '\n\n').trim();
-    msgDiv.innerText = displayContent || 'Đang phân tích dữ liệu...';
+    msgDiv.style.whiteSpace = 'normal';
+    msgDiv.innerHTML = renderMarkdown(displayContent || 'Đang phân tích dữ liệu...');
 
     chatWindow.appendChild(msgDiv);
     chatWindow.scrollTop = chatWindow.scrollHeight;

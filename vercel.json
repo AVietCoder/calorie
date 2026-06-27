@@ -8,7 +8,7 @@
       "maxDuration": 60
     },
     "api/analyze-food.js": {
-      "maxDuration": 30
+      "maxDuration": 120
     },
     "api/auth.js": {
       "maxDuration": 10
@@ -18,11 +18,11 @@
     },
     "api/chat.js": {
       "includeFiles": "knowledge/**",
-      "maxDuration": 60
+      "maxDuration": 300
     },
     "api/coach-dynamic.js": {
       "includeFiles": "knowledge/**",
-      "maxDuration": 60
+      "maxDuration": 300
     },
     "api/diet-info.js": {
       "maxDuration": 10

@@ -63,6 +63,13 @@ const extractJson = (text = "") => {
 };
 
 // Strip <think>...</think> blocks emitted by Qwen2.5-VL-32B-Instruct before JSON.
+// Xoá ký tự Trung/Hán mà model đôi khi lẫn vào (tiếng Việt không dùng dải này).
+const stripCJK = (text = "") =>
+  String(text)
+    .replace(/[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\u3040-\u30FF\uFF00-\uFF9F]/g, "")
+    .replace(/[ \t]{2,}/g, " ")
+    .trim();
+
 const stripThinkBlocks = (text = "") =>
   String(text)
     .replace(/<think>[\s\S]*?<\/think>/gi, "")
@@ -71,6 +78,9 @@ const stripThinkBlocks = (text = "") =>
 const buildPhotoPrompt = () => `
 Bạn là chuyên gia dinh dưỡng AI, am hiểu sâu ẩm thực Việt Nam 3 miền Bắc - Trung - Nam.
 Nhiệm vụ: nhìn ẢNH (kèm ghi chú nếu có) và nhận diện MÓN ĂN/ĐỒ UỐNG rồi ước tính dinh dưỡng.
+
+⚠️ NGÔN NGỮ (BẮT BUỘC): chỉ dùng TIẾNG VIỆT có dấu. TUYỆT ĐỐI KHÔNG dùng chữ Hán/Trung/Nhật.
+Nếu không chắc món gì, chọn món Việt PHỔ BIẾN gần nhất về hình thức, KHÔNG bịa và KHÔNG nói "không nhận diện được" khi rõ ràng là món ăn.
 
 QUY TẮC NHẬN DIỆN MÓN VIỆT (RẤT QUAN TRỌNG):
 - MẶC ĐỊNH coi đây là MÓN ĂN VIỆT NAM trừ khi có dấu hiệu rõ ràng là món nước ngoài.
@@ -81,6 +91,7 @@ QUY TẮC NHẬN DIỆN MÓN VIỆT (RẤT QUAN TRỌNG):
   • cơm tấm (sườn/bì/chả) ≠ cơm gà ≠ cơm chiên.
   • bánh cuốn ≠ bánh ướt; bánh xèo ≠ bánh khọt.
   • gỏi cuốn (tươi) ≠ chả giò/nem rán (chiên giòn).
+  • KHỔ QUA / mướp đắng nhồi thịt: vỏ xanh ĐẬM, bề mặt CÓ GÂN NỔI nhăn nhúm/u lồi, ruột đặc thịt viên ≠ BÍ ĐAO (vỏ xanh nhạt, trơn láng, thịt trắng dày). Khi thấy vỏ xanh đậm + gân lồi → KHỔ QUA, KHÔNG phải bí đao.
 - Ước tính theo khẩu phần người Việt thực tế (1 tô phở ~ 400-500g; 1 đĩa cơm tấm ~ 1 phần đầy đủ; 1 ổ bánh mì).
 - "food" đặt bằng TÊN MÓN VIỆT cụ thể, có dấu tiếng Việt (vd: "Bún bò Huế", "Cơm tấm sườn bì chả").
 
@@ -160,8 +171,9 @@ export default async function handler(req, res) {
 
     const completion = await openai.chat.completions.create({
       model: LLM_VISION_MODEL,
-      max_tokens: 600,
-      temperature: 0.3,
+      max_tokens: 700,
+      temperature: 0,   // greedy = ổn định, cùng ảnh cho cùng kết quả
+      top_p: 1,
       extra_body: { chat_template_kwargs: { enable_thinking: false } },
       messages: [
         { role: "system", content: buildPhotoPrompt() },
@@ -184,13 +196,13 @@ export default async function handler(req, res) {
         success: false,
         notFood: true,
         error: obj.reason
-          ? `Ảnh không phải món ăn (${obj.reason}). Vui lòng chụp lại món ăn.`
+          ? `Ảnh không phải món ăn (${stripCJK(String(obj.reason))}). Vui lòng chụp lại món ăn.`
           : "Ảnh không phải món ăn. Vui lòng chụp lại món ăn.",
       });
     }
 
     let food = {
-      food: asStr(obj.food) || (note ? note : "Món ăn"),
+      food: stripCJK(asStr(obj.food)) || (note ? note : "Món ăn"),
       amount: asStr(obj.amount) || "1 phần",
       calories: parseNumber(obj.calories),
       protein: asStr(obj.protein),

@@ -106,3 +106,32 @@ từ khoá (hoặc server embedding local nếu bạn bật `EMBEDDING_BASE_URL`
 - Sinh thực đơn 7 ngày bằng 32B vẫn khá lâu (~80–100s) vì model lớn + đầu ra dài.
   Muốn nhận diện ảnh nét hơn (giảm nhầm món): tăng `max_pixels` khi chạy vLLM
   (vd `'{"max_pixels": 1605632}'`), đổi lại ảnh xử lý chậm hơn một chút.
+
+---
+
+## Bản tổng hợp: timeout Vercel + render markdown + lịch sử ảnh
+
+### 1) Vercel Runtime Timeout 60s (coach-dynamic / chat)
+- Nguyên nhân: 32B sinh thực đơn 7 ngày mất ~80–100s > 60s.
+- Sửa: `vercel.json` nâng `maxDuration` cho `api/chat.js` và `api/coach-dynamic.js` lên **300**
+  (analyze-food lên 120).
+- ⚠️ QUAN TRỌNG: `maxDuration > 60` **chỉ áp dụng trên gói Vercel Pro/Enterprise**. Gói
+  **Hobby (free) bị giới hạn cứng 60s** → không thể chạy plan 32B trong 60s. Lựa chọn:
+  (a) nâng cấp Vercel Pro, hoặc (b) dùng model nhỏ/nhanh hơn cho khâu sinh thực đơn.
+
+### 2) Trả lời có ** và ### hiện ký tự thô
+- Frontend trước dùng `innerText` nên `**`/`###` hiện nguyên ký tự.
+- Sửa `public/chat.js`: thêm `renderMarkdown` AN TOÀN (escape HTML trước, rồi chuyển
+  `# … ######` → `<h1>…<h6>`, `**đậm**` → `<strong>`, `*nghiêng*` → `<em>`,
+  gạch đầu dòng → `<ul><li>`), dùng `innerHTML`. CSS trong `chat.css` chỉnh cỡ tiêu đề
+  vừa với bong bóng chat. (Không cho phép chèn thẻ HTML lạ → an toàn XSS.)
+
+### 3) Lịch sử chat cho ảnh
+- Đường ảnh: khi chưa chọn bữa, lưu nhãn người dùng là **"Phân tích món ăn: <tên món>"**
+  (thay vì "[ảnh]"/"Phân tích hình ảnh này") → load lại có nghĩa. Trường hợp đã chọn
+  thời điểm ăn vẫn theo luồng xác nhận bữa sẵn có.
+
+### 4) Nhận diện ảnh còn sai (nui vs mì, cháo vs chè…)
+- Đây là GIỚI HẠN CỦA MODEL vision, prompt đã ép phân biệt kỹ. Muốn chính xác hơn:
+  tăng độ phân giải ảnh khi chạy vLLM: `--mm-processor-kwargs '{"max_pixels": 1605632}'`
+  (hoặc 2007040) — nét hơn, đổi lại chậm hơn một chút.
