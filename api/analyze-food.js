@@ -109,26 +109,10 @@ export default async function handler(req, res) {
         const { llm, LLM_VISION_MODEL } = await import("../lib/llm.js");
         const QWEN_MIN_PIXELS = parseInt(process.env.QWEN_MIN_PIXELS || "200704", 10);
         const QWEN_MAX_PIXELS = parseInt(process.env.QWEN_MAX_PIXELS || "2007040", 10);
-        const FALLBACK_PROMPT = `Bạn là chuyên gia dinh dưỡng. Nhìn ảnh và nhận diện CHÍNH XÁC món ăn hoặc đồ uống, rồi ước tính dinh dưỡng.
-
-ƯU TIÊN HÀNG ĐẦU - ẨM THỰC VIỆT NAM:
-- Khi món vừa có thể là Việt vừa có thể là nước ngoài, HÃY ƯU TIÊN tên món Việt nếu thấy dấu hiệu Việt (bát/tô/đĩa đơn giản, rau thơm, nước dùng trong, cơm/bún/phở).
-- Ví dụ: canh/quả xanh nhồi thịt → ưu tiên "Khổ qua nhồi thịt"/"Mướp đắng nhồi thịt" nếu thấy vỏ xanh gồ ghề; chỉ xem "Bí đao nhồi thịt" khi vỏ nhạt trơn.
-- Nếu rõ ràng là món quốc tế (pizza, sushi, burger, ramen, pasta...) thì vẫn trả tên quốc tế chính xác.
-
-QUY TẮC NHẬN DIỆN:
-- Quan sát LOẠI THỰC PHẨM chính (sợi, cơm, bánh, thịt, hải sản, rau/củ, tráng miệng, đồ uống).
-- Quan sát SỐT/MÀU/NƯỚC dùng: trong/trắng, đỏ cay, vàng curry, nâu đậm, xanh herb.
-- Phân biệt rõ: phở (sợi dẹt, nước trong) ≠ bún (sợi tròn) ≠ bún bò Huế (nước đỏ cay) ≠ bún riêu (nước đục chua).
-- KHỔ QUA / MƯỚP ĐẮNG NHỒI THỊT: quả xanh đậm, DA GỒ GHỀ/CÓ GAI MỀM, hình thùy/elip, cắt ngang hoặc nhồi thịt xay. KHÔNG phải Chèo tôm chua (sốt/súp đỏ/cam có tôm, không quả xanh nhồi thịt). KHÔNG phải Bí đao (vỏ nhạt, trơn láng).
-- Món quốc tế: Tteokbokki, Ramen, Sushi, Gimbap, Pasta, Pizza, Burger, Pad Thai, Dim Sum, Steak...
-- Nếu không chắc: chọn tên phổ biến nhất phù hợp, không bịa.
-
-TRẢ Lời NGẬN GỌN theo mẫu:
-**Tên món** — 1 câu tư vấn ngắn (KHÔNG liệt kê số dinh dưỡng).
-Rồi KẾT THÚC bằng DUY NHẤT một dòng JSON:
+        const FALLBACK_PROMPT = `Bạn là chuyên gia dinh dưỡng. Nhìn ảnh và nhận diện món ăn, ước tính dinh dưỡng.
+Trả lời ngắn gọn rồi KẾT THÚC bằng dòng JSON duy nhất theo format:
 <data>{"calories":NNN,"protein":"NNg","fat":"NNg","carbs":"NNg","fiber":"NNg","sugar":"NNg","sodium":"NNmg","description":"Tên món"}</data>
-Nếu KHÔNG phải món ăn/ đồ uống: <data>{"calories":0,"protein":"0g","fat":"0g","carbs":"0g","fiber":"0g","sugar":"0g","sodium":"0mg","description":"NOT_FOOD"}</data>`;
+Nếu KHÔNG phải món ăn: <data>{"calories":0,"protein":"0g","fat":"0g","carbs":"0g","fiber":"0g","sugar":"0g","sodium":"0mg","description":"NOT_FOOD"}</data>`;
         const userContent = [];
         if (note) userContent.push({ type: "text", text: `Món: ${note}` });
         userContent.push({ type: "image_url", image_url: { url: `data:${mimetype};base64,${base64Image}` } });
