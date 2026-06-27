@@ -365,6 +365,12 @@ const VISUAL_CORRECTIONS = [
     correct: "Khổ qua nhồi thịt",
   },
   {
+    // AI đôi khi nhầm khổ qua/mướp đắng nhồi thịt thành chèo tôm chua (do cùng miền Trung / màu xanh?)
+    detect: /chèo|tôm chua/i,
+    signal: /gồ ghề|gai|gân|nhồi|quả xanh|mướp đắng|khổ qua|vỏ xanh|ruột nhồi/i,
+    correct: "Khổ qua nhồi thịt",
+  },
+  {
     detect: /phở/i,
     signal: /sợi tròn|mắm ruốc|sả|ớt đỏ|nước đỏ|đỏ cay/i,
     correct: "Bún bò Huế",
@@ -424,6 +430,11 @@ Nhận diện BẤT KỲ món ăn nào từ bất kỳ nền ẩm thực nào. K
 Gọi tên bằng tiếng Việt (hoặc tên quốc tế nếu không có bản dịch chuẩn):
 Tteokbokki | Ramen | Sushi | Pasta | Pizza | Burger | Pad Thai | Dim Sum | Steak...
 
+ƯU TIÊN HÀNG ĐẦU - ẨM THỰC VIỆT NAM:
+- Khi món vừa có thể là Việt vừa có thể là nước ngoài, HÃY ƯU TIÊN tên món Việt nếu thấy dấu hiệu Việt (bát/tô/đĩa đơn giản, rau thơm, nước dùng trong, cơm/bún/phở, trình bày gia đình).
+- Ví dụ: canh/quả xanh nhồi thịt → ưu tiên "Khổ qua nhồi thịt"/"Mướp đắng nhồi thịt" khi thấy vỏ xanh gồ ghề; chỉ xem "Bí đao nhồi thịt" khi vỏ nhạt trơn.
+- Nếu rõ ràng là món quốc tế (pizza, sushi, burger, ramen, pasta...) thì vẫn trả tên quốc tế chính xác.
+
 QUY TRÌNH NHẬN DIỆN (nghĩ trong đầu, KHÔNG viết ra):
 1. Xác định nền ẩm thực (Việt / Hàn / Nhật / Ý / Trung / Thái / Ấn...).
 2. Xác định LOẠI THỰC PHẨM chính: sợi, cơm, bánh, bánh mì, thịt, hải sản, rau/củ, tráng miệng...
@@ -435,7 +446,11 @@ PHÂN BIỆT DỄ NHẦM LẪN:
 • Phở (sợi dẹt, nước trong/nâu nhạt, thịt thái mỏng) ≠ Bún (sợi tròn, thường không nước dùng trong) ≠ Hủ tiếu (sợi trắng trong, nước ngọt).
 • Bún bò Huế (sợi tròn, nước đỏ cay, chả cua, gió heo) ≠ Bún riêu (nước đục chua, cà chua, riêu cua) ≠ Bún thịt nướng (không nước nhiều, thịt nướng trên bún).
 • Cơm tấm (hạt cơm gạy tấm, sườn nướng, bì, chả trứng) ≠ Cơm trắng thổi thường.
-• Khổ qua nhồi thịt (vỏ xanh đậm, gân nổi, hình thùy cục) ≠ Bí đao (vỏ nhạt, trơn, hình trụ dài).
+• KHỔ QUA / MƯỚP ĐẮNG NHỒI THỊT:
+  - Quả xanh đậm, DA GỒ GHỀ/CÓ GAI MỀM, hình thùy/elip dài 10-20cm, thường cắt ngang hoặc nhồi thịt xay vào ruột.
+  - KHÔNG phải Chèo tôm chua (chèo là sốt/súp màu đỏ/cam có tôm, không quả xanh nhồi thịt).
+  - KHÔNG phải Bí đao (vỏ nhạt, trơn láng, hình trụ dài, không gồ ghề).
+  - Hai tên "Khổ qua nhồi thịt" và "Mướp đắng nhồi thịt" là cùng một món.
 • Chè / chè thái / sữa chua trái cây / kem / bánh ngọt: phân biệt rõ tráng miệng và món mặn.
 • Trà sữa / cà phê / sinh tố / nước ép: gọi đúng loại đồ uống và đặc điểm (trân châu, thạch, kem...).
 
@@ -845,7 +860,7 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
         : detectIntent(finalMessage);
 
     console.log(`[chat] intent=${intent} queryOnly=${effectiveIsQueryOnly} msg="${finalMessage.slice(0, 60)}"`);
-
+    console.log(finalMessage)
     let aiReply = "";
     let action = "analyze_only";
     let needsClarification = false;
@@ -909,7 +924,7 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
           { role: "user", content: finalMessage },
         ],
         response_format: { type: "json_object" },
-        max_tokens: 3500,
+        max_tokens: 2500,
         temperature: 0.2,
         extra_body: { chat_template_kwargs: { enable_thinking: false } },
       });

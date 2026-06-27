@@ -111,11 +111,16 @@ export default async function handler(req, res) {
         const QWEN_MAX_PIXELS = parseInt(process.env.QWEN_MAX_PIXELS || "2007040", 10);
         const FALLBACK_PROMPT = `Bạn là chuyên gia dinh dưỡng. Nhìn ảnh và nhận diện CHÍNH XÁC món ăn hoặc đồ uống, rồi ước tính dinh dưỡng.
 
+ƯU TIÊN HÀNG ĐẦU - ẨM THỰC VIỆT NAM:
+- Khi món vừa có thể là Việt vừa có thể là nước ngoài, HÃY ƯU TIÊN tên món Việt nếu thấy dấu hiệu Việt (bát/tô/đĩa đơn giản, rau thơm, nước dùng trong, cơm/bún/phở).
+- Ví dụ: canh/quả xanh nhồi thịt → ưu tiên "Khổ qua nhồi thịt"/"Mướp đắng nhồi thịt" nếu thấy vỏ xanh gồ ghề; chỉ xem "Bí đao nhồi thịt" khi vỏ nhạt trơn.
+- Nếu rõ ràng là món quốc tế (pizza, sushi, burger, ramen, pasta...) thì vẫn trả tên quốc tế chính xác.
+
 QUY TẮC NHẬN DIỆN:
 - Quan sát LOẠI THỰC PHẨM chính (sợi, cơm, bánh, thịt, hải sản, rau/củ, tráng miệng, đồ uống).
 - Quan sát SỐT/MÀU/NƯỚC dùng: trong/trắng, đỏ cay, vàng curry, nâu đậm, xanh herb.
 - Phân biệt rõ: phở (sợi dẹt, nước trong) ≠ bún (sợi tròn) ≠ bún bò Huế (nước đỏ cay) ≠ bún riêu (nước đục chua).
-- Khổ qua (vỏ xanh đậm, gân nổi) ≠ bí đao (vỏ nhạt, trơn).
+- KHỔ QUA / MƯỚP ĐẮNG NHỒI THỊT: quả xanh đậm, DA GỒ GHỀ/CÓ GAI MỀM, hình thùy/elip, cắt ngang hoặc nhồi thịt xay. KHÔNG phải Chèo tôm chua (sốt/súp đỏ/cam có tôm, không quả xanh nhồi thịt). KHÔNG phải Bí đao (vỏ nhạt, trơn láng).
 - Món quốc tế: Tteokbokki, Ramen, Sushi, Gimbap, Pasta, Pizza, Burger, Pad Thai, Dim Sum, Steak...
 - Nếu không chắc: chọn tên phổ biến nhất phù hợp, không bịa.
 
