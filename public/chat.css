@@ -221,6 +221,41 @@ body
     color: var(--text-main);
 }
 
+.nutrition-code-block
+{
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-soft);
+}
+
+.nutrition-code-block .code-header
+{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--text-sub);
+}
+
+.nutrition-code-block pre
+{
+    margin: 0;
+    padding: 12px 14px;
+    font-size: 12px;
+    line-height: 1.55;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    border-radius: 12px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
 .msg-container
 {
     max-width: 85%;

@@ -220,6 +220,8 @@ NHIỆM VỤ: Người dùng nhắc đến một món ăn hoặc hỏi về dinh
 
 QUY TẮC REPLY:
 - Thân thiện, tự nhiên như người bạn hiểu dinh dưỡng. Không cứng nhắc.
+- KHÔNG liệt kê số calo/protein/fat/carbs trong reply — thông tin đó đã hiển thị ở thẻ dinh dưỡng bên phải.
+- Chỉ nêu TÊN MÓN + LỜI TƯ VẤN thực tế (1-2 câu).
 - Không dùng markdown (không ###, không **bold**, không gạch đầu dòng).
 - Nếu là câu hỏi kiến thức chung (không nhắc món cụ thể) → trả lời rõ ràng, không có mealData.
 
@@ -229,7 +231,7 @@ TRẢ VỀ JSON THUẦN (KHÔNG markdown, KHÔNG dấu \`\`\`):
 Nếu không có món cụ thể: {"reply":"...","mealData":null}
 
 VÍ DỤ — "tôi vừa ăn phở bò":
-{"reply":"Phở bò khoảng 450 kcal, khá cân bằng protein và carbs — ổn cho bữa sáng hoặc trưa. Nếu bạn đang giảm cân thì lưu ý phần nước dùng có thể nhiều muối, nên hạn chế uống hết nước nhé.","mealData":{"calories":450,"protein":"30g","fat":"12g","carbs":"55g","fiber":"3g","sugar":"5g","sodium":"900mg","description":"Phở bò"}}
+{"reply":"Phở bò khá cân bằng protein và carbs, ổn cho bữa sáng hoặc trưa. Nếu đang giảm cân thì nhớ hạn chế uống hết nước dùng vì có thể nhiều muối nhé.","mealData":{"calories":450,"protein":"30g","fat":"12g","carbs":"55g","fiber":"3g","sugar":"5g","sodium":"900mg","description":"Phở bò"}}
 
 CHỈ JSON, không thêm bất kỳ chữ nào khác. /no_think`;
 };
@@ -297,10 +299,13 @@ QUY TẮC mealData:
 - null khi chỉ hỏi kiến thức chung, hoặc action = update_plan / ask_clarify.
 
 VÍ DỤ — "tôi vừa ăn 1 tô phở bò":
-{"reply":"Phở bò khoảng 450 kcal, khá cân bằng. Bạn ăn vào bữa nào để mình ghi nhận nhé?","action":"analyze_only","needsClarification":false,"clarifyQuestion":"","newPlan":[],"mealData":{"calories":450,"protein":"30g","fat":"12g","carbs":"55g","fiber":"3g","sugar":"5g","sodium":"900mg","description":"Phở bò"}}
+{"reply":"Phở bò khá cân bằng, ổn cho bữa sáng hoặc trưa. Bạn ăn vào bữa nào để mình ghi nhận nhé?","action":"analyze_only","needsClarification":false,"clarifyQuestion":"","newPlan":[],"mealData":{"calories":450,"protein":"30g","fat":"12g","carbs":"55g","fiber":"3g","sugar":"5g","sodium":"900mg","description":"Phở bò"}}
+
+VÍ DỤ — "[XÁC NHẬN BỮA ĂN] ăn Phở bò vào bữa Sáng ngày Thứ 2":
+{"reply":"Đã ghi nhận phở bò cho bữa sáng thứ 2. Mình tái cân bằng bữa trưa và tối cùng ngày để tổng calo vẫn đạt mục tiêu nhé.","action":"update_plan","needsClarification":false,"clarifyQuestion":"","newPlan":[...đủ 7 ngày...],"mealData":null}
 
 VÍ DỤ — "đổi trưa thứ 3 thành bún chả":
-{"reply":"Đã đổi bữa trưa thứ 3 thành bún chả (~500 kcal). Mình tái cân bằng bữa tối thứ 3 nhẹ hơn một chút để tổng ngày vẫn đạt mục tiêu nhé.","action":"update_plan","needsClarification":false,"clarifyQuestion":"","newPlan":[...đủ 7 ngày...],"mealData":null}
+{"reply":"Đã đổi bữa trưa thứ 3 thành bún chả. Mình tái cân bằng bữa tối thứ 3 nhẹ hơn một chút để tổng ngày vẫn đạt mục tiêu nhé.","action":"update_plan","needsClarification":false,"clarifyQuestion":"","newPlan":[...đủ 7 ngày...],"mealData":null}
 
 NHIỆM VỤ A — Báo đã ăn + đủ ngày/bữa:
 - Ước lượng calo + macro đầy đủ. Cập nhật đúng ngày/bữa.
@@ -374,6 +379,24 @@ const correctCommonMisidentification = (rawReply, nutritionData) => {
   return nutritionData;
 };
 
+// Tư vấn ngắn gọn dựa trên mục tiêu và dinh dưỡng (KHÔNG liệt kê số chi tiết)
+const buildShortAdvice = (nutritionData, profile) => {
+  const goal = String(profile?.goal || "").toLowerCase();
+  const cals = Number(nutritionData?.calories) || 0;
+  const desc = nutritionData?.description || "Món ăn";
+  if (goal.includes("giảm") || goal.includes("lose") || goal.includes("weight loss")) {
+    return cals > 600
+      ? `Món này khá nặng, nên ăn vừa phải và giảm dầu mỡ/đường nếu có thể nhé.`
+      : `Món này khá ổn cho chế độ giảm cân, nhớ giữ phần ăn vừa phải.`;
+  }
+  if (goal.includes("tăng") || goal.includes("gain") || goal.includes("muscle")) {
+    return cals > 400
+      ? `Món này có nhiều năng lượng, tốt cho mục tiêu tăng cân/tăng cơ.`
+      : `Món này được, bạn có thể kết hợp thêm nguồn protein để đạt mục tiêu nhé.`;
+  }
+  return `Món này có thể phù hợp với chế độ cân bằng của bạn. Chi tiết dinh dưỡng mình để ở thẻ bên phải.`;
+};
+
 // ─── PROMPT: VISION / IMAGE ANALYSIS ─────────────────────────────────────────
 
 const buildNutritionPrompt = (foodsDB = [], knowledgeBlock = "") => {
@@ -392,62 +415,59 @@ Nhận diện BẤT KỲ món ăn nào từ bất kỳ nền ẩm thực nào. K
 Gọi tên bằng tiếng Việt (hoặc tên quốc tế nếu không có bản dịch chuẩn):
 Tteokbokki | Ramen | Sushi | Pasta | Pizza | Burger | Pad Thai | Dim Sum | Steak...
 
-QUY TẮC NHẬN DIỆN CHI TIẾT (quan sát kỹ trước khi kết luận):
-MÓN VIỆT:
-• Sợi dẹt trắng trong + nước trong = Phở | Sợi tròn trắng = Bún | Sợi tròn + nước đỏ cay + sả = Bún bò Huế
-• Nước đục chua + cà chua + cua = Bún riêu | Cơm hạt nhỏ ĐĨA + sườn nướng ± trứng = Cơm tấm
-• Vỏ XANH ĐẬM + GÂN NỔI/NHĂN + nhân thịt = Khổ qua nhồi thịt (≠ Bí đao: vỏ nhạt + trơn)
+QUY TRÌNH NHẬN DIỆN (nghĩ trong đầu, KHÔNG viết ra):
+1. Xác định nền ẩm thực (Việt / Hàn / Nhật / Ý / Trung / Thái / Ân...).
+2. Xác định LOẠI THỰC PHẨM chính: sợi, cơm, bánh, bánh mì, thịt, hải sản, rau/củ, tráng miệng...
+3. Quan sát SỐT/MÀU/NƯỚC dùng: trong/trắng, đỏ cay, vàng curry, nâu sốt đậm, xanh herb...
+4. Quan sát PHỤ GIA: trứng, giá, rau thơm, đậu phụ, nấm, hành phi...
+5. Dựa vào 4 điểm trên để chọn TÊN CHÍNH XÁC NHẤT, không dùng tên chung chung.
+
+PHÂN BIỆT DỄ NHẦM LẪN:
+• Phở (sợi dẹt, nước trong/nâu nhạt, thịt thái mỏng) ≠ Bún (sợi tròn, thường không nước dùng trong) ≠ Hủ tiếu (sợi trắng trong, nước ngọt).
+• Bún bò Huế (sợi tròn, nước đỏ cay, chả cua, gió heo) ≠ Bún riêu (nước đục chua, cà chua, riêu cua) ≠ Bún thịt nướng (không nước nhiều, thịt nướng trên bún).
+• Cơm tấm (hạt cơm gạy tấm, sườn nướng, bì, chả trứng) ≠ Cơm trắng thổi thường.
+• Khổ qua nhồi thịt (vỏ xanh đậm, gân nổi, hình thùy cục) ≠ Bí đao (vỏ nhạt, trơn, hình trụ dài).
+• Chè / chè thái / sữa chua trái cây / kem / bánh ngọt: phân biệt rõ tráng miệng và món mặn.
+• Trà sữa / cà phê / sinh tố / nước ép: gọi đúng loại đồ uống và đặc điểm (trân châu, thạch, kem...).
+
 MÓN QUỐC TẾ:
-• Bánh gạo trụ ngắn dẻo + sốt đỏ cay = Tteokbokki (Hàn) | Mì vàng + nước đậm = Ramen (Nhật)
-• Cơm cuộn rong biển = Gimbap/Sushi | Mì dẹt + sốt kem/cà chua + pho mát = Pasta (Ý)
-• Không chắc → đặt tên món phổ biến nhất phù hợp hình thức, KHÔNG bịa
+• Tteokbokki: bánh gạo trụ ngắn, sốt đỏ cay, thường có trứng cút lát.
+• Ramen: mì vàng xoăn, nước sút đậm, thịt xá xíu, rong biển, trứng lòng đào.
+• Sushi: cơm trộn giấm + hải sản/thịt trên/nằm trong rong biển. Gimbap (Hàn): rong biển bên ngoài, cơm + nhiều rau củ/thịt xông khói.
+• Pasta: mì dẹt/xoăn/dống, sốt kem/cà chua/pesto, thường có pho mát rắc.
+• Pizza: đế bẹt nướng, phủ sốt cà chua + pho mát + topping. Phân biệt kiểu đế (mỏng giòn / dày xốp / viền nhồn phô mai).
+• Burger: bánh mì kẹp thịt viên, rau, pho mát, sốt.
+• Pad Thai: mì xào Thái dẹt, màu vàng cam, đậu phụ, tôm, giá, đậu phụng.
+• Dim Sum: bánh bao/bánh há cảo/bánh xếp trong xửng hấp.
+• Steak: thịt bò cắt lát dày, có vân, thường kèm sốt/rau củ.
+• Không chắc → chọn tên món phổ biến nhất phù hợp, KHÔNG bịa.
+
+ƯỚcC LƯỢNG KHẨU PHẦN:
+- Chỉ đoán khẩu phần từ hình ảnh (bát/tô/đĩa/ly) và ghi vào amount.
+- Nếu chỉ có món ăn không có dụng cụ tham chiếu, mặc định "1 phần".
 ${foodsSection}${knowledgeBlock ? "\n" + knowledgeBlock + "\n" : ""}
 NẾU KHÔNG PHẢI MÓN ĂN/ĐỒ UỐNG (là vật dụng, phong cảnh, con người...):
 → trả về <error>mô tả ngắn thứ nhìn thấy</error>
 
 NẾU LÀ MÓN ĂN — VIẾT REPLY THEO ĐÚNG CẤU TRÚC NÀY:
 
-**[Tên món]** — [1 câu mô tả hương vị / đặc điểm nổi bật]
-
-**Dinh dưỡng ước tính:**
-Năng lượng: [CAL] kcal
-Protein: [PRO]g | Chất béo: [FAT]g | Carbs: [CARB]g
-Chất xơ: [FIB]g | Đường: [SUG]g | Natri: [SOD]mg
-
-[1-2 câu tư vấn phù hợp mục tiêu — thân thiện, thực tế]
+**[Tên món]** — [1 câu mô tả / gợi ý nổi bật] + [1 câu tư vấn thực tế, không liệt kê số]
 
 <data>{"calories":[CAL],"protein":"[PRO]g","fat":"[FAT]g","carbs":"[CARB]g","fiber":"[FIB]g","sugar":"[SUG]g","sodium":"[SOD]mg","description":"[Tên món]"}</data>
 
-⚠️ QUY TẮC NHẤT QUÁN SỐ LIỆU (QUAN TRỌNG NHẤT):
-Các số [CAL], [PRO], [FAT], [CARB], [FIB], [SUG], [SOD] trong phần "Dinh dưỡng ước tính"
-PHẢI HOÀN TOÀN KHỚP với các số trong JSON <data>. Không được lệch dù 1 đơn vị.
-Quyết định một con số → dùng y nguyên con số đó ở cả 2 chỗ.
-
-QUY TẮC ĐỊNH DẠNG:
+⚠️ QUY TẮC QUAN TRỌNG:
+- Reply CHỈ gồm TÊN MÓN + TƯ VẤN. KHÔNG viết phần "Dinh dưỡng ước tính:" hay liệt kê số — các số đã nằm trong <data> để hiển thị ở thẻ bên phải.
+- Các số [CAL], [PRO], [FAT], [CARB], [FIB], [SUG], [SOD] trong <data> PHẢI nhất quán với nhau.
 - KHÔNG in tiêu đề "Bước", "QUAN SÁT", "NHẬN DIỆN", "ĐẦU RA" hay bất kỳ nhãn quy trình nào
-- CHỈ dùng in đậm (**...**) cho TÊN MÓN và "Dinh dưỡng ước tính:" — KHÔNG dùng ## hay gạch đầu dòng
+- CHỈ dùng in đậm (**...**) cho TÊN MÓN — KHÔNG dùng ## hay gạch đầu dòng
 - KHÔNG hỏi về bữa ăn trong reply ảnh | Sau </data> KHÔNG viết thêm gì
 
 VÍ DỤ — MÓN VIỆT:
-**Khổ qua nhồi thịt** — món canh thanh mát, dân dã với vị đắng nhẹ đặc trưng.
-
-**Dinh dưỡng ước tính:**
-Năng lượng: 200 kcal
-Protein: 18g | Chất béo: 8g | Carbs: 12g
-Chất xơ: 3g | Đường: 2g | Natri: 400mg
-
-Món này ít calo, giàu vitamin C và rất hợp với chế độ giảm cân. Ăn thoải mái mà không lo vượt mức nhé!
+**Khổ qua nhồi thịt** — món canh thanh mát, dân dã với vị đắng nhẹ đặc trưng. Món này ít calo, giàu vitamin C và rất hợp với chế độ giảm cân. Ăn thoải mái mà không lo vượt mức nhé!
 <data>{"calories":200,"protein":"18g","fat":"8g","carbs":"12g","fiber":"3g","sugar":"2g","sodium":"400mg","description":"Khổ qua nhồi thịt"}</data>
 
 VÍ DỤ — MÓN QUỐC TẾ:
-**Tteokbokki** — bánh gạo dai giòn thấm đẫm sốt cay ngọt đặc trưng của Hàn Quốc.
-
-**Dinh dưỡng ước tính:**
-Năng lượng: 320 kcal
-Protein: 8g | Chất béo: 5g | Carbs: 62g
-Chất xơ: 2g | Đường: 12g | Natri: 780mg
-
-Món này khá nhiều carbs từ bánh gạo, phù hợp bổ sung năng lượng trước khi vận động. Nếu đang giảm cân, bạn nên ăn nửa phần để kiểm soát calo nhé!
+**Tteokbokki** — bánh gạo dai giòn thấm đẫm sốt cay ngọt đặc trưng của Hàn Quốc. Món này khá nhiều carbs từ bánh gạo, phù hợp bổ sung năng lượng trước khi vận động. Nếu đang giảm cân, bạn nên ăn nửa phần để kiểm soát calo nhé!
 <data>{"calories":320,"protein":"8g","fat":"5g","carbs":"62g","fiber":"2g","sugar":"12g","sodium":"780mg","description":"Tteokbokki"}</data>
 
 /no_think`;
@@ -477,13 +497,16 @@ const normalizeMealLabel = (label = "") => {
 
 /**
  * Xác định dayIndex (1-7) từ mealDayText hoặc dayOfWeek hiện tại.
- * mealDayText có thể là: "hôm nay", "ngày DD/MM/YYYY", "thứ 2"...
+ * mealDayText có thể là: "hôm nay", "YYYY-MM-DD", "DD/MM/YYYY", "thứ 2"...
  */
 const resolveDayIndex = (mealDayText, dayOfWeek) => {
-  if (!mealDayText || mealDayText === "hôm nay") {
-    // Dùng ngày hiện tại (dayOfWeek: 0=CN, 1=T2, ..., 6=T7)
-    return dayOfWeek === 0 ? 7 : dayOfWeek; // CN → 7
+  if (!mealDayText || mealDayText === "hôm nay" || mealDayText === "today") {
+    // Dùng ngày hiện tại (dayOfWeek đã chuẩn hoá 1-7)
+    return dayOfWeek;
   }
+
+  const lower = String(mealDayText).toLowerCase().trim();
+
   // Thứ 2..7, Chủ Nhật
   const dayNameMap = {
     "thứ 2": 1, "thứ hai": 1,
@@ -494,10 +517,24 @@ const resolveDayIndex = (mealDayText, dayOfWeek) => {
     "thứ 7": 6, "thứ bảy": 6,
     "chủ nhật": 7,
   };
-  const lower = String(mealDayText).toLowerCase();
   for (const [k, v] of Object.entries(dayNameMap)) {
     if (lower.includes(k)) return v;
   }
+
+  // ISO date YYYY-MM-DD
+  const isoMatch = mealDayText.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    const d = new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3]));
+    if (!isNaN(d.getTime())) return d.getDay() === 0 ? 7 : d.getDay();
+  }
+
+  // DD/MM/YYYY
+  const vnMatch = mealDayText.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (vnMatch) {
+    const d = new Date(Number(vnMatch[3]), Number(vnMatch[2]) - 1, Number(vnMatch[1]));
+    if (!isNaN(d.getTime())) return d.getDay() === 0 ? 7 : d.getDay();
+  }
+
   return null; // Không xác định được
 };
 
@@ -718,23 +755,11 @@ export default async function handler(req, res) {
         }
 
         // ── Build Gemini reply SAU khi có nutritionData CUỐI CÙNG (đã qua DB override) ──
-        // Đảm bảo số liệu trong text chat = số liệu hiển thị trên UI (không bao giờ lệch)
+        // Build ngắn gọn: tên món + tư vấn thực tế. Số liệu để trong <data> cho sidebar.
         if (nutritionData._geminiReplyPending) {
           delete nutritionData._geminiReplyPending;
-          const dd = (v) => (v != null && String(v).trim() ? v : "?");
-          // Tính calories từ macro nếu calories=0 hoặc null
-          const cals = nutritionData.calories || 0;
-          const pro  = String(nutritionData.protein  || "0").replace(/[^0-9.]/g, "");
-          const fat  = String(nutritionData.fat      || "0").replace(/[^0-9.]/g, "");
-          const carb = String(nutritionData.carbs    || "0").replace(/[^0-9.]/g, "");
-          aiReply = [
-            `**${nutritionData.description}**${nutritionData.amount && nutritionData.amount !== "1 phần" ? ` (${nutritionData.amount})` : ""}`,
-            ``,
-            `**Dinh dưỡng ước tính:**`,
-            `Năng lượng: ${cals} kcal`,
-            `Protein: ${dd(nutritionData.protein)} | Chất béo: ${dd(nutritionData.fat)} | Carbs: ${dd(nutritionData.carbs)}`,
-            `Chất xơ: ${dd(nutritionData.fiber)} | Đường: ${dd(nutritionData.sugar)} | Natri: ${dd(nutritionData.sodium)}`,
-          ].join("\n");
+          const shortAdvice = buildShortAdvice(nutritionData, profile);
+          aiReply = `**${nutritionData.description}**${nutritionData.amount && nutritionData.amount !== "1 phần" ? ` (${nutritionData.amount})` : ""} — ${shortAdvice}`;
         }
 
         // Gắn <data> tag vào cuối reply (cả Gemini lẫn Qwen path)
@@ -771,14 +796,17 @@ export default async function handler(req, res) {
         "bữa phụ": "Phụ", phụ: "Phụ",
       }[String(mealTime).toLowerCase().trim()] || mealTime;
 
-      finalMessage = `[XÁC NHẬN BỮA ĂN THỰC TẾ]
+      finalMessage = `[XÁC NHẬN BỮA ĂN THỰC TẾ — BẮT BUỘC UPDATE PLAN]
 Người dùng đã ăn: "${pendingMealData.description || "món ăn"}"
 Bữa: ${mealLabelNorm} | Ngày trong tuần: day ${followupDayIndex} (${currentDayName}) | Ngày: ${resolvedDayText}
 Calories: ${pendingMealData.calories ?? "N/A"} kcal | Protein: ${pendingMealData.protein || "N/A"} | Fat: ${pendingMealData.fat || "N/A"} | Carbs: ${pendingMealData.carbs || "N/A"} | Fiber: ${pendingMealData.fiber || "N/A"} | Sugar: ${pendingMealData.sugar || "N/A"} | Sodium: ${pendingMealData.sodium || "N/A"}
 
-YÊU CẦU: Cập nhật đúng bữa ${mealLabelNorm} ngày ${followupDayIndex} trong thực đơn với món người dùng vừa ăn thực tế.
-Sau đó tái cân bằng các bữa còn lại trong ngày để tổng calo ~ ${profile.target_calories || "1500-1800"} kcal.
-action PHẢI là "update_plan" và trả về newPlan đầy đủ 7 ngày.`;
+YÊU CẦU BẮT BUỘC:
+1. action PHẢI LÀ "update_plan".
+2. Thay thế ĐÚNG bữa ${mealLabelNorm} của ngày ${followupDayIndex} (${currentDayName}) bằng món người dùng vừa ăn.
+3. Tái cân bằng các bữa còn lại trong ngày để tổng calo ~ ${profile.target_calories || "1500-1800"} kcal (±150 kcal).
+4. Trả về newPlan ĐẦY ĐỦ 7 ngày, KHÔNG để mảng rỗng.
+Nếu không thể update thì trả về analyze_only và newPlan=[].`;
     }
 
     const intent = isMealFollowup

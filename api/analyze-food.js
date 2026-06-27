@@ -109,10 +109,21 @@ export default async function handler(req, res) {
         const { llm, LLM_VISION_MODEL } = await import("../lib/llm.js");
         const QWEN_MIN_PIXELS = parseInt(process.env.QWEN_MIN_PIXELS || "200704", 10);
         const QWEN_MAX_PIXELS = parseInt(process.env.QWEN_MAX_PIXELS || "2007040", 10);
-        const FALLBACK_PROMPT = `Bạn là chuyên gia dinh dưỡng. Nhìn ảnh và nhận diện món ăn, ước tính dinh dưỡng.
-Trả lời ngắn gọn rồi KẾT THÚC bằng dòng JSON duy nhất theo format:
+        const FALLBACK_PROMPT = `Bạn là chuyên gia dinh dưỡng. Nhìn ảnh và nhận diện CHÍNH XÁC món ăn hoặc đồ uống, rồi ước tính dinh dưỡng.
+
+QUY TẮC NHẬN DIỆN:
+- Quan sát LOẠI THỰC PHẨM chính (sợi, cơm, bánh, thịt, hải sản, rau/củ, tráng miệng, đồ uống).
+- Quan sát SỐT/MÀU/NƯỚC dùng: trong/trắng, đỏ cay, vàng curry, nâu đậm, xanh herb.
+- Phân biệt rõ: phở (sợi dẹt, nước trong) ≠ bún (sợi tròn) ≠ bún bò Huế (nước đỏ cay) ≠ bún riêu (nước đục chua).
+- Khổ qua (vỏ xanh đậm, gân nổi) ≠ bí đao (vỏ nhạt, trơn).
+- Món quốc tế: Tteokbokki, Ramen, Sushi, Gimbap, Pasta, Pizza, Burger, Pad Thai, Dim Sum, Steak...
+- Nếu không chắc: chọn tên phổ biến nhất phù hợp, không bịa.
+
+TRẢ Lời NGẬN GỌN theo mẫu:
+**Tên món** — 1 câu tư vấn ngắn (KHÔNG liệt kê số dinh dưỡng).
+Rồi KẾT THÚC bằng DUY NHẤT một dòng JSON:
 <data>{"calories":NNN,"protein":"NNg","fat":"NNg","carbs":"NNg","fiber":"NNg","sugar":"NNg","sodium":"NNmg","description":"Tên món"}</data>
-Nếu KHÔNG phải món ăn: <data>{"calories":0,"protein":"0g","fat":"0g","carbs":"0g","fiber":"0g","sugar":"0g","sodium":"0mg","description":"NOT_FOOD"}</data>`;
+Nếu KHÔNG phải món ăn/ đồ uống: <data>{"calories":0,"protein":"0g","fat":"0g","carbs":"0g","fiber":"0g","sugar":"0g","sodium":"0mg","description":"NOT_FOOD"}</data>`;
         const userContent = [];
         if (note) userContent.push({ type: "text", text: `Món: ${note}` });
         userContent.push({ type: "image_url", image_url: { url: `data:${mimetype};base64,${base64Image}` } });

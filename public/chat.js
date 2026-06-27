@@ -118,6 +118,21 @@ window.currentConvId = null;
       document.getElementById('val-fiber').innerText = data.fiber || '--';
       document.getElementById('val-sugar').innerText = data.sugar || '--';
       document.getElementById('val-sodium').innerText = data.sodium || '--';
+
+      const codeBlock = document.getElementById('nutrition-code');
+      if (codeBlock) {
+        const payload = {
+          description: data.description || '',
+          calories: data.calories ?? 0,
+          protein: data.protein || '0g',
+          fat: data.fat || '0g',
+          carbs: data.carbs || '0g',
+          fiber: data.fiber || '0g',
+          sugar: data.sugar || '0g',
+          sodium: data.sodium || '0mg',
+        };
+        codeBlock.textContent = JSON.stringify(payload, null, 2);
+      }
     } catch (e) { console.error('Lỗi cập nhật Sidebar:', e); }
   }
 
@@ -241,6 +256,8 @@ window.currentConvId = null;
     document.getElementById('val-fiber').innerText = '--';
     document.getElementById('val-sugar').innerText = '--';
     document.getElementById('val-sodium').innerText = '--';
+    const codeBlock = document.getElementById('nutrition-code');
+    if (codeBlock) codeBlock.textContent = '{}';
     document.getElementById('display-food-img').src = 'https://i.pinimg.com/736x/9d/51/c3/9d51c32cccb77dcf89cc2fb11aa20a17.jpg';
   }
 
