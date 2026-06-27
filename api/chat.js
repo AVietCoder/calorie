@@ -295,8 +295,6 @@ QUY TẮC newPlan:
 QUY TẮC mealData:
 - Điền khi action = analyze_only VÀ người dùng nhắc một món cụ thể.
 - null khi chỉ hỏi kiến thức chung, hoặc action = update_plan / ask_clarify.
-- KHI ĐIỀN: phải có ĐỦ 8 trường: calories(số), protein, fat, carbs, fiber, sugar, sodium(có đơn vị), description(tên món).
-- Các số dinh dưỡng trong mealData PHẢI KHỚP với số đã viết trong reply text.
 
 VÍ DỤ — "tôi vừa ăn 1 tô phở bò":
 {"reply":"Phở bò khoảng 450 kcal, khá cân bằng. Bạn ăn vào bữa nào để mình ghi nhận nhé?","action":"analyze_only","needsClarification":false,"clarifyQuestion":"","newPlan":[],"mealData":{"calories":450,"protein":"30g","fat":"12g","carbs":"55g","fiber":"3g","sugar":"5g","sodium":"900mg","description":"Phở bò"}}
@@ -620,85 +618,6 @@ export default async function handler(req, res) {
     const dayNames = ["", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
     const currentDayName = dayNames[dayOfWeek];
 
-    // ── FOOD CORRECTION PATH ───────────────────────────────────────────────────
-    // User chỉnh tên món AI nhận diện sai (vd: "Đây không phải bí đao, là khổ qua nhồi thịt")
-    // Frontend gửi: followupType="food_correction", message=tên đúng, mealData=data cũ
-    if (isFoodCorrection && message) {
-      const correctedName = message.trim();
-      const oldData = pendingMealData || {};
-
-      // Ước tính dinh dưỡng cho tên mới (ưu tiên DB, không có thì AI ước tính)
-      let correctedData = findFoodInDB(foodsDB, correctedName);
-      if (!correctedData) {
-        try {
-          const res2 = await openai.chat.completions.create({
-            model: MODEL,
-            messages: [{
-              role: "system",
-              content: `Bạn là chuyên gia dinh dưỡng quốc tế. Ước tính dinh dưỡng cho món: "${correctedName}".
-Khẩu phần: ${oldData.amount || "1 phần người lớn thông thường"}.
-Trả về DUY NHẤT JSON: {"food":"${correctedName}","amount":"<khẩu phần>","calories":<số>,"protein":"<g>","fat":"<g>","carbs":"<g>","fiber":"<g>","sugar":"<g>","sodium":"<mg>"}
-Chỉ JSON, không markdown, không giải thích.`
-            }],
-            response_format: { type: "json_object" },
-            temperature: 0.1,
-            max_tokens: 200,
-            extra_body: { chat_template_kwargs: { enable_thinking: false } },
-          });
-          const raw = res2.choices?.[0]?.message?.content ?? "";
-          const obj = safeJsonParse(stripThinkBlocks(raw)) || {};
-          const asStr = (v) => (v == null ? null : String(v));
-          correctedData = {
-            description: correctedName,
-            food: correctedName,
-            amount: obj.amount || oldData.amount || "1 phần",
-            calories: parseFloat(obj.calories) || oldData.calories || 0,
-            protein: asStr(obj.protein) || oldData.protein,
-            fat: asStr(obj.fat) || oldData.fat,
-            carbs: asStr(obj.carbs) || oldData.carbs,
-            fiber: asStr(obj.fiber) || oldData.fiber,
-            sugar: asStr(obj.sugar) || oldData.sugar,
-            sodium: asStr(obj.sodium) || oldData.sodium,
-          };
-        } catch (e) {
-          // Fallback: giữ số cũ, chỉ đổi tên
-          correctedData = { ...oldData, description: correctedName, food: correctedName };
-        }
-      } else {
-        correctedData = { ...correctedData, description: correctedName };
-      }
-
-      // Lưu vào foods DB với tên đúng
-      await saveFoodRecord(correctedData);
-
-      // Cập nhật last_detected_meal với tên đã sửa
-      await supabase.from("profiles")
-        .update({ last_detected_meal: correctedData })
-        .eq("id", user.id);
-
-      const dd2 = (v) => (v != null && String(v).trim() ? String(v) : "?");
-      const replyText = [
-        `**${correctedName}** — đã cập nhật lại tên món cho bạn! 🎉`,
-        ``,
-        `**Dinh dưỡng ước tính:**`,
-        `Năng lượng: ${correctedData.calories ?? 0} kcal`,
-        `Protein: ${dd2(correctedData.protein)} | Chất béo: ${dd2(correctedData.fat)} | Carbs: ${dd2(correctedData.carbs)}`,
-        `Chất xơ: ${dd2(correctedData.fiber)} | Đường: ${dd2(correctedData.sugar)} | Natri: ${dd2(correctedData.sodium)}`,
-      ].join("\n");
-
-      const dataTag = buildDataTag({ ...correctedData, description: correctedName });
-      const fullReply = `${replyText}\n${dataTag}`;
-
-      const newHistory = truncateHistory([
-        ...history,
-        { role: "user", content: `[Sửa tên món]: ${correctedName}` },
-        { role: "assistant", content: fullReply },
-      ], 20);
-      await supabase.from("profiles").update({ chat_history: newHistory }).eq("id", user.id);
-
-      return res.status(200).json({ reply: fullReply, action: "analyze_only", username: profile.username });
-    }
-
     // ── IMAGE PATH ─────────────────────────────────────────────────────────────
     if (imageFile) {
       const userContent = [];
@@ -798,13 +717,16 @@ Chỉ JSON, không markdown, không giải thích.`
           await saveFoodRecord(nutritionData);
         }
 
-        // ── Build / patch reply SAU DB override để text LUÔN khớp với <data> JSON ──
-        const dd = (v) => (v != null && String(v).trim() ? String(v) : "?");
-        const cals = nutritionData.calories ?? 0;
-
+        // ── Build Gemini reply SAU khi có nutritionData CUỐI CÙNG (đã qua DB override) ──
+        // Đảm bảo số liệu trong text chat = số liệu hiển thị trên UI (không bao giờ lệch)
         if (nutritionData._geminiReplyPending) {
-          // Gemini path: build reply hoàn toàn mới từ nutritionData final
           delete nutritionData._geminiReplyPending;
+          const dd = (v) => (v != null && String(v).trim() ? v : "?");
+          // Tính calories từ macro nếu calories=0 hoặc null
+          const cals = nutritionData.calories || 0;
+          const pro  = String(nutritionData.protein  || "0").replace(/[^0-9.]/g, "");
+          const fat  = String(nutritionData.fat      || "0").replace(/[^0-9.]/g, "");
+          const carb = String(nutritionData.carbs    || "0").replace(/[^0-9.]/g, "");
           aiReply = [
             `**${nutritionData.description}**${nutritionData.amount && nutritionData.amount !== "1 phần" ? ` (${nutritionData.amount})` : ""}`,
             ``,
@@ -813,26 +735,9 @@ Chỉ JSON, không markdown, không giải thích.`
             `Protein: ${dd(nutritionData.protein)} | Chất béo: ${dd(nutritionData.fat)} | Carbs: ${dd(nutritionData.carbs)}`,
             `Chất xơ: ${dd(nutritionData.fiber)} | Đường: ${dd(nutritionData.sugar)} | Natri: ${dd(nutritionData.sodium)}`,
           ].join("\n");
-        } else {
-          // Qwen path: patch lại các dòng số trong reply AI đã viết bằng số final từ nutritionData
-          // Đây là fix cho BUG 1 — text cũ Qwen sinh (vd 680 kcal) bị DB override về 240 kcal
-          // nhưng text không được cập nhật theo → lệch với <data> hiển thị trên UI
-          aiReply = stripDataBlocks(aiReply)
-            // Patch dòng Năng lượng
-            .replace(/Năng lượng:\s*\d+\s*kcal/gi, `Năng lượng: ${cals} kcal`)
-            // Patch dòng Protein | Chất béo | Carbs
-            .replace(
-              /Protein:\s*[\d.]+g\s*\|\s*Chất béo:\s*[\d.]+g\s*\|\s*Carbs:\s*[\d.]+g/gi,
-              `Protein: ${dd(nutritionData.protein)} | Chất béo: ${dd(nutritionData.fat)} | Carbs: ${dd(nutritionData.carbs)}`
-            )
-            // Patch dòng Chất xơ | Đường | Natri
-            .replace(
-              /Chất xơ:\s*[\d.]+g\s*\|\s*Đường:\s*[\d.]+g\s*\|\s*Natri:\s*[\d.]+mg/gi,
-              `Chất xơ: ${dd(nutritionData.fiber)} | Đường: ${dd(nutritionData.sugar)} | Natri: ${dd(nutritionData.sodium)}`
-            );
         }
 
-        // Gắn <data> tag chuẩn vào cuối (cả Gemini lẫn Qwen path)
+        // Gắn <data> tag vào cuối reply (cả Gemini lẫn Qwen path)
         aiReply = `${stripDataBlocks(aiReply)}\n${buildDataTag(nutritionData)}`;
       }
 
@@ -857,7 +762,6 @@ Chỉ JSON, không markdown, không giải thích.`
     // ── TEXT PATH ──────────────────────────────────────────────────────────────
     let finalMessage = message;
     const isMealFollowup = followupType === "meal_time_update" && pendingMealData && mealTime;
-    const isFoodCorrection = followupType === "food_correction";
 
     if (isMealFollowup) {
       // Xác định dayIndex (1-7) để AI coach biết chính xác ngày cần update trong plan
@@ -1004,36 +908,7 @@ action PHẢI là "update_plan" và trả về newPlan đầy đủ 7 ngày.`;
     }
 
     if (action === "analyze_only" && !isMealFollowup && resultMealData?.description) {
-      // Normalize resultMealData qua DB lookup — đồng nhất với image path
-      const existingFood = findFoodInDB(foodsDB, resultMealData.description);
-      if (existingFood) {
-        // Giữ description gốc (tên AI đặt), override chỉ số dinh dưỡng từ DB
-        resultMealData = {
-          ...resultMealData,
-          ...Object.fromEntries(
-            ["calories", "protein", "fat", "carbs", "fiber", "sugar", "sodium"]
-              .filter((k) => existingFood[k] != null)
-              .map((k) => [k, existingFood[k]])
-          ),
-        };
-      } else {
-        // Lưu món mới vào DB để lần sau dùng được
-        saveFoodRecord(resultMealData).catch(() => {});
-      }
-      // Patch lại text reply để số trong chat khớp với <data> JSON
-      const ddr = (v) => (v != null && String(v).trim() ? String(v) : "?");
-      const calsR = resultMealData.calories ?? 0;
-      aiReply = stripDataBlocks(aiReply)
-        .replace(/Năng lượng:\s*\d+\s*kcal/gi, `Năng lượng: ${calsR} kcal`)
-        .replace(
-          /Protein:\s*[\d.]+g\s*\|\s*Chất béo:\s*[\d.]+g\s*\|\s*Carbs:\s*[\d.]+g/gi,
-          `Protein: ${ddr(resultMealData.protein)} | Chất béo: ${ddr(resultMealData.fat)} | Carbs: ${ddr(resultMealData.carbs)}`
-        )
-        .replace(
-          /Chất xơ:\s*[\d.]+g\s*\|\s*Đường:\s*[\d.]+g\s*\|\s*Natri:\s*[\d.]+mg/gi,
-          `Chất xơ: ${ddr(resultMealData.fiber)} | Đường: ${ddr(resultMealData.sugar)} | Natri: ${ddr(resultMealData.sodium)}`
-        );
-      aiReply = `${aiReply}\n${buildDataTag(resultMealData)}`;
+      aiReply = `${stripDataBlocks(aiReply)}\n${buildDataTag(resultMealData)}`;
     }
 
     const newHistory = truncateHistory([

@@ -231,14 +231,28 @@
 
           <div class="extra-form" id="extra-form" style="display:none">
             <p class="extra-desc" data-i18n="extra.desc">Ăn vặt, trái cây, đồ uống… ngoài thực đơn? Thêm vào đây để tính vào tổng hôm nay.</p>
-            <div class="extra-photo-row">
-              <button type="button" class="btn-extra-photo" id="extra-photo-btn">
-                <i class="fa-solid fa-camera"></i> <span data-i18n="extra.upload_photo">Tải ảnh món ăn</span>
-              </button>
-              <span class="extra-photo-hint" data-i18n="extra.photo_hint">hoặc chụp/tải ảnh để AI tự nhận diện</span>
-              <input type="file" id="extra-photo-input" accept="image/*" style="display:none" />
+            <!-- Upload ảnh: click button HOẶC kéo thả HOẶC paste Ctrl+V -->
+            <div class="extra-photo-drop-zone" id="extra-photo-drop-zone">
+              <div class="extra-photo-drop-inner">
+                <button type="button" class="btn-extra-photo" id="extra-photo-btn">
+                  <i class="fa-solid fa-camera"></i> <span data-i18n="extra.upload_photo">Tải ảnh món ăn</span>
+                </button>
+                <span class="extra-photo-hint">hoặc kéo thả / dán ảnh vào đây <kbd>Ctrl+V</kbd></span>
+                <input type="file" id="extra-photo-input" accept="image/*" style="display:none" />
+              </div>
             </div>
-            <div class="extra-photo-preview" id="extra-photo-preview"><img id="extra-photo-img" alt="" /></div>
+            <!-- Preview ảnh + nút xoá -->
+            <div class="extra-photo-preview" id="extra-photo-preview" style="display:none">
+              <div class="extra-photo-preview-inner">
+                <img id="extra-photo-img" alt="" />
+                <button type="button" class="extra-photo-remove" id="extra-photo-remove" title="Xoá ảnh">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+              <div class="extra-photo-skeleton" id="extra-photo-skeleton" style="display:none">
+                <div class="skeleton-line"></div><div class="skeleton-line short"></div>
+              </div>
+            </div>
             <div class="extra-row">
               <div class="extra-field grow">
                 <label data-i18n="extra.name">Tên món</label>
@@ -617,51 +631,120 @@
 
   async function analyzeExtraPhoto(file) {
     if (!file) return;
-    const btn = document.getElementById('extra-photo-btn');
-    const preview = document.getElementById('extra-photo-preview');
+
+    const btn      = document.getElementById('extra-photo-btn');
+    const preview  = document.getElementById('extra-photo-preview');
     const previewImg = document.getElementById('extra-photo-img');
+    const nameEl   = document.getElementById('extra-name');
+    const kcalEl   = document.getElementById('extra-kcal');
+    const pEl      = document.getElementById('extra-p');
+    const fatEl    = document.getElementById('extra-f');
+    const carbEl   = document.getElementById('extra-c');
+    const addBtn   = document.getElementById('extra-add');
+
+    // 1. Hiển thị preview ngay lập tức
     try {
       const url = URL.createObjectURL(file);
-      if (previewImg) previewImg.src = url;
+      if (previewImg) { previewImg.src = url; previewImg.style.opacity = '0.5'; }
       if (preview) preview.style.display = 'block';
     } catch (e) {}
-    const old = btn ? btn.innerHTML : '';
-    if (btn) {
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + T('extra.analyzing_photo', 'AI đang phân tích ảnh...');
-    }
+
+    // 2. Khoá UI + hiện trạng thái loading
+    const oldBtnHtml = btn ? btn.innerHTML : '';
+    if (btn)    { btn.disabled = true;    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI đang nhận diện...'; }
+    if (addBtn) addBtn.disabled = true;
+
+    // Xoá card kết quả cũ nếu còn
+    document.getElementById('extra-photo-result')?.remove();
+
     try {
       const token = localStorage.getItem('calorie_ai_token');
-      // Resize + convert sang JPEG trước khi gửi (giống chat.js — tránh timeout ảnh lớn)
+      if (!token) {
+        showToast('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.', 'error');
+        return;
+      }
+
+      // 3. Compress ảnh ~1MP trước khi gửi (tránh timeout ảnh 12MP+)
       const optimized = await optimizeImageFile(file);
+
       const fd = new FormData();
       fd.append('image', optimized);
-      const noteEl = document.getElementById('extra-name');
-      if (noteEl && noteEl.value.trim()) fd.append('note', noteEl.value.trim());
+      if (nameEl && nameEl.value.trim()) fd.append('note', nameEl.value.trim());
+
+      // 4. Gọi API
       const res = await fetch('/api/analyze-food', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: fd,
       });
-      const data = await res.json();
-      if (data.success && data.food) {
-        const f = data.food;
-        if (f.food) document.getElementById('extra-name').value = f.food;
-        document.getElementById('extra-kcal').value = f.calories != null ? Math.round(f.calories) : '';
-        document.getElementById('extra-p').value = Math.round(parseMacro(f.protein)) || '';
-        document.getElementById('extra-f').value = Math.round(parseMacro(f.fat)) || '';
-        document.getElementById('extra-c').value = Math.round(parseMacro(f.carbs)) || '';
-        showToast(T('extra.photo_done', 'Đã phân tích ảnh! Kiểm tra lại số liệu nhé.'), 'success');
-      } else if (data.notFood) {
-        showToast(data.error || T('extra.not_food', 'Ảnh không giống món ăn. Hãy thử ảnh khác.'), 'error');
-      } else {
-        showToast(data.error || T('extra.photo_fail', 'Không phân tích được ảnh'), 'error');
+
+      // 5. Xử lý HTTP lỗi (401, 500...) — đây là nguyên nhân chính bị nuốt lỗi
+      if (!res.ok) {
+        if (res.status === 401) {
+          showToast('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.', 'error');
+          return;
+        }
+        const errData = await res.json().catch(() => ({}));
+        showToast(errData.error || `Lỗi server (${res.status}). Thử lại nhé!`, 'error');
+        return;
       }
+
+      const data = await res.json();
+
+      // 6a. Ảnh không phải món ăn
+      if (data.notFood || data.is_food === false) {
+        if (previewImg) previewImg.style.opacity = '1';
+        showToast(data.error || 'Ảnh không phải món ăn — hãy chụp lại nhé!', 'error');
+        return;
+      }
+
+      // 6b. Lỗi khác
+      if (!data.success || !data.food) {
+        showToast(data.error || 'Không phân tích được ảnh. Thử lại nhé!', 'error');
+        return;
+      }
+
+      // 7. Điền form — dùng f.food || f.description || f.name (tránh trống tên)
+      const f = data.food;
+      const foodName = (f.food || f.description || f.name || '').trim();
+      if (nameEl)  nameEl.value  = foodName;
+      if (kcalEl)  kcalEl.value  = f.calories != null ? Math.round(f.calories) : '';
+      if (pEl)     pEl.value     = parseMacro(f.protein)  ? Math.round(parseMacro(f.protein))  : '';
+      if (fatEl)   fatEl.value   = parseMacro(f.fat)      ? Math.round(parseMacro(f.fat))      : '';
+      if (carbEl)  carbEl.value  = parseMacro(f.carbs)    ? Math.round(parseMacro(f.carbs))    : '';
+
+      // 8. Làm sáng preview
+      if (previewImg) previewImg.style.opacity = '1';
+
+      // 9. Hiện card kết quả ngay dưới ảnh
+      const cals  = f.calories != null ? Math.round(f.calories) : '?';
+      const proG  = parseMacro(f.protein) ? Math.round(parseMacro(f.protein)) + 'g' : '?';
+      const fatG  = parseMacro(f.fat)     ? Math.round(parseMacro(f.fat))     + 'g' : '?';
+      const carbG = parseMacro(f.carbs)   ? Math.round(parseMacro(f.carbs))   + 'g' : '?';
+      const card  = document.createElement('div');
+      card.id = 'extra-photo-result';
+      card.style.cssText = 'background:var(--sage-50,#f3f7f1);border:1.5px solid var(--primary,#4a7c59);border-radius:10px;padding:10px 13px;margin:8px 0 4px;font-size:13px;line-height:1.7;';
+      card.innerHTML = `
+        <div style="font-weight:700;color:var(--primary-deep,#2d5a3d);margin-bottom:2px">🍽 ${foodName}</div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap">
+          <span>⚡ <b>${cals} kcal</b></span>
+          <span>Protein <b>${proG}</b></span>
+          <span>Béo <b>${fatG}</b></span>
+          <span>Carbs <b>${carbG}</b></span>
+        </div>
+        <div style="margin-top:5px;font-size:12px;color:var(--text-sub,#888)">✅ Đã điền vào form — nhấn <b>Thêm</b> để lưu</div>
+      `;
+      const photoRow = document.getElementById('extra-photo-preview');
+      if (photoRow && photoRow.parentNode) photoRow.parentNode.insertBefore(card, photoRow.nextSibling);
+
+      showToast('Nhận diện: ' + (foodName || 'món ăn') + ' · ' + cals + ' kcal', 'success');
+
     } catch (e) {
-      console.error(e);
-      showToast(T('extra.photo_fail', 'Không phân tích được ảnh'), 'error');
+      console.error('[analyzeExtraPhoto]', e);
+      showToast('Không phân tích được ảnh. Kiểm tra kết nối mạng nhé!', 'error');
     } finally {
-      if (btn) { btn.disabled = false; btn.innerHTML = old; }
+      if (btn)    { btn.disabled = false;    btn.innerHTML = oldBtnHtml; }
+      if (addBtn) addBtn.disabled = false;
     }
   }
 
@@ -688,9 +771,54 @@
       photoInput.onchange = (e) => {
         const file = e.target.files && e.target.files[0];
         if (file) analyzeExtraPhoto(file);
-        e.target.value = ''; // cho phép chọn lại cùng một ảnh
+        e.target.value = '';
       };
     }
+
+    // ── Drag & Drop lên khu vực photo ──────────────────────────────────────
+    const dropZone = document.getElementById('extra-photo-drop-zone');
+    if (dropZone) {
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+      });
+      dropZone.addEventListener('dragleave', (e) => {
+        if (!dropZone.contains(e.relatedTarget)) dropZone.classList.remove('drag-over');
+      });
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        const file = e.dataTransfer?.files?.[0];
+        if (file && file.type.startsWith('image/')) analyzeExtraPhoto(file);
+      });
+    }
+
+    // ── Nút xóa ảnh preview ────────────────────────────────────────────────
+    const removeBtn = document.getElementById('extra-photo-remove');
+    if (removeBtn) {
+      removeBtn.onclick = () => {
+        const preview = document.getElementById('extra-photo-preview');
+        const previewImg = document.getElementById('extra-photo-img');
+        if (preview)    { preview.style.display = 'none'; }
+        if (previewImg) { previewImg.src = ''; previewImg.style.opacity = '1'; }
+        document.getElementById('extra-photo-result')?.remove();
+      };
+    }
+
+    // ── Paste ảnh Ctrl+V khi extra-form đang mở ────────────────────────────
+    document.addEventListener('paste', (e) => {
+      const form = document.getElementById('extra-form');
+      if (!form || form.style.display === 'none') return; // chỉ bắt khi form đang mở
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) { e.preventDefault(); analyzeExtraPhoto(file); }
+          break;
+        }
+      }
+    });
   }
 
   // Cập nhật lại nhãn động khi đổi ngôn ngữ

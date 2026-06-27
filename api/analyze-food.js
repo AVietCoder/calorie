@@ -97,21 +97,71 @@ export default async function handler(req, res) {
     const base64Image = imageBuffer.toString("base64");
     const mimetype = imageFile.mimetype || "image/jpeg";
 
-    // ── Nhận diện ảnh qua vision.js (Gemini → fallback Qwen) ─────────────
+    // ── Nhận diện ảnh qua vision.js (Gemini → Qwen JSON → Qwen <data> fallback) ──
     let obj;
     try {
       obj = await analyzeFoodImage({ base64: base64Image, mimeType: mimetype, note });
     } catch (e) {
       console.error("[analyze-food] vision lỗi:", e.message);
-      return res
-        .status(502)
-        .json({ success: false, error: "Không đọc được kết quả phân tích. Vui lòng thử lại." });
+      // Fallback: Qwen hội thoại với <data> tag (cách chat.js xử lý thành công)
+      try {
+        console.log("[analyze-food] Thử fallback Qwen <data> path...");
+        const { llm, LLM_VISION_MODEL } = await import("../lib/llm.js");
+        const QWEN_MIN_PIXELS = parseInt(process.env.QWEN_MIN_PIXELS || "200704", 10);
+        const QWEN_MAX_PIXELS = parseInt(process.env.QWEN_MAX_PIXELS || "2007040", 10);
+        const FALLBACK_PROMPT = `Bạn là chuyên gia dinh dưỡng. Nhìn ảnh và nhận diện món ăn, ước tính dinh dưỡng.
+Trả lời ngắn gọn rồi KẾT THÚC bằng dòng JSON duy nhất theo format:
+<data>{"calories":NNN,"protein":"NNg","fat":"NNg","carbs":"NNg","fiber":"NNg","sugar":"NNg","sodium":"NNmg","description":"Tên món"}</data>
+Nếu KHÔNG phải món ăn: <data>{"calories":0,"protein":"0g","fat":"0g","carbs":"0g","fiber":"0g","sugar":"0g","sodium":"0mg","description":"NOT_FOOD"}</data>`;
+        const userContent = [];
+        if (note) userContent.push({ type: "text", text: `Món: ${note}` });
+        userContent.push({ type: "image_url", image_url: { url: `data:${mimetype};base64,${base64Image}` } });
+        const completion = await llm.chat.completions.create({
+          model: LLM_VISION_MODEL,
+          max_tokens: 600,
+          temperature: 0,
+          top_p: 1,
+          messages: [
+            { role: "system", content: FALLBACK_PROMPT },
+            { role: "user", content: userContent },
+          ],
+          extra_body: {
+            chat_template_kwargs: { enable_thinking: false },
+            mm_processor_kwargs: { min_pixels: QWEN_MIN_PIXELS, max_pixels: QWEN_MAX_PIXELS },
+          },
+        });
+        const raw = (completion.choices?.[0]?.message?.content || "")
+          .replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+        const dataM = raw.match(/<data>([\s\S]*?)<\/data>/i);
+        if (dataM) {
+          const parsed = JSON.parse(dataM[1].trim().replace(/,\s*([}\]])/g, "$1"));
+          if (parsed.description === "NOT_FOOD") {
+            return res.status(200).json({ success: false, notFood: true, error: "Ảnh không phải món ăn." });
+          }
+          obj = {
+            is_food: true,
+            food: String(parsed.description || "").replace(/[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/g, "").trim() || (note || "Món ăn"),
+            amount: "1 phần",
+            calories: parsed.calories ?? 0,
+            protein: String(parsed.protein || "0g"),
+            fat: String(parsed.fat || "0g"),
+            carbs: String(parsed.carbs || "0g"),
+            fiber: String(parsed.fiber || "0g"),
+            sugar: String(parsed.sugar || "0g"),
+            sodium: String(parsed.sodium || "0mg"),
+          };
+          console.log("[analyze-food] fallback <data> thành công:", obj.food);
+        } else {
+          throw new Error("Fallback cũng không bóc được <data>");
+        }
+      } catch (fallbackErr) {
+        console.error("[analyze-food] fallback thất bại:", fallbackErr.message);
+        return res.status(502).json({ success: false, error: "Không phân tích được ảnh. Thử lại nhé!" });
+      }
     }
 
     if (!obj) {
-      return res
-        .status(502)
-        .json({ success: false, error: "Không đọc được kết quả phân tích. Vui lòng thử lại." });
+      return res.status(502).json({ success: false, error: "Không phân tích được ảnh. Thử lại nhé!" });
     }
 
     // ── Ảnh không phải món ăn ────────────────────────────────────────────
