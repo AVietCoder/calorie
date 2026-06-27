@@ -595,9 +595,10 @@ async function safeChatCreate(openai, payload) {
     return await openai.chat.completions.create(payload);
   } catch (err) {
     const status = err?.status || err?.response?.status || err?.statusCode;
-    const noBody = !err?.error && !err?.message?.includes("{");
+    const promptLen = payload.messages?.reduce((acc, m) => acc + String(m.content || "").length, 0) || 0;
+    console.warn(`[safeChatCreate] LLM lỗi status=${status}, promptChars=${promptLen}, err=${err?.message || err}`);
     if (status === 400 && (payload.response_format || payload.extra_body)) {
-      console.warn(`[safeChatCreate] LLM trả 400, thử lại không response_format/extra_body...`);
+      console.warn(`[safeChatCreate] Thử lại không response_format/extra_body...`);
       const fallback = { ...payload };
       delete fallback.response_format;
       delete fallback.extra_body;
