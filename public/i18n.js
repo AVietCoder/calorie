@@ -332,7 +332,7 @@
 
       /* ----- guide: setup ----- */
       "guide.setup_title": "Thiết lập hồ sơ (Setup)",
-      "guide.setup_lead": "Trang <strong>setup.html</strong> chia làm 4 bước — biểu tượng tiến độ ở trên cùng cho biết bạn đang ở đâu.",
+      "guide.setup_lead": "Tại đây trang chia làm 4 bước — biểu tượng tiến độ ở trên cùng cho biết bạn đang ở đâu.",
       "guide.setup_fields_h": "Các trường thông tin",
       "guide.setup_li1": "<strong>Thông tin cơ bản:</strong> tên, tuổi, giới tính.",
       "guide.setup_li2": "<strong>Chỉ số cơ thể:</strong> chiều cao (cm), cân nặng hiện tại (kg).",
@@ -342,7 +342,7 @@
 
       /* ----- guide: dashboard ----- */
       "guide.dash_title": "Dashboard Diet",
-      "guide.dash_lead": "Trang <strong>diet-details.html</strong> tổng hợp toàn bộ chỉ số quan trọng dưới dạng biểu đồ trực quan.",
+      "guide.dash_lead": "Tại đây trang tổng hợp toàn bộ chỉ số quan trọng dưới dạng biểu đồ trực quan.",
       "guide.dash_macro_t": "Macro Donut",
       "guide.dash_macro_d": "Tỉ lệ Protein / Carbs / Fat đề xuất.",
       "guide.dash_weight_t": "Tiến độ cân nặng",
@@ -355,7 +355,7 @@
 
       /* ----- guide: chat ----- */
       "guide.chat_title": "Trò chuyện với HLV AI",
-      "guide.chat_lead": "Trang <strong>chat.html</strong> là nơi bạn ghi nhận bữa ăn và nhận tư vấn theo ngữ cảnh.",
+      "guide.chat_lead": "Đây là nơi bạn ghi nhận bữa ăn và nhận tư vấn theo ngữ cảnh.",
       "guide.chat_ask_h": "Bạn có thể hỏi gì?",
       "guide.chat_q1": "\"Tôi vừa ăn 1 bát phở bò, ghi nhận giúp tôi.\"",
       "guide.chat_q2": "\"Bữa tối hôm nay nên ăn gì để đủ Protein?\"",
@@ -365,7 +365,7 @@
 
       /* ----- guide: plan ----- */
       "guide.plan_title": "Lịch ăn 7 ngày",
-      "guide.plan_lead": "Trang <strong>schedule.html</strong> hiển thị thực đơn dạng bảng theo ngày × bữa.",
+      "guide.plan_lead": "Đây là nơi hiển thị thực đơn dạng bảng theo ngày × bữa.",
       "guide.plan_li1": "Mỗi ô là một bữa được AI gợi ý phù hợp với mục tiêu calo & macro.",
       "guide.plan_li2": "Bấm <strong>\"Sinh lại lịch\"</strong> để AI tạo phương án mới.",
       "guide.plan_li3": "Kéo thanh bên dưới để xem các phản hồi/giải thích từ AI về kế hoạch.",
@@ -711,7 +711,7 @@
 
       /* ----- guide: setup ----- */
       "guide.setup_title": "Set up your profile (Setup)",
-      "guide.setup_lead": "The <strong>setup.html</strong> page has 4 steps — the progress icons at the top show where you are.",
+      "guide.setup_lead": "This setup guide has 4 steps — the progress icons at the top show where you are.",
       "guide.setup_fields_h": "Information fields",
       "guide.setup_li1": "<strong>Basic info:</strong> name, age, gender.",
       "guide.setup_li2": "<strong>Body metrics:</strong> height (cm), current weight (kg).",
@@ -721,7 +721,7 @@
 
       /* ----- guide: dashboard ----- */
       "guide.dash_title": "Diet Dashboard",
-      "guide.dash_lead": "The <strong>diet-details.html</strong> page brings together all key metrics as visual charts.",
+      "guide.dash_lead": "This dashboard brings together all key metrics through visual charts.",
       "guide.dash_macro_t": "Macro Donut",
       "guide.dash_macro_d": "Recommended Protein / Carbs / Fat ratio.",
       "guide.dash_weight_t": "Weight progress",
@@ -734,7 +734,7 @@
 
       /* ----- guide: chat ----- */
       "guide.chat_title": "Chat with the AI Coach",
-      "guide.chat_lead": "The <strong>chat.html</strong> page is where you log meals and get contextual advice.",
+      "guide.chat_lead": "This is where you log meals and get contextual advice.",
       "guide.chat_ask_h": "What can you ask?",
       "guide.chat_q1": "\"I just ate a bowl of beef pho, please log it.\"",
       "guide.chat_q2": "\"What should I eat for dinner to get enough protein?\"",
@@ -744,7 +744,7 @@
 
       /* ----- guide: plan ----- */
       "guide.plan_title": "7-day meal plan",
-      "guide.plan_lead": "The <strong>schedule.html</strong> page shows the menu as a table of day × meal.",
+      "guide.plan_lead": "This is where the meal plan is displayed as a table of day × meal.",
       "guide.plan_li1": "Each cell is a meal suggested by AI to fit your calorie & macro targets.",
       "guide.plan_li2": "Tap <strong>\"Regenerate plan\"</strong> for AI to create a new option.",
       "guide.plan_li3": "Drag the bar below to see AI feedback/explanations about the plan.",
