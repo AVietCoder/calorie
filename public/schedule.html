@@ -1154,6 +1154,24 @@
   }
 
   window.onload = () => { wireExtraFoodUI(); renderTodayIntake(); loadAIMenu(); };
+
+  // ĐỒNG BỘ: khi có cập nhật bữa ăn (từ trang chat) và quay lại trang này -> tải lại
+  // thực đơn + thống kê hôm nay để luôn khớp dữ liệu mới nhất.
+  function refreshScheduleIfDirty() {
+    try {
+      const dirty = localStorage.getItem('calorie_plan_dirty');
+      if (dirty && dirty !== sessionStorage.getItem('calorie_sched_seen')) {
+        sessionStorage.setItem('calorie_sched_seen', dirty);
+        if (typeof loadIntakeAll === 'function') loadIntakeAll();
+        if (typeof renderTodayIntake === 'function') renderTodayIntake();
+        if (typeof loadAIMenu === 'function') loadAIMenu();
+      }
+    } catch (_) {}
+  }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshScheduleIfDirty(); });
+  window.addEventListener('focus', refreshScheduleIfDirty);
+  window.addEventListener('storage', (e) => { if (e.key === 'calorie_plan_dirty') refreshScheduleIfDirty(); });
+
   document.getElementById('nav-home').onclick    = () => window.location.href = 'chat.html';
   document.getElementById('nav-diet').onclick    = () => window.location.href = 'diet-details.html';
   document.getElementById('nav-profile').onclick = () => window.location.href = 'setup.html';

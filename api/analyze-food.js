@@ -187,26 +187,36 @@ export default async function handler(req, res) {
         .json({ success: false, error: "Không đọc được kết quả phân tích. Vui lòng thử lại." });
     }
 
-    if (obj.is_food === false) {
+    if (obj.is_food === false || !(obj.items && obj.items.length)) {
+      const reason = obj.reason ? stripCJK(String(obj.reason)) : "";
       return res.status(200).json({
         success: false,
         notFood: true,
-        error: obj.reason
-          ? `Ảnh không phải món ăn (${stripCJK(String(obj.reason))}). Vui lòng chụp lại món ăn.`
+        error: reason
+          ? `Ảnh không phải món ăn (${reason}). Vui lòng chụp lại món ăn.`
           : "Ảnh không phải món ăn. Vui lòng chụp lại món ăn.",
       });
     }
 
+    // Cấu trúc mới: {items[], primary, total, confident}. Nhiều món -> dùng tổng + ghép tên.
+    const p = obj.primary || obj.items[0];
+    const multi = obj.items.length > 1;
+    const t = obj.total || p;
     let food = {
-      food: stripCJK(asStr(obj.food)) || (note ? note : "Món ăn"),
-      amount: asStr(obj.amount) || "1 phần",
-      calories: parseNumber(obj.calories),
-      protein: asStr(obj.protein),
-      fat: asStr(obj.fat),
-      carbs: asStr(obj.carbs),
-      fiber: asStr(obj.fiber),
-      sugar: asStr(obj.sugar),
-      sodium: asStr(obj.sodium),
+      food: multi
+        ? obj.items.map((i) => i.food).join(" + ")
+        : stripCJK(asStr(p.food)) || (note ? note : "Món ăn"),
+      amount: asStr(p.amount) || "1 phần",
+      calories: parseNumber(t.calories),
+      protein: asStr(t.protein),
+      fat: asStr(t.fat),
+      carbs: asStr(t.carbs),
+      fiber: asStr(t.fiber),
+      sugar: asStr(t.sugar),
+      sodium: asStr(t.sodium),
+      confidence: typeof p.confidence === "number" ? p.confidence : null,
+      lowConfidence: obj.confident === false,
+      items: multi ? obj.items : undefined,
       source: "ai",
     };
 

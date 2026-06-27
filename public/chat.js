@@ -1,5 +1,4 @@
-
-  window.currentConvId = null;
+window.currentConvId = null;
   let isAnalyzing = false;
   let isLoadingHistory = false;
   let flag = false;
@@ -212,7 +211,17 @@
       document.getElementById('typing-indicator-box')?.remove();
       if (result.success) {
         renderMessage('bot', result.reply || 'Đã ghi lại bữa ăn của bạn!');
-        if (result.newPlan) console.log("Thực đơn mới:", result.newPlan);
+        // ĐỒNG BỘ: lưu thực đơn mới + phát tín hiệu để Lịch/Dashboard/Thống kê cập nhật ngay.
+        try {
+          if (result.newPlan) {
+            localStorage.setItem('calorie_weekly_plan_cache', JSON.stringify(result.newPlan));
+          }
+          localStorage.setItem('calorie_plan_dirty', String(Date.now()));
+          window.dispatchEvent(new CustomEvent('calorie:plan-updated', { detail: { at: Date.now() } }));
+        } catch (_) {}
+        if (typeof showToast === 'function') showToast('Đã cập nhật thời khóa biểu & thống kê!', 'success');
+      } else {
+        renderMessage('bot', result.reply || result.error || 'Mình chưa cập nhật được, bạn thử lại nhé.');
       }
     } catch (err) {
       document.getElementById('typing-indicator-box')?.remove();
@@ -366,6 +375,44 @@
     reader.readAsDataURL(file);
   }
 
+  // Tối ưu ảnh trước khi gửi: scale về ~1 triệu pixel (giữ tỷ lệ), JPEG chất lượng cao.
+  // ~1MP là "điểm ngọt" cho Qwen2.5-VL (nét + nhanh). Không phóng to ảnh nhỏ.
+  async function optimizeImageFile(file, targetPixels = 1048576, quality = 0.9) {
+    try {
+      const dataUrl = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = (e) => res(e.target.result);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+      const img = await new Promise((res, rej) => {
+        const im = new Image();
+        im.onload = () => res(im);
+        im.onerror = rej;
+        im.src = dataUrl;
+      });
+      const w = img.naturalWidth || img.width;
+      const h = img.naturalHeight || img.height;
+      if (!w || !h) return file;
+      const scale = Math.min(1, Math.sqrt(targetPixels / (w * h)));
+      const nw = Math.max(1, Math.round(w * scale));
+      const nh = Math.max(1, Math.round(h * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = nw;
+      canvas.height = nh;
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, nw, nh);
+      const blob = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', quality));
+      if (!blob) return file;
+      const base = (file.name || 'image').replace(/\.[^.]+$/, '');
+      return new File([blob], base + '.jpg', { type: 'image/jpeg' });
+    } catch {
+      return file;
+    }
+  }
+
   async function sendMessage() {
     if (isAnalyzing || isLoadingHistory) return;
     const token = localStorage.getItem('calorie_ai_token');
@@ -378,13 +425,15 @@
     const fileInput = document.getElementById('file-upload');
     const text = input ? input.value.trim() : '';
     // Ưu tiên file từ input, nếu không có thì dùng ảnh paste
-    const file = fileInput?.files?.[0] || pastedImageFile;
+    let file = fileInput?.files?.[0] || pastedImageFile;
     flag = false;
     if (!text && !file) return;
     if (file && fileInput?.files?.[0] && !file.name.toLowerCase().endsWith('.jpg') && !file.name.toLowerCase().endsWith('.jpeg')) {
       if (typeof showToast === 'function') showToast('Chỉ được gửi ảnh JPG!', 'error');
       return;
     }
+    // Tối ưu ảnh (giảm ~1MP, giữ tỷ lệ) trước khi gửi -> nhanh + nét vừa đủ cho model
+    if (file) file = await optimizeImageFile(file);
     let currentFileBase64 = null;
     if (file) {
       currentFileBase64 = await new Promise(resolve => {

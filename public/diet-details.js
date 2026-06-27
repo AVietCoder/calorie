@@ -1,5 +1,4 @@
-
-  if (typeof window.showToast !== 'function') {
+if (typeof window.showToast !== 'function') {
     window.showToast = (m) => console.log('[toast]', m);
   }
 
@@ -605,6 +604,20 @@
     if (navPlan) navPlan.onclick = () => window.location.href = 'schedule.html';
     if (navProfile) navProfile.onclick = () => window.location.href = 'setup.html';
   });
+
+  // ĐỒNG BỘ: khi có cập nhật bữa ăn (từ chat) và quay lại trang -> tải lại thống kê dinh dưỡng.
+  function refreshDietIfDirty() {
+    try {
+      const dirty = localStorage.getItem('calorie_plan_dirty');
+      if (dirty && dirty !== sessionStorage.getItem('calorie_diet_seen')) {
+        sessionStorage.setItem('calorie_diet_seen', dirty);
+        loadDietData();
+      }
+    } catch (_) {}
+  }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshDietIfDirty(); });
+  window.addEventListener('focus', refreshDietIfDirty);
+  window.addEventListener('storage', (e) => { if (e.key === 'calorie_plan_dirty') refreshDietIfDirty(); });
 
   // Đổi ngôn ngữ -> vẽ lại biểu đồ + thẻ bệnh lý theo ngôn ngữ mới
   document.addEventListener('langchange', () => {
