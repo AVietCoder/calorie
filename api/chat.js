@@ -295,6 +295,8 @@ QUY TẮC newPlan:
 QUY TẮC mealData:
 - Điền khi action = analyze_only VÀ người dùng nhắc một món cụ thể.
 - null khi chỉ hỏi kiến thức chung, hoặc action = update_plan / ask_clarify.
+- KHI ĐIỀN: phải có ĐỦ 8 trường: calories(số), protein, fat, carbs, fiber, sugar, sodium(có đơn vị), description(tên món).
+- Các số dinh dưỡng trong mealData PHẢI KHỚP với số đã viết trong reply text.
 
 VÍ DỤ — "tôi vừa ăn 1 tô phở bò":
 {"reply":"Phở bò khoảng 450 kcal, khá cân bằng. Bạn ăn vào bữa nào để mình ghi nhận nhé?","action":"analyze_only","needsClarification":false,"clarifyQuestion":"","newPlan":[],"mealData":{"calories":450,"protein":"30g","fat":"12g","carbs":"55g","fiber":"3g","sugar":"5g","sodium":"900mg","description":"Phở bò"}}
@@ -382,65 +384,73 @@ const buildNutritionPrompt = (foodsDB = [], knowledgeBlock = "") => {
     ? `\nKHO MÓN ĂN (20 phổ biến nhất):\n${formatFoodsForPrompt(topFoods)}\nNếu khớp -> dùng số liệu từ đây.\n`
     : "";
 
-  return `Bạn là chuyên gia dinh dưỡng AI, am hiểu sâu ẩm thực Việt Nam 3 miền.
-Nhiệm vụ: nhìn ảnh -> nhận diện món ăn -> ước tính dinh dưỡng -> trình bày kết quả thân thiện.
+  return `Bạn là chuyên gia dinh dưỡng AI, am hiểu ẩm thực Việt Nam và quốc tế.
+Nhiệm vụ: nhìn ảnh → nhận diện món ăn/đồ uống → ước tính dinh dưỡng → trình bày kết quả thân thiện.
 
 NGÔN NGỮ: Trả lời 100% TIẾNG VIỆT có dấu. KHÔNG dùng chữ Hán/Trung/Nhật.
 
-TRƯỚC KHI VIẾT (chỉ suy nghĩ nội tâm, KHÔNG in ra):
-- Quan sát màu sắc, kết cấu bề mặt (gân nổi/trơn), loại sợi (dẹt=phở|tròn=bún), nước dùng, topping
-- Xác định đúng tên món rồi mới viết reply
+PHẠM VI NHẬN DIỆN — KHÔNG GIỚI HẠN QUỐC GIA:
+Nhận diện BẤT KỲ món ăn nào từ bất kỳ nền ẩm thực nào. KHÔNG từ chối với lý do "không phải món Việt".
+Gọi tên bằng tiếng Việt (hoặc tên quốc tế nếu không có bản dịch chuẩn):
+Tteokbokki | Ramen | Sushi | Pasta | Pizza | Burger | Pad Thai | Dim Sum | Steak...
 
-QUY TẮC NHẬN DIỆN:
-• Vỏ XANH ĐẬM + GÂN NỔI/NHĂN + nhân thịt viên = Khổ qua nhồi thịt
-• Vỏ XANH NHẠT + TRƠN LÁNG + thịt trắng dày = Bí đao nhồi thịt
-• Nước đỏ cay + sả + mắm ruốc + sợi tròn = Bún bò Huế (KHÔNG phải phở)
-• Nước đục chua + cà chua + cua = Bún riêu cua
-• Cơm hạt nhỏ trên ĐĨA + sườn nướng ± trứng = Cơm tấm
-• Không chắc → chọn món Việt phổ biến gần nhất, không bịa
+QUY TẮC NHẬN DIỆN CHI TIẾT (quan sát kỹ trước khi kết luận):
+MÓN VIỆT:
+• Sợi dẹt trắng trong + nước trong = Phở | Sợi tròn trắng = Bún | Sợi tròn + nước đỏ cay + sả = Bún bò Huế
+• Nước đục chua + cà chua + cua = Bún riêu | Cơm hạt nhỏ ĐĨA + sườn nướng ± trứng = Cơm tấm
+• Vỏ XANH ĐẬM + GÂN NỔI/NHĂN + nhân thịt = Khổ qua nhồi thịt (≠ Bí đao: vỏ nhạt + trơn)
+MÓN QUỐC TẾ:
+• Bánh gạo trụ ngắn dẻo + sốt đỏ cay = Tteokbokki (Hàn) | Mì vàng + nước đậm = Ramen (Nhật)
+• Cơm cuộn rong biển = Gimbap/Sushi | Mì dẹt + sốt kem/cà chua + pho mát = Pasta (Ý)
+• Không chắc → đặt tên món phổ biến nhất phù hợp hình thức, KHÔNG bịa
 ${foodsSection}${knowledgeBlock ? "\n" + knowledgeBlock + "\n" : ""}
-NẾU KHÔNG PHẢI MÓN ĂN: trả về <error>mô tả ngắn thứ nhìn thấy</error>
+NẾU KHÔNG PHẢI MÓN ĂN/ĐỒ UỐNG (là vật dụng, phong cảnh, con người...):
+→ trả về <error>mô tả ngắn thứ nhìn thấy</error>
 
 NẾU LÀ MÓN ĂN — VIẾT REPLY THEO ĐÚNG CẤU TRÚC NÀY:
 
 **[Tên món]** — [1 câu mô tả hương vị / đặc điểm nổi bật]
 
 **Dinh dưỡng ước tính:**
-Năng lượng: [X] kcal
-Protein: [X]g | Chất béo: [X]g | Carbs: [X]g
-Chất xơ: [X]g | Đường: [X]g | Natri: [X]mg
+Năng lượng: [CAL] kcal
+Protein: [PRO]g | Chất béo: [FAT]g | Carbs: [CARB]g
+Chất xơ: [FIB]g | Đường: [SUG]g | Natri: [SOD]mg
 
 [1-2 câu tư vấn phù hợp mục tiêu — thân thiện, thực tế]
 
-<data>{"calories":số,"protein":"Xg","fat":"Xg","carbs":"Xg","fiber":"Xg","sugar":"Xg","sodium":"Xmg","description":"tên món tiếng Việt"}</data>
+<data>{"calories":[CAL],"protein":"[PRO]g","fat":"[FAT]g","carbs":"[CARB]g","fiber":"[FIB]g","sugar":"[SUG]g","sodium":"[SOD]mg","description":"[Tên món]"}</data>
 
-QUY TẮC QUAN TRỌNG:
+⚠️ QUY TẮC NHẤT QUÁN SỐ LIỆU (QUAN TRỌNG NHẤT):
+Các số [CAL], [PRO], [FAT], [CARB], [FIB], [SUG], [SOD] trong phần "Dinh dưỡng ước tính"
+PHẢI HOÀN TOÀN KHỚP với các số trong JSON <data>. Không được lệch dù 1 đơn vị.
+Quyết định một con số → dùng y nguyên con số đó ở cả 2 chỗ.
+
+QUY TẮC ĐỊNH DẠNG:
 - KHÔNG in tiêu đề "Bước", "QUAN SÁT", "NHẬN DIỆN", "ĐẦU RA" hay bất kỳ nhãn quy trình nào
-- CHỈ dùng in đậm (**...**) cho TÊN MÓN và dòng "Dinh dưỡng ước tính:" — KHÔNG dùng ## hay gạch đầu dòng
-- KHÔNG hỏi về bữa ăn trong phần reply ảnh
-- Sau </data> KHÔNG viết thêm gì
+- CHỈ dùng in đậm (**...**) cho TÊN MÓN và "Dinh dưỡng ước tính:" — KHÔNG dùng ## hay gạch đầu dòng
+- KHÔNG hỏi về bữa ăn trong reply ảnh | Sau </data> KHÔNG viết thêm gì
 
-VÍ DỤ ĐẦU RA:
-
-**Khổ qua nhồi thịt** — món canh thanh mát, dân dã với vị đắng nhẹ đặc trưng của khổ qua.
+VÍ DỤ — MÓN VIỆT:
+**Khổ qua nhồi thịt** — món canh thanh mát, dân dã với vị đắng nhẹ đặc trưng.
 
 **Dinh dưỡng ước tính:**
 Năng lượng: 200 kcal
 Protein: 18g | Chất béo: 8g | Carbs: 12g
 Chất xơ: 3g | Đường: 2g | Natri: 400mg
 
-Món này ít calo, giàu vitamin C và rất hợp với chế độ giảm cân. Bạn có thể ăn thoải mái mà không lo vượt mức nhé!
+Món này ít calo, giàu vitamin C và rất hợp với chế độ giảm cân. Ăn thoải mái mà không lo vượt mức nhé!
 <data>{"calories":200,"protein":"18g","fat":"8g","carbs":"12g","fiber":"3g","sugar":"2g","sodium":"400mg","description":"Khổ qua nhồi thịt"}</data>
 
-**Cơm tấm sườn trứng** — bữa ăn đậm đà, no lâu với lớp sườn nướng thơm lừng.
+VÍ DỤ — MÓN QUỐC TẾ:
+**Tteokbokki** — bánh gạo dai giòn thấm đẫm sốt cay ngọt đặc trưng của Hàn Quốc.
 
 **Dinh dưỡng ước tính:**
-Năng lượng: 680 kcal
-Protein: 35g | Chất béo: 22g | Carbs: 82g
-Chất xơ: 3g | Đường: 6g | Natri: 850mg
+Năng lượng: 320 kcal
+Protein: 8g | Chất béo: 5g | Carbs: 62g
+Chất xơ: 2g | Đường: 12g | Natri: 780mg
 
-Món này khá đầy đủ dưỡng chất, phù hợp bữa trưa năng động. Nếu đang kiểm soát calo, bạn có thể ăn nửa phần cơm để giảm bớt nhé!
-<data>{"calories":680,"protein":"35g","fat":"22g","carbs":"82g","fiber":"3g","sugar":"6g","sodium":"850mg","description":"Cơm tấm sườn trứng"}</data>
+Món này khá nhiều carbs từ bánh gạo, phù hợp bổ sung năng lượng trước khi vận động. Nếu đang giảm cân, bạn nên ăn nửa phần để kiểm soát calo nhé!
+<data>{"calories":320,"protein":"8g","fat":"5g","carbs":"62g","fiber":"2g","sugar":"12g","sodium":"780mg","description":"Tteokbokki"}</data>
 
 /no_think`;
 };
@@ -494,6 +504,7 @@ const resolveDayIndex = (mealDayText, dayOfWeek) => {
 };
 
 const applyMealToPlan = ({ plan, mealData, mealTime, mealDayText, dayOfWeek }) => {
+  if (!Array.isArray(plan) || plan.length === 0) return null;
   const mealLabel = normalizeMealLabel(mealTime);
   if (!mealLabel) {
     console.warn(`[applyMealToPlan] Không nhận diện được bữa: "${mealTime}"`);
@@ -505,42 +516,32 @@ const applyMealToPlan = ({ plan, mealData, mealTime, mealDayText, dayOfWeek }) =
     return null;
   }
 
-  // CHUẨN HOÁ về dạng grouped [{day, meals:[...]}] dù plan đang grouped HAY flat.
-  const grouped = [];
-  for (let d = 1; d <= 7; d++) grouped.push({ day: d, meals: [] });
-  if (Array.isArray(plan)) {
-    for (const entry of plan) {
-      if (!entry || typeof entry !== "object") continue;
-      if (Array.isArray(entry.meals)) {
-        // grouped
-        const g = grouped.find((x) => Number(x.day) === Number(entry.day));
-        if (g) entry.meals.forEach((m) => m && g.meals.push({ ...m }));
-      } else if (entry.meal || entry.food) {
-        // flat {day, meal, food, ...}
-        const g = grouped.find((x) => Number(x.day) === Number(entry.day));
-        if (g) {
-          const { day: _d, ...rest } = entry;
-          g.meals.push({ ...rest });
-        }
-      }
-    }
-  }
+  // Clone sâu plan
+  const next = plan.map((d) => ({
+    day: d.day,
+    meals: Array.isArray(d.meals) ? d.meals.map((m) => ({ ...m })) : [],
+  }));
 
-  const dayEntry = grouped.find((d) => Number(d.day) === dayIdx);
-  if (!dayEntry) return null;
+  // Tìm ngày tương ứng (grouped plan: {day, meals:[...]})
+  let dayEntry = next.find((d) => Number(d.day) === dayIdx);
+  if (!dayEntry) {
+    // Nếu plan là flat array [{day, meal, food, ...}]
+    // thì không thể áp grouped — trả null, để chat.js tiếp tục bình thường
+    return null;
+  }
 
   const updatedMeal = {
     meal: mealLabel,
     food: mealData.description || mealData.food || "Món ăn",
     amount: mealData.amount || "1 phần",
-    calories: Number(mealData.calories) || 0,
+    calories: mealData.calories ?? 0,
     protein: mealData.protein || "0g",
     fat: mealData.fat || "0g",
     carbs: mealData.carbs || "0g",
     fiber: mealData.fiber || "0g",
     sugar: mealData.sugar || "0g",
     sodium: mealData.sodium || "0mg",
-    isActuallyEaten: true, // món user thực sự ăn (recalc calo theo món này, không theo gợi ý cũ)
+    isActuallyEaten: true, // Đánh dấu đây là món user thực sự ăn (không phải gợi ý)
   };
 
   const idx = dayEntry.meals.findIndex((m) => m.meal === mealLabel);
@@ -549,22 +550,7 @@ const applyMealToPlan = ({ plan, mealData, mealTime, mealDayText, dayOfWeek }) =
   } else {
     dayEntry.meals.push(updatedMeal);
   }
-  return grouped; // luôn trả grouped để lưu DB
-};
-
-// Trải grouped -> flat [{day, meal, food,...}] cho frontend render thời khóa biểu.
-const flattenGroupedPlan = (grouped) => {
-  const out = [];
-  if (!Array.isArray(grouped)) return out;
-  for (const d of grouped) {
-    if (!d) continue;
-    if (Array.isArray(d.meals)) {
-      d.meals.forEach((m) => m && out.push({ day: Number(d.day), ...m }));
-    } else if (d.meal || d.food) {
-      out.push({ ...d, day: Number(d.day) });
-    }
-  }
-  return out;
+  return next;
 };
 
 // ─── MAIN HANDLER ─────────────────────────────────────────────────────────────
@@ -634,6 +620,85 @@ export default async function handler(req, res) {
     const dayNames = ["", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
     const currentDayName = dayNames[dayOfWeek];
 
+    // ── FOOD CORRECTION PATH ───────────────────────────────────────────────────
+    // User chỉnh tên món AI nhận diện sai (vd: "Đây không phải bí đao, là khổ qua nhồi thịt")
+    // Frontend gửi: followupType="food_correction", message=tên đúng, mealData=data cũ
+    if (isFoodCorrection && message) {
+      const correctedName = message.trim();
+      const oldData = pendingMealData || {};
+
+      // Ước tính dinh dưỡng cho tên mới (ưu tiên DB, không có thì AI ước tính)
+      let correctedData = findFoodInDB(foodsDB, correctedName);
+      if (!correctedData) {
+        try {
+          const res2 = await openai.chat.completions.create({
+            model: MODEL,
+            messages: [{
+              role: "system",
+              content: `Bạn là chuyên gia dinh dưỡng quốc tế. Ước tính dinh dưỡng cho món: "${correctedName}".
+Khẩu phần: ${oldData.amount || "1 phần người lớn thông thường"}.
+Trả về DUY NHẤT JSON: {"food":"${correctedName}","amount":"<khẩu phần>","calories":<số>,"protein":"<g>","fat":"<g>","carbs":"<g>","fiber":"<g>","sugar":"<g>","sodium":"<mg>"}
+Chỉ JSON, không markdown, không giải thích.`
+            }],
+            response_format: { type: "json_object" },
+            temperature: 0.1,
+            max_tokens: 200,
+            extra_body: { chat_template_kwargs: { enable_thinking: false } },
+          });
+          const raw = res2.choices?.[0]?.message?.content ?? "";
+          const obj = safeJsonParse(stripThinkBlocks(raw)) || {};
+          const asStr = (v) => (v == null ? null : String(v));
+          correctedData = {
+            description: correctedName,
+            food: correctedName,
+            amount: obj.amount || oldData.amount || "1 phần",
+            calories: parseFloat(obj.calories) || oldData.calories || 0,
+            protein: asStr(obj.protein) || oldData.protein,
+            fat: asStr(obj.fat) || oldData.fat,
+            carbs: asStr(obj.carbs) || oldData.carbs,
+            fiber: asStr(obj.fiber) || oldData.fiber,
+            sugar: asStr(obj.sugar) || oldData.sugar,
+            sodium: asStr(obj.sodium) || oldData.sodium,
+          };
+        } catch (e) {
+          // Fallback: giữ số cũ, chỉ đổi tên
+          correctedData = { ...oldData, description: correctedName, food: correctedName };
+        }
+      } else {
+        correctedData = { ...correctedData, description: correctedName };
+      }
+
+      // Lưu vào foods DB với tên đúng
+      await saveFoodRecord(correctedData);
+
+      // Cập nhật last_detected_meal với tên đã sửa
+      await supabase.from("profiles")
+        .update({ last_detected_meal: correctedData })
+        .eq("id", user.id);
+
+      const dd2 = (v) => (v != null && String(v).trim() ? String(v) : "?");
+      const replyText = [
+        `**${correctedName}** — đã cập nhật lại tên món cho bạn! 🎉`,
+        ``,
+        `**Dinh dưỡng ước tính:**`,
+        `Năng lượng: ${correctedData.calories ?? 0} kcal`,
+        `Protein: ${dd2(correctedData.protein)} | Chất béo: ${dd2(correctedData.fat)} | Carbs: ${dd2(correctedData.carbs)}`,
+        `Chất xơ: ${dd2(correctedData.fiber)} | Đường: ${dd2(correctedData.sugar)} | Natri: ${dd2(correctedData.sodium)}`,
+      ].join("\n");
+
+      const dataTag = buildDataTag({ ...correctedData, description: correctedName });
+      const fullReply = `${replyText}\n${dataTag}`;
+
+      const newHistory = truncateHistory([
+        ...history,
+        { role: "user", content: `[Sửa tên món]: ${correctedName}` },
+        { role: "assistant", content: fullReply },
+      ], 20);
+      await supabase.from("profiles").update({ chat_history: newHistory }).eq("id", user.id);
+
+      return res.status(200).json({ reply: fullReply, action: "analyze_only", username: profile.username });
+    }
+
     // ── IMAGE PATH ─────────────────────────────────────────────────────────────
     if (imageFile) {
       const userContent = [];
@@ -644,80 +709,132 @@ export default async function handler(req, res) {
       let aiReply;
       let nutritionData = null;
 
-      // Nhận diện hybrid (Gemini nếu có key -> fallback Qwen). Đa ẩm thực + NHIỀU MÓN + confidence.
-      let recog = null;
-      try {
-        recog = await analyzeFoodImage({
-          base64: base64Image,
-          mimeType: imageFile.mimetype,
-          note: message,
-        });
-      } catch (e) {
-        console.error("[chat-image] nhận diện lỗi:", e.message);
-        return res.status(200).json({
-          reply: "Mình chưa phân tích được ảnh này, bạn thử gửi lại ảnh rõ hơn nhé!",
-          username: profile.username,
-        });
+      // Ưu tiên provider mạnh hơn (Gemini) nếu được cấu hình; lỗi -> tự về Qwen.
+      if (visionProvider() === "gemini") {
+        try {
+          const food = await analyzeFoodImage({
+            base64: base64Image,
+            mimeType: imageFile.mimetype,
+            note: message,
+          });
+          if (food && food.is_food === false) {
+            const reply = `Ảnh này mình không nhận ra là món ăn${food.reason ? ` (mình thấy: ${food.reason})` : ""}. Bạn gửi giúp mình ảnh món ăn hoặc đồ uống nhé!`;
+            return res.status(200).json({ reply, username: profile.username });
+          }
+          if (food && food.food) {
+            // Lưu nutritionData tạm — aiReply sẽ được build SAU khi DB lookup hoàn tất
+            // để đảm bảo số liệu trong text = số liệu trong <data> JSON (không lệch nhau)
+            nutritionData = {
+              calories: food.calories,
+              protein: food.protein,
+              fat: food.fat,
+              carbs: food.carbs,
+              fiber: food.fiber,
+              sugar: food.sugar,
+              sodium: food.sodium,
+              description: food.food,
+              amount: food.amount || "1 phần",
+              _geminiReplyPending: true, // flag: build reply sau khi DB override xong
+            };
+          }
+        } catch (e) {
+          console.error("[chat-image] vision lỗi, dùng Qwen:", e.message);
+        }
       }
 
-      if (!recog || recog.is_food === false || !(recog.items && recog.items.length)) {
-        const reply = `Ảnh này mình không nhận ra là món ăn${recog?.reason ? ` (mình thấy: ${recog.reason})` : ""}. Bạn gửi giúp mình ảnh món ăn hoặc đồ uống nhé!`;
-        return res.status(200).json({ reply, username: profile.username });
+      // Mặc định / fallback: Qwen (mô tả hội thoại + <data>)
+      if (aiReply === undefined) {
+        const QWEN_MIN_PIXELS = parseInt(process.env.QWEN_MIN_PIXELS || "200704", 10);
+        const QWEN_MAX_PIXELS = parseInt(process.env.QWEN_MAX_PIXELS || "2007040", 10);
+        const completion = await openai.chat.completions.create({
+          model: LLM_VISION_MODEL,
+          messages: [
+            { role: "system", content: buildNutritionPrompt(foodsDB, knowledgeBlock) },
+            ...history.slice(-6),
+            { role: "user", content: userContent },
+          ],
+          max_tokens: 1200,
+          temperature: 0,
+          top_p: 1,
+          extra_body: {
+            chat_template_kwargs: { enable_thinking: false },
+            mm_processor_kwargs: {
+              min_pixels: QWEN_MIN_PIXELS,
+              max_pixels: QWEN_MAX_PIXELS,
+            },
+          },
+        });
+
+        aiReply = stripCJK(stripThinkBlocks(completion.choices[0]?.message?.content || ""));
+
+        // Ảnh không phải món ăn
+        const errMatch = aiReply.match(/<error>([\s\S]*?)<\/error>/i);
+        if (errMatch) {
+          const seen = errMatch[1].trim();
+          const reply = `Ảnh này mình không nhận ra là món ăn${seen ? ` (mình thấy: ${seen})` : ""}. Bạn gửi giúp mình ảnh món ăn hoặc đồ uống nhé!`;
+          return res.status(200).json({ reply, username: profile.username });
+        }
+
+        aiReply = stripInternalSteps(aiReply);
+        nutritionData = extractDataBlock(aiReply);
+        if (nutritionData?.description) {
+          nutritionData.description = stripCJK(String(nutritionData.description));
+          nutritionData = correctCommonMisidentification(aiReply, nutritionData);
+        }
       }
-
-      const items = recog.items;
-      const multi = items.length > 1;
-
-      // Số liệu cho KHUNG bên phải = tổng (nhiều món) hoặc món duy nhất
-      nutritionData = {
-        calories: recog.total.calories,
-        protein: recog.total.protein,
-        fat: recog.total.fat,
-        carbs: recog.total.carbs,
-        fiber: recog.total.fiber,
-        sugar: recog.total.sugar,
-        sodium: recog.total.sodium,
-        description: items.map((i) => i.food).join(" + "),
-      };
-
-      // Ưu tiên số liệu DB đã xác minh (CHỈ khi 1 món). Áp TRƯỚC khi dựng text -> text == khung phải.
-      if (!multi) {
+      if (nutritionData?.description) {
         const existing = findFoodInDB(foodsDB, nutritionData.description);
         if (existing) {
-          for (const k of ["calories", "protein", "fat", "carbs", "fiber", "sugar", "sodium"]) {
-            if (existing[k] != null) nutritionData[k] = existing[k];
-          }
-          if (existing.description) nutritionData.description = existing.description;
+          // DB override: dùng số liệu chuẩn từ DB thay số AI ước tính
+          nutritionData = {
+            ...nutritionData,
+            ...Object.fromEntries(
+              ["calories", "protein", "fat", "carbs", "fiber", "sugar", "sodium"]
+                .filter((k) => existing[k] != null)
+                .map((k) => [k, existing[k]])
+            ),
+          };
         } else {
-          saveFoodRecord(nutritionData).catch(() => {});
+          await saveFoodRecord(nutritionData);
         }
-      }
 
-      // Dựng TEXT trả lời TỪ CHÍNH nutritionData đã chốt -> KHÔNG còn lệch số với khung bên phải.
-      const pct = (c) => `${Math.round((c || 0) * 100)}%`;
-      const lines = [];
-      if (!recog.confident) {
-        lines.push('Mình **không chắc chắn lắm** về món này. Nếu sai, bạn nhắn "không phải, đó là <tên món>" để mình sửa nhé:', "");
-      }
-      if (multi) {
-        lines.push(`Mình nhận ra **${items.length} món** trong ảnh:`);
-        for (const it of items) {
-          lines.push(`• **${it.food}** (độ tin cậy ${pct(it.confidence)}) — ${it.calories} kcal`);
+        // ── Build / patch reply SAU DB override để text LUÔN khớp với <data> JSON ──
+        const dd = (v) => (v != null && String(v).trim() ? String(v) : "?");
+        const cals = nutritionData.calories ?? 0;
+
+        if (nutritionData._geminiReplyPending) {
+          // Gemini path: build reply hoàn toàn mới từ nutritionData final
+          delete nutritionData._geminiReplyPending;
+          aiReply = [
+            `**${nutritionData.description}**${nutritionData.amount && nutritionData.amount !== "1 phần" ? ` (${nutritionData.amount})` : ""}`,
+            ``,
+            `**Dinh dưỡng ước tính:**`,
+            `Năng lượng: ${cals} kcal`,
+            `Protein: ${dd(nutritionData.protein)} | Chất béo: ${dd(nutritionData.fat)} | Carbs: ${dd(nutritionData.carbs)}`,
+            `Chất xơ: ${dd(nutritionData.fiber)} | Đường: ${dd(nutritionData.sugar)} | Natri: ${dd(nutritionData.sodium)}`,
+          ].join("\n");
+        } else {
+          // Qwen path: patch lại các dòng số trong reply AI đã viết bằng số final từ nutritionData
+          // Đây là fix cho BUG 1 — text cũ Qwen sinh (vd 680 kcal) bị DB override về 240 kcal
+          // nhưng text không được cập nhật theo → lệch với <data> hiển thị trên UI
+          aiReply = stripDataBlocks(aiReply)
+            // Patch dòng Năng lượng
+            .replace(/Năng lượng:\s*\d+\s*kcal/gi, `Năng lượng: ${cals} kcal`)
+            // Patch dòng Protein | Chất béo | Carbs
+            .replace(
+              /Protein:\s*[\d.]+g\s*\|\s*Chất béo:\s*[\d.]+g\s*\|\s*Carbs:\s*[\d.]+g/gi,
+              `Protein: ${dd(nutritionData.protein)} | Chất béo: ${dd(nutritionData.fat)} | Carbs: ${dd(nutritionData.carbs)}`
+            )
+            // Patch dòng Chất xơ | Đường | Natri
+            .replace(
+              /Chất xơ:\s*[\d.]+g\s*\|\s*Đường:\s*[\d.]+g\s*\|\s*Natri:\s*[\d.]+mg/gi,
+              `Chất xơ: ${dd(nutritionData.fiber)} | Đường: ${dd(nutritionData.sugar)} | Natri: ${dd(nutritionData.sodium)}`
+            );
         }
-        lines.push("", "**Tổng dinh dưỡng ước tính:**");
-      } else {
-        lines.push(
-          `**${nutritionData.description}** (độ tin cậy ${pct(items[0].confidence)})`,
-          "",
-          "**Dinh dưỡng ước tính:**"
-        );
+
+        // Gắn <data> tag chuẩn vào cuối (cả Gemini lẫn Qwen path)
+        aiReply = `${stripDataBlocks(aiReply)}\n${buildDataTag(nutritionData)}`;
       }
-      lines.push(
-        `Năng lượng: ${nutritionData.calories} kcal`,
-        `Protein: ${nutritionData.protein} | Chất béo: ${nutritionData.fat} | Carbs: ${nutritionData.carbs}`,
-        `Chất xơ: ${nutritionData.fiber} | Đường: ${nutritionData.sugar} | Natri: ${nutritionData.sodium}`
-      );
-      aiReply = `${lines.join("\n")}\n${buildDataTag(nutritionData)}`;
 
       const userHistoryLabel = nutritionData?.description
         ? `Phân tích món ăn: ${nutritionData.description}`
@@ -740,75 +857,33 @@ export default async function handler(req, res) {
     // ── TEXT PATH ──────────────────────────────────────────────────────────────
     let finalMessage = message;
     const isMealFollowup = followupType === "meal_time_update" && pendingMealData && mealTime;
+    const isFoodCorrection = followupType === "food_correction";
 
     if (isMealFollowup) {
-      // ✅ CẬP NHẬT TRỰC TIẾP đúng ô (ngày + bữa) — KHÔNG gọi LLM -> nhanh + LUÔN chính xác.
-      //    Đồng thời recalc calo: vì món thực ăn thay thế món gợi ý nên thống kê tự tính lại.
-      const updatedPlan = applyMealToPlan({
-        plan: currentPlan,
-        mealData: pendingMealData,
-        mealTime,
-        mealDayText,
-        dayOfWeek,
-      });
-      if (updatedPlan) {
-        currentPlan = updatedPlan;
-        await supabase
-          .from("profiles")
-          .update({ weekly_plan: currentPlan, plan_updated_at: now.toISOString() })
-          .eq("id", user.id);
-        savePlanToFoods(currentPlan).catch((e) => console.error("❌ savePlanToFoods:", e.message));
-        console.log(`[chat] ✅ Đã áp món "${pendingMealData.description}" vào ${mealTime}/${mealDayText} (deterministic)`);
-      }
+      // Xác định dayIndex (1-7) để AI coach biết chính xác ngày cần update trong plan
+      const followupDayIndex = dayOfWeek === 0 ? 7 : dayOfWeek; // CN=0 -> 7
+      const mealLabelNorm = {
+        sáng: "Sáng", trưa: "Trưa", tối: "Tối", chiều: "Tối",
+        "bữa phụ": "Phụ", phụ: "Phụ",
+      }[String(mealTime).toLowerCase().trim()] || mealTime;
 
-      const dishName = stripCJK(String(pendingMealData.description || pendingMealData.food || "món ăn"));
-      const mealLabel = normalizeMealLabel(mealTime) || mealTime;
-      const dayLabel = mealDayText && mealDayText !== "hôm nay" ? mealDayText : "hôm nay";
-      const kcal = pendingMealData.calories != null ? ` (~${pendingMealData.calories} kcal)` : "";
-      const reply = updatedPlan
-        ? `Đã ghi **${dishName}**${kcal} vào bữa **${mealLabel}** (${dayLabel}) và cập nhật thời khóa biểu + thống kê calo của bạn rồi nhé! ✅`
-        : `Mình đã ghi nhận **${dishName}** cho bữa **${mealLabel}**, nhưng chưa khớp được vào lịch (có thể bạn chưa tạo thực đơn). Bạn kiểm tra lại giúp nhé.`;
+      finalMessage = `[XÁC NHẬN BỮA ĂN THỰC TẾ]
+Người dùng đã ăn: "${pendingMealData.description || "món ăn"}"
+Bữa: ${mealLabelNorm} | Ngày trong tuần: day ${followupDayIndex} (${currentDayName}) | Ngày: ${resolvedDayText}
+Calories: ${pendingMealData.calories ?? "N/A"} kcal | Protein: ${pendingMealData.protein || "N/A"} | Fat: ${pendingMealData.fat || "N/A"} | Carbs: ${pendingMealData.carbs || "N/A"} | Fiber: ${pendingMealData.fiber || "N/A"} | Sugar: ${pendingMealData.sugar || "N/A"} | Sodium: ${pendingMealData.sodium || "N/A"}
 
-      const newHistory = truncateHistory(
-        [
-          ...history,
-          { role: "user", content: `Đã ăn ${dishName} — bữa ${mealLabel} (${dayLabel})` },
-          { role: "assistant", content: reply },
-        ],
-        20
-      );
-      await supabase.from("profiles").update({ chat_history: newHistory }).eq("id", user.id);
-
-      return res.status(200).json({
-        success: true,
-        reply,
-        action: "update_plan",
-        newPlan: flattenGroupedPlan(currentPlan),
-        username: profile.username,
-        isDeadlinePassed,
-      });
-    }
-
-    // ── BUG#3: Người dùng ĐÍNH CHÍNH tên món sau khi AI nhận sai ──────────────
-    // VD: "không phải phở, đó là bún bò" -> phân tích lại đúng món họ nói + cập nhật thẻ.
-    const CORRECTION_RE = /\b(không phải|ko phải|hong phải|hông phải|nhầm rồi|nhầm|sai rồi|sai|thật ra|đó là|đây là|phải là|mà là|sửa lại|sửa thành|đính chính|nhận sai)\b/i;
-    const isCorrection =
-      !isMealFollowup && !!profile.last_detected_meal && CORRECTION_RE.test(message);
-    if (isCorrection) {
-      const lastName = stripCJK(String(profile.last_detected_meal.description || "món trước đó"));
-      finalMessage = `Người dùng ĐÍNH CHÍNH: món vừa rồi KHÔNG phải "${lastName}". Câu của họ: "${message}".
-Hãy xác định ĐÚNG món họ đính chính, phân tích dinh dưỡng món MỚI đó và trả về mealData cho món mới (giữ định dạng thẻ).`;
+YÊU CẦU: Cập nhật đúng bữa ${mealLabelNorm} ngày ${followupDayIndex} trong thực đơn với món người dùng vừa ăn thực tế.
+Sau đó tái cân bằng các bữa còn lại trong ngày để tổng calo ~ ${profile.target_calories || "1500-1800"} kcal.
+action PHẢI là "update_plan" và trả về newPlan đầy đủ 7 ngày.`;
     }
 
     const intent = isMealFollowup
       ? "coach"
-      : isCorrection
+      : effectiveIsQueryOnly
         ? "analyze"
-        : effectiveIsQueryOnly
-          ? "analyze"
-          : detectIntent(finalMessage);
+        : detectIntent(finalMessage);
 
-    console.log(`[chat] intent=${intent} queryOnly=${effectiveIsQueryOnly} correction=${isCorrection} msg="${finalMessage.slice(0, 60)}"`);
+    console.log(`[chat] intent=${intent} queryOnly=${effectiveIsQueryOnly} msg="${finalMessage.slice(0, 60)}"`);
 
     let aiReply = "";
     let action = "analyze_only";
@@ -929,7 +1004,36 @@ Hãy xác định ĐÚNG món họ đính chính, phân tích dinh dưỡng món
     }
 
     if (action === "analyze_only" && !isMealFollowup && resultMealData?.description) {
-      aiReply = `${stripDataBlocks(aiReply)}\n${buildDataTag(resultMealData)}`;
+      // Normalize resultMealData qua DB lookup — đồng nhất với image path
+      const existingFood = findFoodInDB(foodsDB, resultMealData.description);
+      if (existingFood) {
+        // Giữ description gốc (tên AI đặt), override chỉ số dinh dưỡng từ DB
+        resultMealData = {
+          ...resultMealData,
+          ...Object.fromEntries(
+            ["calories", "protein", "fat", "carbs", "fiber", "sugar", "sodium"]
+              .filter((k) => existingFood[k] != null)
+              .map((k) => [k, existingFood[k]])
+          ),
+        };
+      } else {
+        // Lưu món mới vào DB để lần sau dùng được
+        saveFoodRecord(resultMealData).catch(() => {});
+      }
+      // Patch lại text reply để số trong chat khớp với <data> JSON
+      const ddr = (v) => (v != null && String(v).trim() ? String(v) : "?");
+      const calsR = resultMealData.calories ?? 0;
+      aiReply = stripDataBlocks(aiReply)
+        .replace(/Năng lượng:\s*\d+\s*kcal/gi, `Năng lượng: ${calsR} kcal`)
+        .replace(
+          /Protein:\s*[\d.]+g\s*\|\s*Chất béo:\s*[\d.]+g\s*\|\s*Carbs:\s*[\d.]+g/gi,
+          `Protein: ${ddr(resultMealData.protein)} | Chất béo: ${ddr(resultMealData.fat)} | Carbs: ${ddr(resultMealData.carbs)}`
+        )
+        .replace(
+          /Chất xơ:\s*[\d.]+g\s*\|\s*Đường:\s*[\d.]+g\s*\|\s*Natri:\s*[\d.]+mg/gi,
+          `Chất xơ: ${ddr(resultMealData.fiber)} | Đường: ${ddr(resultMealData.sugar)} | Natri: ${ddr(resultMealData.sodium)}`
+        );
+      aiReply = `${aiReply}\n${buildDataTag(resultMealData)}`;
     }
 
     const newHistory = truncateHistory([

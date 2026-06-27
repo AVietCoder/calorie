@@ -150,7 +150,7 @@ ${formatFoodsForPrompt(foodsDB)}
 QUY TẮC:
 1. BẮT BUỘC ưu tiên chọn món từ danh sách trên.
 2. Nếu món CÓ trong danh sách → dùng CHÍNH XÁC dinh dưỡng từ đó.
-3. Nếu món KHÔNG có → tự ước tính theo khẩu phần Việt Nam.
+3. Nếu món KHÔNG có → tự ước tính theo khẩu phần thực tế (ưu tiên món Việt, nhưng chấp nhận món quốc tế nếu user yêu cầu hoặc phù hợp).
 4. Không lặp lại cùng 1 món quá 2 lần trong 7 ngày.
 `;
 };
@@ -320,7 +320,7 @@ nhưng vẫn hướng về mục tiêu ${profile.target_calories || "1500-1800"}
 `;
   }
   return `
-Bạn là chuyên gia dinh dưỡng và am hiểu sâu ẩm thực Việt Nam 3 miền Bắc - Trung - Nam.
+Bạn là chuyên gia dinh dưỡng, am hiểu ẩm thực Việt Nam 3 miền và các món quốc tế phổ biến.
 
 ${buildProfileSection(profile)}
 ${knowledgeBlock ? "\n" + knowledgeBlock + "\n" : ""}
@@ -435,20 +435,24 @@ const findFoodInDB = (food, foodsDB) => {
 
 /** Hỏi AI ước tính dinh dưỡng cho ĐÚNG 1 món (không đụng tới các bữa khác). */
 const estimateOneFoodAI = async ({ food, mealLabel, traceId }) => {
-  const sys = `Bạn là chuyên gia dinh dưỡng ẩm thực Việt Nam, hiểu rõ món ăn 3 miền Bắc - Trung - Nam.
-MẶC ĐỊNH coi đây là MÓN ĂN VIỆT NAM trừ khi tên ghi rõ là món nước ngoài.
-Hiểu các tên gọi vùng miền và cách viết khác nhau (vd: "bắp" = "ngô", "heo" = "lợn",
-"khoai mì" = "sắn", "trái" = "quả", "hủ tiếu" / "hủ tíu", "bánh mỳ" = "bánh mì").
-Phân biệt đúng các món dễ nhầm (vd: phở bò ≠ bún bò Huế ≠ bún riêu; cơm tấm ≠ cơm gà;
-xôi mặn ≠ xôi xéo). KHÔNG được đoán nhầm sang một món khác chỉ vì tên gần giống.
+  const sys = `Bạn là chuyên gia dinh dưỡng quốc tế, am hiểu ẩm thực Việt Nam và thế giới.
+PHẠM VI: Ước tính dinh dưỡng cho BẤT KỲ món ăn nào (Việt Nam, Hàn Quốc, Nhật Bản, Ý, Mỹ...).
+KHÔNG giới hạn quốc gia — tên món gì cũng ước tính được.
 
-Ước tính dinh dưỡng cho ĐÚNG MỘT món ăn theo khẩu phần 1 người Việt thông thường
-(vd: 1 tô/bát phở ~ 400-500g; 1 đĩa cơm tấm sườn ~ 1 phần; 1 ổ bánh mì ~ 1 ổ).
+Với MÓN VIỆT — hiểu đúng tên vùng miền:
+• "bắp"="ngô" | "heo"="lợn" | "khoai mì"="sắn" | "trái"="quả" | "hủ tiếu"/"hủ tíu" | "bánh mỳ"="bánh mì"
+• Phân biệt: phở bò ≠ bún bò Huế ≠ bún riêu | cơm tấm ≠ cơm gà | xôi mặn ≠ xôi xéo
+
+Với MÓN QUỐC TẾ — dùng số liệu chuẩn quốc tế:
+• Tteokbokki (bánh gạo cay Hàn) ~320kcal/phần | Ramen ~450-550kcal/tô | Sushi ~300-400kcal/phần
+• Pasta carbonara ~550kcal | Pizza (2 lát) ~500kcal | Burger ~550kcal | Steak 200g ~350kcal
+
+Ước tính theo khẩu phần 1 người thông thường (1 tô phở ~400-500g; 1 phần cơm tấm; 1 ổ bánh mì).
 ${mealLabel ? `Bữa: ${mealLabel}.` : ""}
-Món: "${food}".
+Món cần ước tính: "${food}".
 
-Trả về DUY NHẤT một JSON object đúng các trường sau:
-{ "food": "<giữ NGUYÊN tên món người dùng nhập>", "amount": "<khẩu phần, vd: 1 tô (450g)>",
+Trả về DUY NHẤT một JSON object:
+{ "food": "<giữ NGUYÊN tên món người dùng nhập>", "amount": "<khẩu phần thực tế>",
   "calories": <number kcal>, "protein": "<g>", "fat": "<g>", "carbs": "<g>",
   "fiber": "<g>", "sugar": "<g>", "sodium": "<mg>" }
 Chỉ trả JSON hợp lệ, không markdown, không giải thích.`;

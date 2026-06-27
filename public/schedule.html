@@ -577,6 +577,44 @@
     }
   }
 
+  // Resize ảnh về ~1MP và convert sang JPEG trước khi gửi lên model.
+  // Giống hệt optimizeImageFile() trong chat.js — tránh timeout với ảnh camera 12MP+.
+  async function optimizeImageFile(file, targetPixels = 1048576, quality = 0.9) {
+    try {
+      const dataUrl = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = (e) => res(e.target.result);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+      const img = await new Promise((res, rej) => {
+        const im = new Image();
+        im.onload = () => res(im);
+        im.onerror = rej;
+        im.src = dataUrl;
+      });
+      const w = img.naturalWidth || img.width;
+      const h = img.naturalHeight || img.height;
+      if (!w || !h) return file;
+      const scale = Math.min(1, Math.sqrt(targetPixels / (w * h)));
+      const nw = Math.max(1, Math.round(w * scale));
+      const nh = Math.max(1, Math.round(h * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = nw;
+      canvas.height = nh;
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, nw, nh);
+      const blob = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', quality));
+      if (!blob) return file;
+      const base = (file.name || 'image').replace(/\.[^.]+$/, '');
+      return new File([blob], base + '.jpg', { type: 'image/jpeg' });
+    } catch {
+      return file;
+    }
+  }
+
   async function analyzeExtraPhoto(file) {
     if (!file) return;
     const btn = document.getElementById('extra-photo-btn');
@@ -594,8 +632,10 @@
     }
     try {
       const token = localStorage.getItem('calorie_ai_token');
+      // Resize + convert sang JPEG trước khi gửi (giống chat.js — tránh timeout ảnh lớn)
+      const optimized = await optimizeImageFile(file);
       const fd = new FormData();
-      fd.append('image', file);
+      fd.append('image', optimized);
       const noteEl = document.getElementById('extra-name');
       if (noteEl && noteEl.value.trim()) fd.append('note', noteEl.value.trim());
       const res = await fetch('/api/analyze-food', {

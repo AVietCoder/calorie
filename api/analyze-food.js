@@ -1,8 +1,6 @@
 import { IncomingForm } from "formidable";
 import fs from "fs";
 import { supabase } from "../lib/supabase.js";
-// Local LLM (vLLM) via OpenAI-compatible client. See lib/llm.js.
-import { llm as openai, LLM_VISION_MODEL } from "../lib/llm.js";
 import { analyzeFoodImage } from "../lib/vision.js";
 
 // Formidable cần tự xử lý body (multipart) -> tắt bodyParser mặc định của Vercel.
@@ -25,7 +23,7 @@ const parseNumber = (val) => {
 };
 const asStr = (v) => (v == null ? null : String(v).trim());
 
-// Chuẩn hóa tên món để so khớp CHÍNH XÁC với FOODS DB (bỏ dấu, gộp khoảng trắng).
+// Chuẩn hóa tên món để so khớp với FOODS DB (bỏ dấu, gộp khoảng trắng).
 const normalizeFoodName = (s) =>
   String(s || "")
     .toLowerCase()
@@ -33,6 +31,12 @@ const normalizeFoodName = (s) =>
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
+    .trim();
+
+const stripCJK = (text = "") =>
+  String(text)
+    .replace(/[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\u3040-\u30FF\uFF00-\uFF9F]/g, "")
+    .replace(/[ \t]{2,}/g, " ")
     .trim();
 
 const fetchFoodsDB = async () => {
@@ -47,74 +51,6 @@ const fetchFoodsDB = async () => {
   }
 };
 
-const extractJson = (text = "") => {
-  const raw = String(text).trim();
-  // Thử nguyên khối trước.
-  try {
-    return JSON.parse(raw);
-  } catch {}
-  // Bóc khối JSON đầu tiên nếu model lỡ kèm chữ/markdown.
-  const m = raw.match(/\{[\s\S]*\}/);
-  if (m) {
-    try {
-      return JSON.parse(m[0]);
-    } catch {}
-  }
-  return null;
-};
-
-// Strip <think>...</think> blocks emitted by Qwen2.5-VL-32B-Instruct before JSON.
-// Xoá ký tự Trung/Hán mà model đôi khi lẫn vào (tiếng Việt không dùng dải này).
-const stripCJK = (text = "") =>
-  String(text)
-    .replace(/[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\u3040-\u30FF\uFF00-\uFF9F]/g, "")
-    .replace(/[ \t]{2,}/g, " ")
-    .trim();
-
-const stripThinkBlocks = (text = "") =>
-  String(text)
-    .replace(/<think>[\s\S]*?<\/think>/gi, "")
-    .trim();
-
-const buildPhotoPrompt = () => `
-Bạn là chuyên gia dinh dưỡng AI, am hiểu sâu ẩm thực Việt Nam 3 miền Bắc - Trung - Nam.
-Nhiệm vụ: nhìn ẢNH (kèm ghi chú nếu có) và nhận diện MÓN ĂN/ĐỒ UỐNG rồi ước tính dinh dưỡng.
-
-⚠️ NGÔN NGỮ (BẮT BUỘC): chỉ dùng TIẾNG VIỆT có dấu. TUYỆT ĐỐI KHÔNG dùng chữ Hán/Trung/Nhật.
-Nếu không chắc món gì, chọn món Việt PHỔ BIẾN gần nhất về hình thức, KHÔNG bịa và KHÔNG nói "không nhận diện được" khi rõ ràng là món ăn.
-
-QUY TẮC NHẬN DIỆN MÓN VIỆT (RẤT QUAN TRỌNG):
-- MẶC ĐỊNH coi đây là MÓN ĂN VIỆT NAM trừ khi có dấu hiệu rõ ràng là món nước ngoài.
-- Nhận diện dựa trên đặc điểm trực quan: loại nước dùng, sợi (phở dẹt, bún tròn, hủ tiếu, miến, mì),
-  topping (chả, giò, thịt, hải sản), rau ăn kèm, nước chấm, kiểu bát/đĩa/tô.
-- Phân biệt CHÍNH XÁC các món dễ nhầm:
-  • phở bò (bánh phở dẹt, nước trong) ≠ bún bò Huế (bún tròn, nước đỏ cay) ≠ bún riêu ≠ hủ tiếu.
-  • cơm tấm (sườn/bì/chả) ≠ cơm gà ≠ cơm chiên.
-  • bánh cuốn ≠ bánh ướt; bánh xèo ≠ bánh khọt.
-  • gỏi cuốn (tươi) ≠ chả giò/nem rán (chiên giòn).
-  • KHỔ QUA / mướp đắng nhồi thịt: vỏ xanh ĐẬM, bề mặt CÓ GÂN NỔI nhăn nhúm/u lồi, ruột đặc thịt viên ≠ BÍ ĐAO (vỏ xanh nhạt, trơn láng, thịt trắng dày). Khi thấy vỏ xanh đậm + gân lồi → KHỔ QUA, KHÔNG phải bí đao.
-- Ước tính theo khẩu phần người Việt thực tế (1 tô phở ~ 400-500g; 1 đĩa cơm tấm ~ 1 phần đầy đủ; 1 ổ bánh mì).
-- "food" đặt bằng TÊN MÓN VIỆT cụ thể, có dấu tiếng Việt (vd: "Bún bò Huế", "Cơm tấm sườn bì chả").
-
-KIỂM TRA ẢNH:
-- Nếu ảnh KHÔNG phải thực phẩm/đồ uống, trả về: {"is_food": false, "reason": "<mô tả ngắn thứ nhìn thấy>"}.
-
-ĐẦU RA: chỉ trả về DUY NHẤT một JSON object hợp lệ (không markdown, không giải thích):
-{
-  "is_food": true,
-  "food": "<tên món tiếng Việt>",
-  "amount": "<khẩu phần, vd: 1 tô (450g)>",
-  "calories": <number kcal>,
-  "protein": "<số + g>",
-  "fat": "<số + g>",
-  "carbs": "<số + g>",
-  "fiber": "<số + g>",
-  "sugar": "<số + g>",
-  "sodium": "<số + mg>"
-}
-/no_think
-`;
-
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -125,7 +61,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ success: false, error: "Method not allowed" });
   }
 
-  // ── Xác thực (giống /api/chat) ───────────────────────────────────────────
+  // ── Xác thực ─────────────────────────────────────────────────────────────
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     return res.status(401).json({ success: false, error: "Không tìm thấy mã xác thực" });
@@ -161,16 +97,7 @@ export default async function handler(req, res) {
     const base64Image = imageBuffer.toString("base64");
     const mimetype = imageFile.mimetype || "image/jpeg";
 
-    const userContent = [];
-    if (note) {
-      userContent.push({ type: "text", text: `Ghi chú từ người dùng: ${note}` });
-    }
-    userContent.push({
-      type: "image_url",
-      image_url: { url: `data:${mimetype};base64,${base64Image}` },
-    });
-
-    // Nhận diện qua module hybrid: Gemini (nếu có GEMINI_API_KEY) -> fallback Qwen.
+    // ── Nhận diện ảnh qua vision.js (Gemini → fallback Qwen) ─────────────
     let obj;
     try {
       obj = await analyzeFoodImage({ base64: base64Image, mimeType: mimetype, note });
@@ -187,50 +114,53 @@ export default async function handler(req, res) {
         .json({ success: false, error: "Không đọc được kết quả phân tích. Vui lòng thử lại." });
     }
 
-    if (obj.is_food === false || !(obj.items && obj.items.length)) {
-      const reason = obj.reason ? stripCJK(String(obj.reason)) : "";
+    // ── Ảnh không phải món ăn ────────────────────────────────────────────
+    // Chỉ trả notFood khi vision.js chắc chắn không phải thực phẩm (is_food === false).
+    // Món ăn quốc tế (Tteokbokki, Sushi...) luôn is_food = true sau fix vision.js.
+    if (obj.is_food === false) {
       return res.status(200).json({
         success: false,
         notFood: true,
-        error: reason
-          ? `Ảnh không phải món ăn (${reason}). Vui lòng chụp lại món ăn.`
+        error: obj.reason
+          ? `Ảnh không phải món ăn (${stripCJK(String(obj.reason))}). Vui lòng chụp lại món ăn.`
           : "Ảnh không phải món ăn. Vui lòng chụp lại món ăn.",
       });
     }
 
-    // Cấu trúc mới: {items[], primary, total, confident}. Nhiều món -> dùng tổng + ghép tên.
-    const p = obj.primary || obj.items[0];
-    const multi = obj.items.length > 1;
-    const t = obj.total || p;
+    // ── Chuẩn hoá kết quả vision ─────────────────────────────────────────
+    // Đồng nhất tên field: dùng cả `food` (tên hiển thị) lẫn `description` (key DB)
+    // để frontend không bị trống khi đọc theo key khác nhau.
+    const foodName = stripCJK(asStr(obj.food) || asStr(obj.description)) || (note ? note : "Món ăn");
     let food = {
-      food: multi
-        ? obj.items.map((i) => i.food).join(" + ")
-        : stripCJK(asStr(p.food)) || (note ? note : "Món ăn"),
-      amount: asStr(p.amount) || "1 phần",
-      calories: parseNumber(t.calories),
-      protein: asStr(t.protein),
-      fat: asStr(t.fat),
-      carbs: asStr(t.carbs),
-      fiber: asStr(t.fiber),
-      sugar: asStr(t.sugar),
-      sodium: asStr(t.sodium),
-      confidence: typeof p.confidence === "number" ? p.confidence : null,
-      lowConfidence: obj.confident === false,
-      items: multi ? obj.items : undefined,
+      food: foodName,           // key frontend dùng để điền "Tên món"
+      description: foodName,    // key DB / chat.js dùng
+      amount: asStr(obj.amount) || "1 phần",
+      calories: parseNumber(obj.calories) ?? 0,
+      protein: asStr(obj.protein),
+      fat: asStr(obj.fat),
+      carbs: asStr(obj.carbs),
+      fiber: asStr(obj.fiber),
+      sugar: asStr(obj.sugar),
+      sodium: asStr(obj.sodium),
       source: "ai",
     };
 
-    // Nếu món này đã có trong FOODS DB (khớp CHÍNH XÁC) -> ưu tiên số liệu DB đã xác minh.
+    // ── DB lookup: ưu tiên số liệu đã xác minh nếu món đã có trong DB ───
     try {
       const foodsDB = await fetchFoodsDB();
-      const key = normalizeFoodName(food.food);
+      const key = normalizeFoodName(foodName);
       const hit = key
-        ? foodsDB.find((f) => normalizeFoodName(f.description) === key)
+        ? foodsDB.find((f) => normalizeFoodName(f.description) === key) ||
+          foodsDB.find((f) => normalizeFoodName(f.description).includes(key)) ||
+          foodsDB.find((f) => key.includes(normalizeFoodName(f.description)))
         : null;
+
       if (hit) {
+        const dbName = hit.description || foodName;
         food = {
           ...food,
-          food: hit.description || food.food,
+          food: dbName,
+          description: dbName,
           calories: hit.calories != null ? Math.round(Number(hit.calories)) : food.calories,
           protein: hit.protein != null ? String(hit.protein) : food.protein,
           fat: hit.fat != null ? String(hit.fat) : food.fat,
@@ -240,12 +170,30 @@ export default async function handler(req, res) {
           sodium: hit.sodium != null ? String(hit.sodium) : food.sodium,
           source: "db",
         };
+        console.log(`[analyze-food] DB hit: "${dbName}" (${food.calories} kcal)`);
+      } else {
+        // Lưu món mới vào DB để lần sau có sẵn
+        const newRecord = {
+          description: foodName,
+          calories: food.calories,
+          protein: food.protein,
+          fat: food.fat,
+          carbs: food.carbs,
+          fiber: food.fiber,
+          sugar: food.sugar,
+          sodium: food.sodium,
+        };
+        supabase.from("foods").insert(newRecord).then(({ error }) => {
+          if (error) console.warn("[analyze-food] Lưu foods DB:", error.message);
+        });
       }
-    } catch {
-      /* DB optional: lỗi tra cứu không chặn kết quả AI */
+    } catch (dbErr) {
+      console.warn("[analyze-food] DB lookup lỗi (không chặn):", dbErr.message);
     }
 
+    console.log(`[analyze-food] ✅ "${food.food}" | ${food.calories} kcal | source=${food.source}`);
     return res.status(200).json({ success: true, food });
+
   } catch (err) {
     console.error("analyze-food error:", err);
     return res
