@@ -146,30 +146,98 @@ body
     flex-shrink: 0;
 }
 
-.voice-btn:hover
-{
-    background: var(--primary);
-    color: #fff;
-}
+.voice-btn:hover { background: var(--primary); color: #fff; }
+.voice-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
+/* Trạng thái recording: nút mic đổi màu đỏ */
 .voice-btn.recording
 {
     background: #e53e3e;
     color: #fff;
-    animation: voice-pulse 1.2s ease-in-out infinite;
 }
 
-@keyframes voice-pulse
+/* Nút X hủy */
+.voice-cancel-btn
 {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(229,62,62,0.4); }
-    50%       { box-shadow: 0 0 0 8px rgba(229,62,62,0); }
+    display: none;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+    background: var(--sage-50);
+    color: #e53e3e;
+    flex-shrink: 0;
+}
+.voice-cancel-btn:hover { background: #fee2e2; }
+
+/* Nút ✓ xác nhận */
+.voice-confirm-btn
+{
+    display: none;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+    background: var(--primary);
+    color: #fff;
+    flex-shrink: 0;
+}
+.voice-confirm-btn:hover { background: var(--primary-deep); }
+
+/* Waveform */
+.voice-waveform
+{
+    display: none;
+    align-items: center;
+    gap: 3px;
+    height: 28px;
+    flex-shrink: 0;
 }
 
-.voice-btn:disabled
+.voice-waveform span
 {
-    opacity: 0.4;
-    cursor: not-allowed;
+    display: block;
+    width: 3px;
+    border-radius: 3px;
+    background: #a0aec0;
+    animation: waveform-bar 1s ease-in-out infinite;
 }
+
+.voice-waveform span:nth-child(1)  { animation-delay: 0.0s; }
+.voice-waveform span:nth-child(2)  { animation-delay: 0.1s; }
+.voice-waveform span:nth-child(3)  { animation-delay: 0.2s; }
+.voice-waveform span:nth-child(4)  { animation-delay: 0.3s; }
+.voice-waveform span:nth-child(5)  { animation-delay: 0.4s; }
+.voice-waveform span:nth-child(6)  { animation-delay: 0.3s; }
+.voice-waveform span:nth-child(7)  { animation-delay: 0.2s; }
+.voice-waveform span:nth-child(8)  { animation-delay: 0.1s; }
+.voice-waveform span:nth-child(9)  { animation-delay: 0.05s; }
+.voice-waveform span:nth-child(10) { animation-delay: 0.0s; }
+
+@keyframes waveform-bar
+{
+    0%, 100% { height: 4px;  background: #cbd5e0; }
+    50%       { height: 22px; background: #e53e3e; }
+}
+
+/* State: đang ghi âm */
+.input-wrapper.is-recording #upload-btn  { display: none; }
+.input-wrapper.is-recording .chat-input  { pointer-events: none; color: var(--text-sub); }
+.input-wrapper.is-recording #voice-btn   { background: #e53e3e; color: #fff; }
+.input-wrapper.is-recording #voice-waveform  { display: flex; }
+.input-wrapper.is-recording #voice-cancel-btn  { display: flex; }
+.input-wrapper.is-recording #voice-confirm-btn { display: flex; }
+.input-wrapper.is-recording #send-btn    { display: none; }
 
 .info-sidebar
 {

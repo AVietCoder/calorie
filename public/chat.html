@@ -40,16 +40,37 @@
           <div class="card" data-i18n="chat.greeting">Chào bạn! Hãy gửi tin nhắn hoặc ảnh món ăn, tôi sẽ phân tích giúp bạn.</div>
         </div>
 
-        <div class="input-wrapper">
-          <div class="input-tools" onclick="document.getElementById('file-upload').click()" data-i18n-title="chat.upload_hint" title="Tải ảnh món ăn">
+        <div class="input-wrapper" id="input-wrapper">
+          <!-- Trạng thái bình thường -->
+          <div class="input-tools" id="upload-btn" onclick="document.getElementById('file-upload').click()" data-i18n-title="chat.upload_hint" title="Tải ảnh món ăn">
             <i class="fa-solid fa-circle-plus"></i>
             <input type="file" id="file-upload" accept=".jpg,.jpeg" style="display:none" onchange="handleFileSelect()" />
           </div>
           <input id="user-input" type="text" data-i18n-ph="chat.placeholder" placeholder="Hỏi tôi liên quan về dinh dưỡng..." class="chat-input" />
+
+          <!-- Waveform (chỉ hiện khi đang ghi âm) -->
+          <div class="voice-waveform" id="voice-waveform">
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+
+          <!-- Nút mic (bình thường) -->
           <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Nhấn để nói">
-            <i class="fa-solid fa-microphone" id="voice-icon"></i>
+            <i class="fa-solid fa-microphone"></i>
           </button>
-          <button class="send-btn" onclick="sendMessage()" data-i18n-title="chat.send" title="Gửi"><i class="fa-solid fa-paper-plane"></i></button>
+
+          <!-- Nút X — hủy (chỉ hiện khi ghi âm) -->
+          <button class="voice-cancel-btn" id="voice-cancel-btn" onclick="cancelVoice()" title="Hủy">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+
+          <!-- Nút ✓ — giữ text (chỉ hiện khi ghi âm) -->
+          <button class="voice-confirm-btn" id="voice-confirm-btn" onclick="confirmVoice()" title="Giữ văn bản">
+            <i class="fa-solid fa-check"></i>
+          </button>
+
+          <!-- Nút gửi (bình thường) -->
+          <button class="send-btn" id="send-btn" onclick="sendMessage()" data-i18n-title="chat.send" title="Gửi"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
       </section>
 
