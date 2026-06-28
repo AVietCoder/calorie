@@ -81,7 +81,7 @@ const stripDataBlocks = (text = "") =>
     .replace(/<data>[\s\S]*?<\/data>/gi, "")
     .replace(/```(?:json)?[\s\S]*?```/gi, "")
     .replace(/\{[^{}]*["']?calories["']?\s*:[\s\S]*?\}/gi, "")
-    .replace(/^\s*(Dữ liệu ước tính|Dữ liệu dinh dưỡng|Ước tính dinh dưỡng|Thông tin dinh dưỡng|JSON)\s*:?\s*$/gim, "")
+    .replace(/^\s*(Dữ liệu ước tính|Dữ liệu dinh dưỡng|Ước tính dinh dưỡng|Thông tin dinh dưỡng|Khối dữ liệu|JSON)\s*:?\s*$/gim, "")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 
