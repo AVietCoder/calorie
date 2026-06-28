@@ -8,6 +8,77 @@ window.currentConvId = null;
   const sessionPhotos = [];
   let pastedImageFile = null;
 
+  // ── Voice Recognition ──────────────────────────────────────────
+  let voiceRecognition = null;
+  let isRecording = false;
+
+  function initVoice() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return; // browser không hỗ trợ → nút vẫn hiển thị nhưng sẽ báo lỗi khi click
+
+    voiceRecognition = new SpeechRecognition();
+    voiceRecognition.continuous = false;
+    voiceRecognition.interimResults = true;
+
+    voiceRecognition.onstart = () => {
+      isRecording = true;
+      const btn = document.getElementById('voice-btn');
+      const icon = document.getElementById('voice-icon');
+      if (btn) btn.classList.add('recording');
+      if (icon) { icon.className = 'fa-solid fa-stop'; }
+    };
+
+    voiceRecognition.onresult = (e) => {
+      const transcript = Array.from(e.results)
+        .map(r => r[0].transcript)
+        .join('');
+      const input = document.getElementById('user-input');
+      if (input) input.value = transcript;
+      // Nếu kết quả final → tự gửi
+      if (e.results[e.results.length - 1].isFinal) {
+        stopVoice();
+        if (transcript.trim()) sendMessage();
+      }
+    };
+
+    voiceRecognition.onerror = (e) => {
+      stopVoice();
+      const msgs = { 'not-allowed': 'Vui lòng cấp quyền microphone.', 'no-speech': 'Không nghe thấy gì, thử lại nhé.', 'network': 'Lỗi mạng khi nhận giọng nói.' };
+      if (typeof showToast === 'function') showToast(msgs[e.error] || 'Lỗi nhận giọng nói: ' + e.error, 'error');
+    };
+
+    voiceRecognition.onend = () => { stopVoice(); };
+  }
+
+  function stopVoice() {
+    isRecording = false;
+    const btn = document.getElementById('voice-btn');
+    const icon = document.getElementById('voice-icon');
+    if (btn) btn.classList.remove('recording');
+    if (icon) icon.className = 'fa-solid fa-microphone';
+    try { voiceRecognition && voiceRecognition.stop(); } catch (_) {}
+  }
+
+  function toggleVoice() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      if (typeof showToast === 'function') showToast('Trình duyệt của bạn không hỗ trợ nhận giọng nói.', 'error');
+      return;
+    }
+    if (isRecording) {
+      stopVoice();
+    } else {
+      if (!voiceRecognition) initVoice();
+      // Luôn cập nhật lang theo lựa chọn hiện tại của người dùng
+      const lang = (window.i18n && window.i18n.getLang() === 'en') ? 'en-US' : 'vi-VN';
+      voiceRecognition.lang = lang;
+      try { voiceRecognition.start(); } catch (_) { initVoice(); voiceRecognition.lang = lang; voiceRecognition.start(); }
+    }
+  }
+
+  // Khi user đổi ngôn ngữ giữa chừng → dừng recording để tránh lang cũ bị giữ
+  document.addEventListener('langchange', () => { if (isRecording) stopVoice(); });
+
   function handleLogout() {
     localStorage.removeItem('calorie_ai_token');
     localStorage.removeItem('user_id');

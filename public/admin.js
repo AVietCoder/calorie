@@ -162,46 +162,58 @@ function escapeHtml(s) {
   );
 }
 
-/* ---- upload ---- */
+/* ---- upload (multi-file sequential) ---- */
 async function doUpload() {
   const input = $("fileInput");
-  const file = input.files && input.files[0];
-  if (!file) return toast("Hãy chọn một tệp PDF trước.", "error");
-  if (!/\.pdf$/i.test(file.name) && file.type !== "application/pdf") {
-    return toast("Chỉ chấp nhận tệp PDF.", "error");
-  }
+  const files = input.files ? Array.from(input.files) : [];
+  if (!files.length) return toast("Hãy chọn một hoặc nhiều tệp PDF trước.", "error");
+
+  const invalid = files.filter(f => !/\.pdf$/i.test(f.name) && f.type !== "application/pdf");
+  if (invalid.length) return toast(`File "${invalid[0].name}" không phải PDF.`, "error");
 
   const btn = $("uploadBtn");
   const prog = $("progress");
   btn.disabled = true;
   prog.style.display = "flex";
-  $("progressMsg").textContent = "Đang tải lên & xử lý (có thể mất 10–30 giây)…";
 
-  try {
-    const fd = new FormData();
-    fd.append("file", file);
-    const res = await fetch(`${API}?action=upload`, {
-      method: "POST",
-      headers: authHeaders(),
-      body: fd,
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Tải lên thất bại");
+  let successCount = 0;
+  let failCount = 0;
 
-    const d = data.document || {};
-    toast(`Đã xử lý "${d.file_name}": ${d.chunk_count} đoạn${d.embedding_count ? `, ${d.embedding_count} embedding` : ""}.`, "success");
-    if (data.warning) toast(data.warning, "error");
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    $("progressMsg").textContent = `Đang xử lý file ${i + 1}/${files.length}: "${file.name}"…`;
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch(`${API}?action=upload`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Tải lên thất bại");
 
-    input.value = "";
-    $("fileLabel").textContent = "Bấm để chọn tệp PDF (≤ 20MB)";
-    $("dropzone").classList.remove("has-file");
-    await loadPdfs();
-  } catch (err) {
-    toast(err.message, "error");
-  } finally {
-    btn.disabled = false;
-    prog.style.display = "none";
+      const d = data.document || {};
+      toast(`✓ "${d.file_name}": ${d.chunk_count} đoạn${d.embedding_count ? `, ${d.embedding_count} embed` : ""}.`, "success");
+      if (data.warning) toast(data.warning, "error");
+      successCount++;
+    } catch (err) {
+      toast(`✗ "${file.name}": ${err.message}`, "error");
+      failCount++;
+    }
   }
+
+  input.value = "";
+  $("fileLabel").textContent = "Bấm để chọn một hoặc nhiều tệp PDF";
+  $("dropzone").classList.remove("has-file");
+
+  if (files.length > 1) {
+    toast(`Hoàn tất: ${successCount} thành công, ${failCount} thất bại.`, successCount ? "success" : "error");
+  }
+
+  btn.disabled = false;
+  prog.style.display = "none";
+  await loadPdfs();
 }
 
 /* ---- delete ---- */
@@ -227,11 +239,20 @@ async function deletePdf(id, btn) {
 function wireDropzone() {
   const dz = $("dropzone");
   const input = $("fileInput");
-  input.addEventListener("change", () => {
-    const f = input.files && input.files[0];
-    $("fileLabel").textContent = f ? f.name : "Bấm để chọn tệp PDF (≤ 20MB)";
-    dz.classList.toggle("has-file", !!f);
-  });
+  function updateLabel() {
+    const files = input.files ? Array.from(input.files) : [];
+    if (!files.length) {
+      $("fileLabel").textContent = "Bấm để chọn một hoặc nhiều tệp PDF";
+      dz.classList.remove("has-file");
+    } else if (files.length === 1) {
+      $("fileLabel").textContent = files[0].name;
+      dz.classList.add("has-file");
+    } else {
+      $("fileLabel").textContent = `${files.length} file đã chọn (${files.map(f => f.name).join(", ")})`;
+      dz.classList.add("has-file");
+    }
+  }
+  input.addEventListener("change", updateLabel);
   ["dragover", "dragenter"].forEach((e) =>
     dz.addEventListener(e, (ev) => {
       ev.preventDefault();
@@ -245,11 +266,10 @@ function wireDropzone() {
     })
   );
   dz.addEventListener("drop", (ev) => {
-    const f = ev.dataTransfer?.files?.[0];
-    if (f) {
-      input.files = ev.dataTransfer.files;
-      $("fileLabel").textContent = f.name;
-      dz.classList.add("has-file");
+    const dt = ev.dataTransfer;
+    if (dt && dt.files && dt.files.length) {
+      input.files = dt.files;
+      updateLabel();
     }
   });
 }

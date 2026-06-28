@@ -46,6 +46,9 @@
             <input type="file" id="file-upload" accept=".jpg,.jpeg" style="display:none" onchange="handleFileSelect()" />
           </div>
           <input id="user-input" type="text" data-i18n-ph="chat.placeholder" placeholder="Hỏi tôi liên quan về dinh dưỡng..." class="chat-input" />
+          <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Nhấn để nói">
+            <i class="fa-solid fa-microphone" id="voice-icon"></i>
+          </button>
           <button class="send-btn" onclick="sendMessage()" data-i18n-title="chat.send" title="Gửi"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
       </section>
