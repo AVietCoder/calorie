@@ -221,6 +221,8 @@ NHIỆM VỤ: Người dùng nhắc đến một món ăn hoặc hỏi về dinh
 QUY TẮC REPLY:
 - Thân thiện, tự nhiên như người bạn hiểu dinh dưỡng. Không cứng nhắc.
 - KHÔNG liệt kê số calo/protein/fat/carbs trong reply — thông tin đó đã hiển thị ở thẻ dinh dưỡng bên phải.
+- Chỉ nêu TÊN MÓN + LỜI TƯ VẤN thực tế (1-2 câu).
+- Không dùng markdown (không ###, không **bold**, không gạch đầu dòng).
 - Nếu là câu hỏi kiến thức chung (không nhắc món cụ thể) → trả lời rõ ràng, không có mealData.
 
 TRẢ VỀ JSON THUẦN (KHÔNG markdown, KHÔNG dấu \`\`\`):
@@ -265,68 +267,31 @@ ${JSON.stringify((currentPlan || []).map(d => ({
 
 LƯU Ý: Khi cập nhật (action=update_plan), newPlan PHẢI trả về ĐẦY ĐỦ 7 ngày, mỗi bữa ĐỦ 10 trường: meal, food, amount, calories, protein, fat, carbs, fiber, sugar, sodium.
 
-KHOÁ MÓN ĂN CÓ SẴN (FOODS DATABASE)
-${formatFoodsForPrompt(foodsDB)}
+KHO MÓN ĂN CÓ SẴN (30 món phổ biến — ưu tiên dùng):
+${formatFoodsForPrompt((foodsDB || []).slice(0, 30))}
 
 QUY TẮC FOODS DATABASE:
-- Ưu tiên dùng món từ danh sách khi xây dựng/cập nhật thực đơn.
-- Nếu món đã có → dùng CHÍNH XÁC số liệu từ đó.
-- Nếu chưa có → tự ước tính hợp lý.
+- Ưu tiên dùng món từ danh sách khi xây/cập nhật thực đơn; món đã có → dùng CHÍNH XÁC số liệu đó; chưa có → tự ước tính hợp lý.
 
-PHÂN LOẠI NHIỆM VỤ:
-1) update_plan — có đủ ngày + bữa + món → cập nhật thực đơn.
-2) analyze_only — hỏi kiến thức / nói món ăn chưa có ngày bữa.
-3) ask_clarify — muốn đổi nhưng thiếu ngày hoặc bữa.
-
-QUY TẮC XỬ LÝ:
-- Chỉ nói tên món, không có ngày/bữa → analyze_only, KHÔNG đổi plan.
-- Thiếu ngày hoặc bữa → ask_clarify, hỏi rõ ràng cái còn thiếu.
-- isQueryOnly = ${isQueryOnly} → nếu true thì LUÔN analyze_only dù có đủ thông tin.
-- Reply phải tự nhiên, thân thiện. Không dùng markdown.
+PHÂN LOẠI & XỬ LÝ:
+- update_plan: có ĐỦ ngày + bữa + món → cập nhật đúng ngày/bữa, ước lượng calo+macro đầy đủ; tái cân bằng các bữa còn lại trong ngày để tổng ~ ${profile.target_calories || "1500-1800"} kcal (±150); tái cấu trúc 1-2 ngày sau nếu lệch >150 kcal.
+- analyze_only: chỉ hỏi kiến thức, HOẶC nói tên món mà CHƯA có ngày/bữa → KHÔNG đổi plan; phân tích + nhận xét tác động tới mục tiêu.
+- ask_clarify: muốn đổi nhưng THIẾU ngày hoặc bữa → hỏi lại đúng phần còn thiếu, KHÔNG đổi plan.
+- isQueryOnly = ${isQueryOnly}: nếu true thì LUÔN analyze_only.
+- Reply tự nhiên, thân thiện, KHÔNG markdown.
 
 ĐỊNH DẠNG MỖI BỮA (đủ 10 trường):
 {"meal":"Sáng|Trưa|Tối|Phụ","food":"...","amount":"...","calories":số,"protein":"Xg","fat":"Xg","carbs":"Xg","fiber":"Xg","sugar":"Xg","sodium":"Xmg"}
 
-PHẢN HỒI BẮT BUỘC — CHỈ JSON THUẦN, KHÔNG markdown:
-{
-  "reply": "...",
-  "action": "update_plan"|"analyze_only"|"ask_clarify",
-  "needsClarification": true/false,
-  "clarifyQuestion": "...",
-  "newPlan": [...],
-  "mealData": null hoặc {"calories":số,"protein":"Xg","fat":"Xg","carbs":"Xg","fiber":"Xg","sugar":"Xg","sodium":"Xmg","description":"tên món"}
-}
+CHỈ TRẢ JSON THUẦN (KHÔNG markdown):
+{"reply":"...","action":"update_plan|analyze_only|ask_clarify","needsClarification":true/false,"clarifyQuestion":"...","newPlan":[...],"mealData":null hoặc {...10 trường + "description"}}
+- newPlan: ĐỦ 7 ngày nếu update_plan; [] nếu analyze_only/ask_clarify.
+- mealData: điền khi analyze_only + có món cụ thể; null nếu hỏi kiến thức / update_plan / ask_clarify.
 
-QUY TẮC newPlan:
-- action = update_plan → trả về thực đơn 7 ngày ĐẦY ĐỦ đã cập nhật.
-- action = analyze_only hoặc ask_clarify → trả về MẢNG RỖNG [].
-
-QUY TẮC mealData:
-- Điền khi action = analyze_only VÀ người dùng nhắc một món cụ thể.
-- null khi chỉ hỏi kiến thức chung, hoặc action = update_plan / ask_clarify.
-
-VÍ DỤ — "tôi vừa ăn 1 tô phở bò":
-{"reply":"Phở bò khá cân bằng, ổn cho bữa sáng hoặc trưa. Bạn ăn vào bữa nào để mình ghi nhận nhé?","action":"analyze_only","needsClarification":false,"clarifyQuestion":"","newPlan":[],"mealData":{"calories":450,"protein":"30g","fat":"12g","carbs":"55g","fiber":"3g","sugar":"5g","sodium":"900mg","description":"Phở bò"}}
-
-VÍ DỤ — "[XÁC NHẬN BỮA ĂN] ăn Phở bò vào bữa Sáng ngày Thứ 2":
-{"reply":"Đã ghi nhận phở bò cho bữa sáng thứ 2. Mình tái cân bằng bữa trưa và tối cùng ngày để tổng calo vẫn đạt mục tiêu nhé.","action":"update_plan","needsClarification":false,"clarifyQuestion":"","newPlan":[...đủ 7 ngày...],"mealData":null}
-
-VÍ DỤ — "đổi trưa thứ 3 thành bún chả":
-{"reply":"Đã đổi bữa trưa thứ 3 thành bún chả. Mình tái cân bằng bữa tối thứ 3 nhẹ hơn một chút để tổng ngày vẫn đạt mục tiêu nhé.","action":"update_plan","needsClarification":false,"clarifyQuestion":"","newPlan":[...đủ 7 ngày...],"mealData":null}
-
-NHIỆM VỤ A — Báo đã ăn + đủ ngày/bữa:
-- Ước lượng calo + macro đầy đủ. Cập nhật đúng ngày/bữa.
-- Tái cân bằng các bữa còn lại trong ngày để tổng calo ~ ${profile.target_calories || "1500-1800"} kcal (±150 kcal).
-- Tái cấu trúc 1-2 ngày sau nếu ngày hiện tại dư/thiếu >150 kcal.
-
-NHIỆM VỤ B — Chỉ nói món, không có ngày/bữa:
-- Phân tích calo + macro + nhận xét tác động đến mục tiêu. Không thay đổi plan.
-
-NHIỆM VỤ C — Thiếu ngày hoặc bữa:
-- Hỏi lại rõ ràng đúng phần còn thiếu. Không thay đổi plan.
-
-NHIỆM VỤ D — Đủ ngày/bữa, muốn đổi món:
-- Cập nhật + tái cân bằng ngày đó + tái cấu trúc nếu cần.
+VÍ DỤ:
+- "tôi vừa ăn 1 tô phở bò" -> {"reply":"Phở bò khá cân bằng, ổn cho bữa sáng/trưa. Bạn ăn vào bữa nào để mình ghi nhận nhé?","action":"analyze_only","needsClarification":false,"clarifyQuestion":"","newPlan":[],"mealData":{"calories":450,"protein":"30g","fat":"12g","carbs":"55g","fiber":"3g","sugar":"5g","sodium":"900mg","description":"Phở bò"}}
+- "[XÁC NHẬN BỮA ĂN] ăn Phở bò bữa Sáng Thứ 2" -> {"reply":"Đã ghi nhận phở bò cho bữa sáng thứ 2, mình tái cân bằng trưa và tối để đạt mục tiêu nhé.","action":"update_plan","needsClarification":false,"clarifyQuestion":"","newPlan":[...đủ 7 ngày...],"mealData":null}
+- "đổi trưa thứ 3 thành bún chả" -> {"reply":"Đã đổi bữa trưa thứ 3 thành bún chả, mình chỉnh bữa tối nhẹ hơn để cân bằng ngày nhé.","action":"update_plan","needsClarification":false,"clarifyQuestion":"","newPlan":[...đủ 7 ngày...],"mealData":null}
 
 /no_think`;
 
@@ -412,7 +377,7 @@ const buildShortAdvice = (nutritionData, profile) => {
 
 // ─── PROMPT: VISION / IMAGE ANALYSIS ─────────────────────────────────────────
 
-const buildNutritionPrompt = (foodsDB = [], knowledgeBlock = "") => {
+const buildNutritionPrompt = (foodsDB = [], knowledgeBlock = "", profile = {}) => {
   const topFoods = Array.isArray(foodsDB) ? foodsDB.slice(0, 20) : [];
   const foodsSection = topFoods.length > 0
     ? `\nKHO MÓN ĂN (20 phổ biến nhất):\n${formatFoodsForPrompt(topFoods)}\nNếu khớp -> dùng số liệu từ đây.\n`
@@ -471,26 +436,36 @@ ${foodsSection}${knowledgeBlock ? "\n" + knowledgeBlock + "\n" : ""}
 NẾU KHÔNG PHẢI MÓN ĂN/ĐỒ UỐNG (là vật dụng, phong cảnh, con người...):
 → trả về <error>mô tả ngắn thứ nhìn thấy</error>
 
-NẾU LÀ MÓN ĂN — VIẾT REPLY THEO ĐÚNG CẤU TRÚC NÀY:
+NẾU LÀ MÓN ĂN — VIẾT REPLY TỰ NHIÊN, THÂN THIỆN, ĐÚNG CẤU TRÚC SAU:
 
-**[Tên món]** — [1 câu mô tả / gợi ý nổi bật] + [1 câu tư vấn thực tế, không liệt kê số]
+1) Mở đầu 1 câu nhận diện món + thành phần NHÌN THẤY:
+   vd: "Đây là món **[Tên món]**, gồm [liệt kê các thành phần chính nhìn thấy trong ảnh]."
 
+2) **Phù hợp với mục tiêu của bạn:**
+   2-3 câu đánh giá món này hợp / không hợp với mục tiêu "${profile.goal || "của bạn"}"${profile.disease && profile.disease !== "không có" ? ` và tình trạng "${profile.disease}"` : ""} — nói rõ LÝ DO, thực tế, dễ hiểu.
+
+3) **Gợi ý điều chỉnh:**
+   - 2-4 gạch đầu dòng gợi ý thực tế (ăn kèm gì, giảm/thay/tránh gì) để món phù hợp hơn với mục tiêu.
+
+4) Khối dữ liệu (BẮT BUỘC, đặt CUỐI CÙNG):
 <data>{"calories":[CAL],"protein":"[PRO]g","fat":"[FAT]g","carbs":"[CARB]g","fiber":"[FIB]g","sugar":"[SUG]g","sodium":"[SOD]mg","description":"[Tên món]"}</data>
 
-⚠️ QUY TẮC QUAN TRỌNG:
-- Reply CHỈ gồm TÊN MÓN + TƯ VẤN. KHÔNG viết phần "Dinh dưỡng ước tính:" hay liệt kê số — các số đã nằm trong <data> để hiển thị ở thẻ bên phải.
-- Các số [CAL], [PRO], [FAT], [CARB], [FIB], [SUG], [SOD] trong <data> PHẢI nhất quán với nhau.
-- KHÔNG in tiêu đề "Bước", "QUAN SÁT", "NHẬN DIỆN", "ĐẦU RA" hay bất kỳ nhãn quy trình nào
-- CHỈ dùng in đậm (**...**) cho TÊN MÓN — KHÔNG dùng ## hay gạch đầu dòng
-- KHÔNG hỏi về bữa ăn trong reply ảnh | Sau </data> KHÔNG viết thêm gì
+QUY TẮC BẮT BUỘC:
+- TUYỆT ĐỐI KHÔNG liệt kê số calo / protein / chất béo / carbs / chất xơ / đường / muối trong phần CHỮ, KHÔNG viết mục "Dinh dưỡng ước tính". Các số chỉ nằm trong <data> để hiển thị ở thẻ bên phải.
+- Dùng **in đậm** cho tên món + 2 tiêu đề "Phù hợp với mục tiêu của bạn:" và "Gợi ý điều chỉnh:". Dùng gạch đầu dòng "-" cho phần gợi ý.
+- KHÔNG in nhãn quy trình ("Bước", "QUAN SÁT", "NHẬN DIỆN"...). KHÔNG hỏi về bữa ăn. Sau </data> KHÔNG viết thêm gì.
 
-VÍ DỤ — MÓN VIỆT:
-**Khổ qua nhồi thịt** — món canh thanh mát, dân dã với vị đắng nhẹ đặc trưng. Món này ít calo, giàu vitamin C và rất hợp với chế độ giảm cân. Ăn thoải mái mà không lo vượt mức nhé!
-<data>{"calories":200,"protein":"18g","fat":"8g","carbs":"12g","fiber":"3g","sugar":"2g","sodium":"400mg","description":"Khổ qua nhồi thịt"}</data>
+VÍ DỤ:
+Đây là món **Cơm tấm sườn bì chả**, gồm sườn nướng, bì, chả trứng, dưa leo, cà chua và trứng ốp la.
 
-VÍ DỤ — MÓN QUỐC TẾ:
-**Tteokbokki** — bánh gạo dai giòn thấm đẫm sốt cay ngọt đặc trưng của Hàn Quốc. Món này khá nhiều carbs từ bánh gạo, phù hợp bổ sung năng lượng trước khi vận động. Nếu đang giảm cân, bạn nên ăn nửa phần để kiểm soát calo nhé!
-<data>{"calories":320,"protein":"8g","fat":"5g","carbs":"62g","fiber":"2g","sugar":"12g","sodium":"780mg","description":"Tteokbokki"}</data>
+**Phù hợp với mục tiêu của bạn:**
+Món này khá nhiều năng lượng và chất béo bão hoà từ sườn nướng, bì và trứng chiên, nên nếu bạn đang kiểm soát cân nặng thì cần để ý khẩu phần kẻo dễ vượt mức calo trong ngày.
+
+**Gợi ý điều chỉnh:**
+- Giảm bớt lượng cơm để hạ carbs và năng lượng.
+- Ưu tiên phần thịt nạc, hạn chế bì và phần mỡ.
+- Ăn kèm thêm rau xanh để tăng chất xơ và no lâu hơn.
+<data>{"calories":650,"protein":"35g","fat":"24g","carbs":"70g","fiber":"4g","sugar":"6g","sodium":"1200mg","description":"Cơm tấm sườn bì chả"}</data>
 
 /no_think`;
 };
@@ -747,7 +722,7 @@ export default async function handler(req, res) {
         const completion = await safeChatCreate(openai, {
           model: LLM_VISION_MODEL,
           messages: [
-            { role: "system", content: buildNutritionPrompt(foodsDB, knowledgeBlock) },
+            { role: "system", content: buildNutritionPrompt(foodsDB, knowledgeBlock, profile) },
             ...history.slice(-6),
             { role: "user", content: userContent },
           ],
@@ -829,6 +804,24 @@ export default async function handler(req, res) {
     // ── TEXT PATH ──────────────────────────────────────────────────────────────
     let finalMessage = message;
     const isMealFollowup = followupType === "meal_time_update" && pendingMealData && mealTime;
+
+    // ── ĐÃ HOÀN THÀNH LỘ TRÌNH (qua deadline): không cập nhật nữa, chúc mừng người dùng ──
+    if (isMealFollowup && isDeadlinePassed) {
+      const dishName = stripCJK(String(pendingMealData.description || "món ăn"));
+      const reply =
+        `Chúc mừng bạn đã xuất sắc hoàn thành trọn vẹn lộ trình dinh dưỡng của mình! ` +
+        `Đây là một cột mốc rất đáng tự hào, cho thấy bạn đã thực sự kiên trì và nghiêm túc với sức khỏe của bản thân. ` +
+        `Vì lộ trình đã khép lại nên mình tạm dừng việc ghi món "${dishName}" vào thực đơn. ` +
+        `Khi sẵn sàng cho chặng đường mới, bạn chỉ cần vào mục Lộ trình để đặt mục tiêu tiếp theo, mình sẽ đồng hành cùng bạn ngay nhé.`;
+      return res.status(200).json({
+        success: true,
+        reply: stripCJK(reply),
+        action: "analyze_only",
+        planCompleted: true,
+        isDeadlinePassed: true,
+        username: profile.username,
+      });
+    }
 
     if (isMealFollowup) {
       // Xác định dayIndex (1-7) để AI coach biết chính xác ngày cần update trong plan
@@ -918,7 +911,7 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
               isDeadlinePassed, foodsDB, knowledgeBlock,
             }),
           },
-          ...history.slice(-6),
+          ...history.slice(-4),
           { role: "user", content: finalMessage },
         ],
         response_format: { type: "json_object" },
