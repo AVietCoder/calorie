@@ -99,6 +99,17 @@ window.currentConvId = null;
       const suffix = parts[1].trim();
       displayContent = (prefix === suffix || suffix === '') ? prefix : suffix;
     }
+    // Ẩn phần "YÊU CẦU BẮT BUỘC" trở xuống trong tin nhắn xác nhận bữa ăn (chỉ ẩn hiển thị, không ảnh hưởng dữ liệu)
+    if (displayContent.includes('[XÁC NHẬN BỮA ĂN THỰC TẾ')) {
+      const cutKeywords = ['YÊU CẦU BẮT BUỘC', 'Nếu không thể update'];
+      for (const kw of cutKeywords) {
+        const idx = displayContent.indexOf(kw);
+        if (idx !== -1) {
+          displayContent = displayContent.substring(0, idx).trim();
+          break;
+        }
+      }
+    }
     displayContent = displayContent.replace(/\n{3,}/g, '\n\n').trim();
     msgDiv.style.whiteSpace = 'normal';
     msgDiv.innerHTML = renderMarkdown(displayContent || 'Đang phân tích dữ liệu...');
