@@ -124,8 +124,12 @@ const fileLink = p.download_url
             ? `<span class="tick"><i class="fa-solid fa-check"></i> ${p.embedding_count}</span>`
             : '<span class="cross">—</span>';
           const errTitle = p.status === "error" && p.error_message ? ` title="${String(p.error_message).replace(/"/g, "&quot;")}"` : "";
+          const fullName = escapeHtml(p.file_name || "");
+          const shortName = p.file_name && p.file_name.length > 48
+            ? escapeHtml(p.file_name.slice(0, 44) + "…" + (p.file_name.lastIndexOf(".") > 44 ? p.file_name.slice(p.file_name.lastIndexOf(".")) : ""))
+            : fullName;
           return `<tr>
-            <td class="doc-name">${escapeHtml(p.file_name)}</td>
+            <td class="doc-name" title="${fullName}">${shortName}</td>
             <td>${fmtBytes(p.file_size)}</td>
             <td${errTitle}>${statusBadge(p.status)}</td>
             <td class="chip-count">${p.chunk_count ?? 0}</td>
@@ -205,6 +209,8 @@ async function doUpload() {
 
   input.value = "";
   $("fileLabel").textContent = "Bấm để chọn một hoặc nhiều tệp PDF";
+  $("fileLabel").style.display = "";
+  const _chips = $("fileChips"); if (_chips) _chips.innerHTML = "";
   $("dropzone").classList.remove("has-file");
 
   if (files.length > 1) {
@@ -239,16 +245,35 @@ async function deletePdf(id, btn) {
 function wireDropzone() {
   const dz = $("dropzone");
   const input = $("fileInput");
+  function truncateName(name, maxLen) {
+    if (!maxLen) maxLen = 42;
+    if (name.length <= maxLen) return name;
+    const dotIdx = name.lastIndexOf(".");
+    const ext = dotIdx !== -1 ? name.slice(dotIdx) : "";
+    return name.slice(0, maxLen - ext.length - 3) + "..." + ext;
+  }
+
   function updateLabel() {
     const files = input.files ? Array.from(input.files) : [];
+    const labelEl = $("fileLabel");
+    const chipWrap = $("fileChips");
     if (!files.length) {
-      $("fileLabel").textContent = "Bấm để chọn một hoặc nhiều tệp PDF";
+      labelEl.textContent = "Bấm để chọn một hoặc nhiều tệp PDF";
+      labelEl.style.display = "";
+      if (chipWrap) chipWrap.innerHTML = "";
       dz.classList.remove("has-file");
-    } else if (files.length === 1) {
-      $("fileLabel").textContent = files[0].name;
+    } else if (files.length <= 3) {
+      labelEl.style.display = "none";
+      if (chipWrap) {
+        chipWrap.innerHTML = files.map(function(f) {
+          return '<span class="file-chip"><i class="fa-solid fa-file-pdf"></i> ' + escapeHtml(truncateName(f.name)) + '</span>';
+        }).join("");
+      }
       dz.classList.add("has-file");
     } else {
-      $("fileLabel").textContent = `${files.length} file đã chọn (${files.map(f => f.name).join(", ")})`;
+      labelEl.textContent = "Đã chọn " + files.length + " file";
+      labelEl.style.display = "";
+      if (chipWrap) chipWrap.innerHTML = "";
       dz.classList.add("has-file");
     }
   }

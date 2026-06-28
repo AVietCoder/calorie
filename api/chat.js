@@ -202,13 +202,13 @@ const detectIntent = (message = "") => {
 
 // ─── PROMPT: ANALYZE ─────────────────────────────────────────────────────────
 
-const buildAnalyzePrompt = ({ profile, foodsDB, knowledgeBlock = "" }) => {
+const buildAnalyzePrompt = ({ profile, foodsDB, knowledgeBlock = "", langInstruction = "" }) => {
   const topFoods = Array.isArray(foodsDB) ? foodsDB.slice(0, 20) : [];
   const foodsSection = topFoods.length > 0
     ? `\nKHO MÓN ĂN (20 món phổ biến nhất):\n${formatFoodsForPrompt(topFoods)}\nNếu món khớp → dùng số liệu từ đây, ghi "(theo dữ liệu đã lưu)".\n`
     : "";
 
-  return `Bạn là chuyên gia dinh dưỡng AI, am hiểu sâu ẩm thực Việt Nam 3 miền, luôn thân thiện và tư vấn đến nơi đến chốn.
+  return `${langInstruction ? langInstruction + "\n\n" : ""}Bạn là chuyên gia dinh dưỡng AI, am hiểu sâu ẩm thực Việt Nam 3 miền, luôn thân thiện và tư vấn đến nơi đến chốn.
 
 THÔNG TIN NGƯỜI DÙNG: Mục tiêu: ${profile.goal ?? "N/A"} | Calo/ngày: ${profile.target_calories || "1500-1800"} kcal | Bệnh lý: ${profile.disease || "không có"}.
 ${foodsSection}${knowledgeBlock ? knowledgeBlock + "\n" : ""}
@@ -240,9 +240,9 @@ CHỈ JSON, không thêm bất kỳ chữ nào khác. /no_think`;
 
 const buildCoachPrompt = ({
   profile, currentPlan, currentDayName, dayOfWeek, message,
-  isQueryOnly, isDeadlinePassed, foodsDB, knowledgeBlock = "",
+  isQueryOnly, isDeadlinePassed, foodsDB, knowledgeBlock = "", langInstruction = "",
 }) => {
-  let prompt = `Bạn là HLV Dinh dưỡng AI thông minh, thân thiện và am hiểu sâu ẩm thực Việt Nam.
+  let prompt = `${langInstruction ? langInstruction + "\n\n" : ""}Bạn là HLV Dinh dưỡng AI thông minh, thân thiện và am hiểu sâu ẩm thực Việt Nam.
 Luôn tư vấn đến nơi đến chốn — không trả lời chung chung, không qua loa.
 
 HÔM NAY LÀ: ${currentDayName} (day ${dayOfWeek} trong thực đơn).
@@ -304,8 +304,8 @@ VÍ DỤ:
 
 // ─── PROMPT: CASUAL ───────────────────────────────────────────────────────────
 
-const buildCasualPrompt = (profile) =>
-  `Bạn là trợ lý thân thiện của ứng dụng dinh dưỡng, luôn vui vẻ và gần gũi.
+const buildCasualPrompt = (profile, langInstruction = "") =>
+  `${langInstruction ? langInstruction + "\n\n" : ""}Bạn là trợ lý thân thiện của ứng dụng dinh dưỡng, luôn vui vẻ và gần gũi.
 Tên người dùng: ${profile.username || "bạn"}.
 
 Người dùng đang nhắn tin ngoài chủ đề ăn uống/dinh dưỡng.
@@ -358,26 +358,28 @@ const correctCommonMisidentification = (rawReply, nutritionData) => {
 };
 
 // Tư vấn ngắn gọn dựa trên mục tiêu và dinh dưỡng (KHÔNG liệt kê số chi tiết)
-const buildShortAdvice = (nutritionData, profile) => {
+const buildShortAdvice = (nutritionData, profile, langInstruction = "") => {
   const goal = String(profile?.goal || "").toLowerCase();
   const cals = Number(nutritionData?.calories) || 0;
-  const desc = nutritionData?.description || "Món ăn";
+  const isEn = langInstruction.includes("English");
   if (goal.includes("giảm") || goal.includes("lose") || goal.includes("weight loss")) {
     return cals > 600
-      ? `Món này khá nặng, nên ăn vừa phải và giảm dầu mỡ/đường nếu có thể nhé.`
-      : `Món này khá ổn cho chế độ giảm cân, nhớ giữ phần ăn vừa phải.`;
+      ? (isEn ? `This dish is quite heavy — enjoy it in moderation and reduce oil/sugar if possible.` : `Món này khá nặng, nên ăn vừa phải và giảm dầu mỡ/đường nếu có thể nhé.`)
+      : (isEn ? `This dish is fine for weight loss — just keep your portions in check.` : `Món này khá ổn cho chế độ giảm cân, nhớ giữ phần ăn vừa phải.`);
   }
   if (goal.includes("tăng") || goal.includes("gain") || goal.includes("muscle")) {
     return cals > 400
-      ? `Món này có nhiều năng lượng, tốt cho mục tiêu tăng cân/tăng cơ.`
-      : `Món này được, bạn có thể kết hợp thêm nguồn protein để đạt mục tiêu nhé.`;
+      ? (isEn ? `This dish is calorie-dense — great for your muscle gain / bulking goal.` : `Món này có nhiều năng lượng, tốt cho mục tiêu tăng cân/tăng cơ.`)
+      : (isEn ? `This dish works, but consider pairing it with an extra protein source to hit your goal.` : `Món này được, bạn có thể kết hợp thêm nguồn protein để đạt mục tiêu nhé.`);
   }
-  return `Món này có thể phù hợp với chế độ cân bằng của bạn. Chi tiết dinh dưỡng mình để ở thẻ bên phải.`;
+  return isEn
+    ? `This dish can fit a balanced diet. Detailed nutrition is shown in the card on the right.`
+    : `Món này có thể phù hợp với chế độ cân bằng của bạn. Chi tiết dinh dưỡng mình để ở thẻ bên phải.`;
 };
 
 // ─── PROMPT: VISION / IMAGE ANALYSIS ─────────────────────────────────────────
 
-const buildNutritionPrompt = (foodsDB = [], knowledgeBlock = "", profile = {}) => {
+const buildNutritionPrompt = (foodsDB = [], knowledgeBlock = "", profile = {}, langInstruction = "") => {
   const topFoods = Array.isArray(foodsDB) ? foodsDB.slice(0, 20) : [];
   const foodsSection = topFoods.length > 0
     ? `\nKHO MÓN ĂN (20 phổ biến nhất):\n${formatFoodsForPrompt(topFoods)}\nNếu khớp -> dùng số liệu từ đây.\n`
@@ -386,7 +388,7 @@ const buildNutritionPrompt = (foodsDB = [], knowledgeBlock = "", profile = {}) =
   return `Bạn là chuyên gia dinh dưỡng AI, am hiểu ẩm thực Việt Nam và quốc tế.
 Nhiệm vụ: nhìn ảnh → nhận diện món ăn/đồ uống → ước tính dinh dưỡng → trình bày kết quả thân thiện.
 
-NGÔN NGỮ: Trả lời 100% TIẾNG VIỆT có dấu. KHÔNG dùng chữ Hán/Trung/Nhật.
+${langInstruction || "NGÔN NGỮ: Trả lời 100% TIẾNG VIỆT có dấu. KHÔNG dùng chữ Hán/Trung/Nhật."}
 
 PHẠM VI NHẬN DIỆN — KHÔNG GIỚI HẠN QUỐC GIA:
 Nhận diện BẤT KỲ món ăn nào từ bất kỳ nền ẩm thực nào. KHÔNG từ chối với lý do "không phải món Việt".
@@ -638,6 +640,12 @@ export default async function handler(req, res) {
     const mealDayText = normalizeText(getFirst(fields.mealDayText)) || normalizeText(getFirst(fields.mealDayValue));
     const pendingMealData = safeJsonParse(mealDataRaw);
 
+    // ── LANGUAGE ──────────────────────────────────────────────────────────────
+    const userLang = normalizeText(getFirst(fields.lang)) || "vi";
+    const langInstruction = userLang === "en"
+      ? "LANGUAGE RULE: You MUST respond entirely in English. Do not use Vietnamese under any circumstances."
+      : "NGÔN NGỮ: Trả lời 100% TIẾNG VIỆT có dấu đầy đủ. KHÔNG dùng tiếng Anh hay ngôn ngữ khác.";
+
     if (!message && !imageFile) return res.status(400).json({ error: "Thiếu dữ liệu." });
 
     const [{ data: profile, error: profileError }, foodsDB] = await Promise.all([
@@ -722,7 +730,7 @@ export default async function handler(req, res) {
         const completion = await safeChatCreate(openai, {
           model: LLM_VISION_MODEL,
           messages: [
-            { role: "system", content: buildNutritionPrompt(foodsDB, knowledgeBlock, profile) },
+            { role: "system", content: buildNutritionPrompt(foodsDB, knowledgeBlock, profile, langInstruction) },
             ...history.slice(-6),
             { role: "user", content: userContent },
           ],
@@ -775,7 +783,7 @@ export default async function handler(req, res) {
         // Build ngắn gọn: tên món + tư vấn thực tế. Số liệu để trong <data> cho sidebar.
         if (nutritionData._geminiReplyPending) {
           delete nutritionData._geminiReplyPending;
-          const shortAdvice = buildShortAdvice(nutritionData, profile);
+          const shortAdvice = buildShortAdvice(nutritionData, profile, langInstruction);
           aiReply = `**${nutritionData.description}**${nutritionData.amount && nutritionData.amount !== "1 phần" ? ` (${nutritionData.amount})` : ""} — ${shortAdvice}`;
         }
 
@@ -863,7 +871,7 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
       const casualCompletion = await safeChatCreate(openai, {
         model: LLM_MODEL,
         messages: [
-          { role: "system", content: buildCasualPrompt(profile) },
+          { role: "system", content: buildCasualPrompt(profile, langInstruction) },
           ...history.slice(-4),
           { role: "user", content: finalMessage },
         ],
@@ -883,7 +891,7 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
       const analyzeCompletion = await safeChatCreate(openai, {
         model: LLM_MODEL,
         messages: [
-          { role: "system", content: buildAnalyzePrompt({ profile, foodsDB, knowledgeBlock }) },
+          { role: "system", content: buildAnalyzePrompt({ profile, foodsDB, knowledgeBlock, langInstruction }) },
           ...history.slice(-4),
           { role: "user", content: finalMessage },
         ],
@@ -908,7 +916,7 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
             role: "system", content: buildCoachPrompt({
               profile, currentPlan, currentDayName, dayOfWeek,
               message: finalMessage, isQueryOnly: effectiveIsQueryOnly,
-              isDeadlinePassed, foodsDB, knowledgeBlock,
+              isDeadlinePassed, foodsDB, knowledgeBlock, langInstruction,
             }),
           },
           ...history.slice(-4),

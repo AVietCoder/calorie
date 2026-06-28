@@ -316,6 +316,7 @@ window.currentConvId = null;
     formData.append('mealTime', mealTime);
     formData.append('mealDayText', displayDate);
     formData.append('mealDayValue', dayValue);
+    formData.append('lang', (window.i18n && window.i18n.getLang()) || 'vi');
     try {
       const res = await fetch('/api/chat', { method:'POST', body:formData, headers:{ 'Authorization':`Bearer ${token}` } });
       const result = await res.json();
@@ -567,6 +568,7 @@ window.currentConvId = null;
       formData.append('message', text);
       if (file) formData.append('image', file);
     }
+    formData.append('lang', (window.i18n && window.i18n.getLang()) || 'vi');
 
     try {
       const res = await fetch('/api/chat', { method:'POST', body:formData, headers:{ Authorization:`Bearer ${token}` } });
