@@ -58,7 +58,7 @@
 
         <!-- Calo lớn -->
         <div class="kcal-highlight">
-          <div class="kcal-icon">🔥</div>
+          <div class="kcal-icon"><i class="fa-solid fa-fire-flame-curved"></i></div>
           <div>
             <div class="kcal-num" id="modal-calories">—</div>
             <div class="kcal-unit">kcal · <span id="modal-amount" style="color:var(--primary-deep)">—</span></div>
@@ -725,14 +725,14 @@
       card.id = 'extra-photo-result';
       card.style.cssText = 'background:var(--sage-50,#f3f7f1);border:1.5px solid var(--primary,#4a7c59);border-radius:10px;padding:10px 13px;margin:8px 0 4px;font-size:13px;line-height:1.7;';
       card.innerHTML = `
-        <div style="font-weight:700;color:var(--primary-deep,#2d5a3d);margin-bottom:2px">🍽 ${foodName}</div>
+        <div style="font-weight:700;color:var(--primary-deep,#2d5a3d);margin-bottom:2px"><i class="fa-solid fa-utensils" style="margin-right:5px"></i>${foodName}</div>
         <div style="display:flex;gap:14px;flex-wrap:wrap">
-          <span>⚡ <b>${cals} kcal</b></span>
+          <span><i class="fa-solid fa-fire-flame-curved" style="color:#e8743b;margin-right:4px"></i><b>${cals} kcal</b></span>
           <span>Protein <b>${proG}</b></span>
           <span>Béo <b>${fatG}</b></span>
           <span>Carbs <b>${carbG}</b></span>
         </div>
-        <div style="margin-top:5px;font-size:12px;color:var(--text-sub,#888)">✅ Đã điền vào form — nhấn <b>Thêm</b> để lưu</div>
+        <div style="margin-top:5px;font-size:12px;color:var(--text-sub,#888)"><i class="fa-solid fa-circle-check" style="color:var(--primary,#4a7c59);margin-right:4px"></i>Đã điền vào form — nhấn <b>Thêm</b> để lưu</div>
       `;
       const photoRow = document.getElementById('extra-photo-preview');
       if (photoRow && photoRow.parentNode) photoRow.parentNode.insertBefore(card, photoRow.nextSibling);
@@ -1291,7 +1291,7 @@
           wrapper.appendChild(overlay);
         } else {
           if (result.newPlan && result.newPlan.length > 0) {
-            tempPlan = result.newPlan;            // ✅ Khởi tạo tempPlan từ data backend
+            tempPlan = result.newPlan;            // Khởi tạo tempPlan từ data backend
             modifiedMap.clear();                  // Reset các thay đổi pending
             updateRemainingTimetable(result.newPlan);
             showToast(T('toast.menu_updated', "Đã cập nhật thực đơn mới từ AI!"), "success");
