@@ -267,8 +267,8 @@ ${JSON.stringify((currentPlan || []).map(d => ({
 
 LƯU Ý: Khi cập nhật (action=update_plan), newPlan PHẢI trả về ĐẦY ĐỦ 7 ngày, mỗi bữa ĐỦ 10 trường: meal, food, amount, calories, protein, fat, carbs, fiber, sugar, sodium.
 
-KHO MÓN ĂN CÓ SẴN (30 món phổ biến — ưu tiên dùng):
-${formatFoodsForPrompt((foodsDB || []).slice(0, 30))}
+KHO MÓN ĂN CÓ SẴN (20 món phổ biến — ưu tiên dùng):
+${formatFoodsForPrompt((foodsDB || []).slice(0, 20))}
 
 QUY TẮC FOODS DATABASE:
 - Ưu tiên dùng món từ danh sách khi xây/cập nhật thực đơn; món đã có → dùng CHÍNH XÁC số liệu đó; chưa có → tự ước tính hợp lý.
