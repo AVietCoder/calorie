@@ -94,21 +94,27 @@ const stripInternalSteps = (text = "") =>
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 
-const MEAL_TIME_REGEX = /\b(sáng|trưa|chiều|tối|bữa phụ|bua phu|ăn lúc|lúc nào|mấy giờ)\b/i;
-const FOLLOW_UP = "Bạn có thể cho mình biết bạn ăn vào sáng, trưa, tối hay bữa phụ không?";
+const MEAL_TIME_REGEX = /\b(sáng|trưa|chiều|tối|bữa phụ|bua phu|ăn lúc|lúc nào|mấy giờ|breakfast|lunch|dinner|snack)\b/i;
+const FOLLOW_UP_VI = "Bạn có thể cho mình biết bạn ăn vào sáng, trưa, tối hay bữa phụ không?";
+const FOLLOW_UP_EN = "Could you let me know whether you had this for breakfast, lunch, dinner, or as a snack?";
+const followUpText = (lang) => (lang === "en" ? FOLLOW_UP_EN : FOLLOW_UP_VI);
 
-const appendMealTimeFollowUp = (reply, message) => {
+const appendMealTimeFollowUp = (reply, message, lang = "vi") => {
+  const followUp = followUpText(lang);
   const text = String(reply || "").trim();
-  if (!text) return FOLLOW_UP;
+  if (!text) return followUp;
   if (MEAL_TIME_REGEX.test(String(message || ""))) return text;
   const lower = text.toLowerCase();
   if (
     lower.includes("sáng, trưa, tối hay bữa phụ") ||
     lower.includes("bạn có thể cho") ||
     lower.includes("bữa phụ không") ||
-    lower.includes("ăn vào lúc nào")
+    lower.includes("ăn vào lúc nào") ||
+    lower.includes("breakfast, lunch, dinner") ||
+    lower.includes("which meal") ||
+    lower.includes("for breakfast")
   ) return text;
-  return `${text}\n\n${FOLLOW_UP}`;
+  return `${text}\n\n${followUp}`;
 };
 
 // ─── DB HELPERS ──────────────────────────────────────────────────────────────
@@ -642,9 +648,12 @@ export default async function handler(req, res) {
 
     // ── LANGUAGE ──────────────────────────────────────────────────────────────
     const userLang = normalizeText(getFirst(fields.lang)) || "vi";
-    const langInstruction = userLang === "en"
-      ? "LANGUAGE RULE: You MUST respond entirely in English. Do not use Vietnamese under any circumstances."
-      : "NGÔN NGỮ: Trả lời 100% TIẾNG VIỆT có dấu đầy đủ. KHÔNG dùng tiếng Anh hay ngôn ngữ khác.";
+    const isEn = userLang === "en";
+    const langInstruction = isEn
+      ? "LANGUAGE — ABSOLUTE RULE: Respond ONLY in natural English. Even though the instructions and the examples below are written in Vietnamese, and even if the user's message or the chat history is in Vietnamese, your ENTIRE reply — every sentence, including the greeting and any follow-up question — MUST be in English. Never output any Vietnamese."
+      : "NGÔN NGỮ — BẮT BUỘC: Trả lời 100% bằng TIẾNG VIỆT có dấu đầy đủ. KHÔNG dùng tiếng Anh hay ngôn ngữ khác.";
+    // Nhắc lại ở cuối lượt user (đòn bẩy mạnh nhất để model chọn đúng ngôn ngữ đầu ra)
+    const langReminder = isEn ? "\n\n[Reply in English only.]" : "";
 
     if (!message && !imageFile) return res.status(400).json({ error: "Thiếu dữ liệu." });
 
@@ -699,7 +708,9 @@ export default async function handler(req, res) {
             note: message,
           });
           if (food && food.is_food === false) {
-            const reply = `Ảnh này mình không nhận ra là món ăn${food.reason ? ` (mình thấy: ${food.reason})` : ""}. Bạn gửi giúp mình ảnh món ăn hoặc đồ uống nhé!`;
+            const reply = isEn
+              ? `I couldn't recognize any food in this image${food.reason ? ` (I see: ${food.reason})` : ""}. Please send a photo of a dish or drink instead!`
+              : `Ảnh này mình không nhận ra là món ăn${food.reason ? ` (mình thấy: ${food.reason})` : ""}. Bạn gửi giúp mình ảnh món ăn hoặc đồ uống nhé!`;
             return res.status(200).json({ reply, username: profile.username });
           }
           if (food && food.food) {
@@ -732,7 +743,7 @@ export default async function handler(req, res) {
           messages: [
             { role: "system", content: buildNutritionPrompt(foodsDB, knowledgeBlock, profile, langInstruction) },
             ...history.slice(-6),
-            { role: "user", content: userContent },
+            { role: "user", content: isEn ? [...userContent, { type: "text", text: "[Reply in English only.]" }] : userContent },
           ],
           max_tokens: 1200,
           temperature: 0,
@@ -752,7 +763,9 @@ export default async function handler(req, res) {
         const errMatch = aiReply.match(/<error>([\s\S]*?)<\/error>/i);
         if (errMatch) {
           const seen = errMatch[1].trim();
-          const reply = `Ảnh này mình không nhận ra là món ăn${seen ? ` (mình thấy: ${seen})` : ""}. Bạn gửi giúp mình ảnh món ăn hoặc đồ uống nhé!`;
+          const reply = isEn
+            ? `I couldn't recognize any food in this image${seen ? ` (I see: ${seen})` : ""}. Please send a photo of a dish or drink instead!`
+            : `Ảnh này mình không nhận ra là món ăn${seen ? ` (mình thấy: ${seen})` : ""}. Bạn gửi giúp mình ảnh món ăn hoặc đồ uống nhé!`;
           return res.status(200).json({ reply, username: profile.username });
         }
 
@@ -815,12 +828,16 @@ export default async function handler(req, res) {
 
     // ── ĐÃ HOÀN THÀNH LỘ TRÌNH (qua deadline): không cập nhật nữa, chúc mừng người dùng ──
     if (isMealFollowup && isDeadlinePassed) {
-      const dishName = stripCJK(String(pendingMealData.description || "món ăn"));
-      const reply =
-        `Chúc mừng bạn đã xuất sắc hoàn thành trọn vẹn lộ trình dinh dưỡng của mình! ` +
-        `Đây là một cột mốc rất đáng tự hào, cho thấy bạn đã thực sự kiên trì và nghiêm túc với sức khỏe của bản thân. ` +
-        `Vì lộ trình đã khép lại nên mình tạm dừng việc ghi món "${dishName}" vào thực đơn. ` +
-        `Khi sẵn sàng cho chặng đường mới, bạn chỉ cần vào mục Lộ trình để đặt mục tiêu tiếp theo, mình sẽ đồng hành cùng bạn ngay nhé.`;
+      const dishName = stripCJK(String(pendingMealData.description || (isEn ? "this dish" : "món ăn")));
+      const reply = isEn
+        ? `Congratulations on brilliantly completing your entire nutrition journey! ` +
+          `This is a milestone to be truly proud of — it shows real commitment and dedication to your health. ` +
+          `Since the journey has wrapped up, I'll hold off on logging "${dishName}" into your menu. ` +
+          `Whenever you're ready for a new chapter, just head to the Plan section to set your next goal and I'll be right there with you.`
+        : `Chúc mừng bạn đã xuất sắc hoàn thành trọn vẹn lộ trình dinh dưỡng của mình! ` +
+          `Đây là một cột mốc rất đáng tự hào, cho thấy bạn đã thực sự kiên trì và nghiêm túc với sức khỏe của bản thân. ` +
+          `Vì lộ trình đã khép lại nên mình tạm dừng việc ghi món "${dishName}" vào thực đơn. ` +
+          `Khi sẵn sàng cho chặng đường mới, bạn chỉ cần vào mục Lộ trình để đặt mục tiêu tiếp theo, mình sẽ đồng hành cùng bạn ngay nhé.`;
       return res.status(200).json({
         success: true,
         reply: stripCJK(reply),
@@ -873,7 +890,7 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
         messages: [
           { role: "system", content: buildCasualPrompt(profile, langInstruction) },
           ...history.slice(-4),
-          { role: "user", content: finalMessage },
+          { role: "user", content: finalMessage + langReminder },
         ],
         response_format: { type: "json_object" },
         max_tokens: 300,
@@ -883,7 +900,9 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
 
       const rawContent = casualCompletion.choices[0]?.message?.content || "{}";
       const result = safeJsonParse(stripThinkBlocks(rawContent)) || {};
-      aiReply = stripCJK(String(result.reply || "Haha, chủ đề này mình chưa rành lắm. Bạn hỏi mình về chuyện ăn uống đi, mình tư vấn số 1 luôn!"));
+      aiReply = stripCJK(String(result.reply || (isEn
+        ? "Haha, that's a little outside my wheelhouse. Ask me anything about food and nutrition — that's my specialty!"
+        : "Haha, chủ đề này mình chưa rành lắm. Bạn hỏi mình về chuyện ăn uống đi, mình tư vấn số 1 luôn!")));
       action = "analyze_only";
 
     // ── ANALYZE PATH ──────────────────────────────────────────────────────────
@@ -893,7 +912,7 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
         messages: [
           { role: "system", content: buildAnalyzePrompt({ profile, foodsDB, knowledgeBlock, langInstruction }) },
           ...history.slice(-4),
-          { role: "user", content: finalMessage },
+          { role: "user", content: finalMessage + langReminder },
         ],
         response_format: { type: "json_object" },
         max_tokens: 700,
@@ -920,7 +939,7 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
             }),
           },
           ...history.slice(-4),
-          { role: "user", content: finalMessage },
+          { role: "user", content: finalMessage + langReminder },
         ],
         response_format: { type: "json_object" },
         max_tokens: 2500,
@@ -975,7 +994,7 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
 
     // Chỉ hỏi bữa ăn khi CHƯA xác nhận bữa (không phải meal followup response)
     if (!isMealFollowup && intent !== "casual" && (action === "analyze_only" || (!needsClarification && action === "ask_clarify"))) {
-      aiReply = appendMealTimeFollowUp(aiReply, finalMessage);
+      aiReply = appendMealTimeFollowUp(aiReply, finalMessage, userLang);
     }
 
     if (action === "analyze_only" && !isMealFollowup && resultMealData?.description) {
