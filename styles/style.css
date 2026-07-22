@@ -29,6 +29,8 @@ body
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
     padding: 20px 8%;
     background: transparent;
 }
@@ -41,6 +43,8 @@ body
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .nav-link
@@ -49,6 +53,7 @@ body
     color: var(--text-gray);
     margin-right: 30px;
     font-weight: 500;
+    white-space: nowrap;
 }
 
 .btn-primary
@@ -61,6 +66,11 @@ body
     font-weight: 600;
     border: 1px solid var(--primary-green);
     transition: 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .btn-primary:hover
@@ -332,19 +342,24 @@ footer
 
 .user-profile-nav
 {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 15px;
     background: rgba(88, 166, 119, 0.1);
     padding: 5px 15px;
     border-radius: 50px;
     border: 1px solid rgba(88, 166, 119, 0.2);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .user-name
 {
     font-size: 0.95rem;
     color: #2d3436;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
 }
 
 .user-name i
@@ -369,4 +384,70 @@ footer
 {
     transform: scale(1.1);
     color: #d63031;
+}
+
+
+/* ===== Responsive fixes (auth navbar) ===== */
+.nav-auth
+{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+}
+
+.nav-auth .nav-item
+{
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Landing navbar auth zone stays on one line down to mobile */
+@media (max-width: 768px)
+{
+    .navbar
+    {
+        padding: 16px 5%;
+        gap: 12px;
+    }
+    .nav-auth
+    {
+        gap: 10px;
+    }
+    .btn-primary
+    {
+        padding: 9px 16px;
+        font-size: 0.9rem;
+    }
+    .user-profile-nav
+    {
+        padding: 4px 12px;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 480px)
+{
+    .navbar
+    {
+        padding: 14px 16px;
+    }
+    .logo
+    {
+        font-size: 1.15rem;
+    }
+    .logo i
+    {
+        font-size: 1.1rem;
+    }
+    .btn-primary span,
+    .user-name span:not(:first-child)
+    {
+        display: none;
+    }
+    .btn-primary
+    {
+        padding: 9px 12px;
+    }
 }

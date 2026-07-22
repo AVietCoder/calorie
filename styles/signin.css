@@ -101,3 +101,29 @@
     text-decoration: none;
     font-weight: 600;
 }
+
+
+/* ===== Responsive auth container ===== */
+@media (max-width: 640px)
+{
+    .auth-container
+    {
+        margin: 24px 16px;
+        padding: 28px 20px;
+        max-width: none;
+        border-radius: 16px;
+    }
+    .auth-header h2
+    {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 380px)
+{
+    .auth-container
+    {
+        margin: 16px 12px;
+        padding: 22px 16px;
+    }
+}

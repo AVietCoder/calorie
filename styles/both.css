@@ -188,6 +188,8 @@ button
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
     padding: 20px 40px;
     background: rgba(255,255,255,0.88);
     backdrop-filter: blur(14px);
@@ -207,6 +209,8 @@ button
     align-items: center;
     gap: 12px;
     letter-spacing: -0.3px;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .logo i
@@ -228,6 +232,9 @@ button
     display: flex;
     gap: 14px;
     align-items: center;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .user-profile-nav
@@ -246,6 +253,8 @@ button
     transition: all .25s ease;
     user-select: none;
     box-shadow: var(--shadow-sm);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .user-profile-nav:hover
@@ -263,6 +272,7 @@ button
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    white-space: nowrap;
 }
 
 .user-name i
