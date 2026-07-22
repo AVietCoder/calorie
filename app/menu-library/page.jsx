@@ -21,7 +21,7 @@ export default function MenuLibraryPage() {
 
   async function loadTemplates(tag) {
     const data = await get('/api/family-menu', { resource: 'templates', ...(tag ? { tag } : {}) });
-    setRanked(data || []);
+    setRanked(Array.isArray(data) ? data : []);
   }
 
   useEffect(() => {

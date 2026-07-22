@@ -23,7 +23,9 @@
 .admin-grid {
   display: grid; grid-template-columns: minmax(360px, 460px) 1fr; gap: 22px;
   align-items: start;
+  min-width: 0;
 }
+.admin-grid > * { min-width: 0; }
 @media (max-width: 980px) { .admin-grid { grid-template-columns: 1fr; } }
 
 .card {

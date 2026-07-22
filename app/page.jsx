@@ -66,14 +66,14 @@ export default function LandingPage() {
           )}
           {authState === 'guest' && (
             <>
-              <Link href="/signin" className="nav-link nav-item">{t('land.signin', 'Đăng nhập')}</Link>
-              <Link href="/signup" className="btn-primary nav-item">
+              <Link href="/signin" className="nav-link">{t('land.signin', 'Đăng nhập')}</Link>
+              <Link href="/signup" className="btn-signup">
                 <i className="fa-solid fa-user-plus" /> <span>{t('land.signup', 'Đăng ký')}</span>
               </Link>
             </>
           )}
           {authState === 'user' && (
-            <div className="user-profile-nav nav-item" onClick={handleLogout} style={{ cursor: 'pointer' }} title={t('common.logout_hint', 'Nhấn để đăng xuất')}>
+            <div className="user-profile-nav" onClick={handleLogout} style={{ cursor: 'pointer' }} title={t('common.logout_hint', 'Nhấn để đăng xuất')}>
               <span className="user-name">
                 <i className="fa-solid fa-circle-user" /> <span>{t('common.logout', 'Đăng xuất')}</span>
               </span>

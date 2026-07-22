@@ -301,6 +301,64 @@ button
     width: 100%;
 }
 
+/* Shared page hero — used by schedule / menu-plan / menu-library / household.
+   Lives here (global) so every page renders it on a fresh load, not only when
+   schedule.css happens to be loaded. */
+.schedule-hero
+{
+    border-radius: var(--radius-xl);
+    padding: 30px 36px;
+    background: var(--gradient-hero);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.schedule-hero h1
+{
+    margin: 0;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text-main);
+}
+
+.schedule-hero p
+{
+    margin: 6px 0 0;
+    color: var(--text-sub);
+    font-size: 14px;
+}
+
+.schedule-hero-icon
+{
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: var(--gradient-primary);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+    box-shadow: 0 12px 24px -10px rgba(125,155,118,0.55);
+}
+
+.schedule-hero-text
+{
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
 .card
 {
     background: var(--surface);
@@ -362,6 +420,13 @@ button
 {
     color: var(--text-sub);
     font-size: 15px;
+}
+
+/* Charts must never push their container wider than the viewport (Chart.js
+   can briefly size a canvas to its intrinsic width). */
+canvas
+{
+    max-width: 100%;
 }
 
 .btn
@@ -628,6 +693,14 @@ label
     .card h3
     {
         font-size:16px
+    }
+    .schedule-hero
+    {
+        padding:22px 20px
+    }
+    .schedule-hero h1
+    {
+        font-size:20px
     }
 }
 

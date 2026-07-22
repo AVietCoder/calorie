@@ -163,6 +163,12 @@
     margin-top: 18px;
 }
 
+/* Let grid tracks shrink below their content's intrinsic width so charts /
+   canvases don't blow the layout wider than the viewport on mobile. */
+.hero-grid, .grid-2, .grid-charts, .stats-grid { min-width: 0; }
+.hero-grid > *, .grid-2 > *, .grid-charts > *, .stats-grid > * { min-width: 0; }
+.chart-wrap, .hero-chart, .macro-donut-wrap { min-width: 0; }
+
 .macro-donut-wrap
 {
     position: relative;

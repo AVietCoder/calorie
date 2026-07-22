@@ -56,7 +56,7 @@ body
     white-space: nowrap;
 }
 
-.btn-primary
+.btn-signup
 {
     background: var(--white);
     color: var(--primary-green);
@@ -73,7 +73,7 @@ body
     flex-shrink: 0;
 }
 
-.btn-primary:hover
+.btn-signup:hover
 {
     background: var(--primary-green);
     color: var(--white);
@@ -415,7 +415,7 @@ footer
     {
         gap: 10px;
     }
-    .btn-primary
+    .btn-signup
     {
         padding: 9px 16px;
         font-size: 0.9rem;
@@ -441,12 +441,12 @@ footer
     {
         font-size: 1.1rem;
     }
-    .btn-primary span,
+    .btn-signup span,
     .user-name span:not(:first-child)
     {
         display: none;
     }
-    .btn-primary
+    .btn-signup
     {
         padding: 9px 12px;
     }
