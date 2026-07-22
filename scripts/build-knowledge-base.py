@@ -1,0 +1,267 @@
+#!/usr/bin/env python3
+"""
+Extract text from the 6 research PDFs and build a chunked knowledge base
+(knowledge-base.json) that ships with the calorie app for RAG retrieval.
+
+Each chunk is tagged with the disease it belongs to (with Vietnamese +
+English labels) so the app can route by the user's `disease` profile field.
+Retrieval uses PostgreSQL Full Text Search (tsvector + GIN + ts_rank) — see
+migrations/fulltext_search.sql and scripts/seed-base-knowledge.mjs. No
+embeddings are generated or stored anywhere in this pipeline.
+"""
+import json
+import re
+import os
+import sys
+
+SRC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sources")
+OUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "knowledge", "knowledge-base.json")
+
+DISEASE_MAP = {
+    "Diet for Diabetic Patients_ Recommended Foods, Foods to Avoid, and Dietary Targets.pdf": {
+        "disease_key": "diabetes",
+        "title": "Chế độ ăn cho người Tiểu đường (Diabetes)",
+        "labels": ["tiểu đường", "tieu duong", "đái tháo đường", "dai thao duong",
+                   "tđ", "diabetes", "diabetic", "blood sugar", "đường huyết",
+                   "duong huyet", "glucose"],
+    },
+    "Diet for Fatty Liver Disease_ Recommended Patterns, Foods to Eat, and Foods to Avoid.pdf": {
+        "disease_key": "fatty_liver",
+        "title": "Chế độ ăn cho người Gan nhiễm mỡ (Fatty Liver)",
+        "labels": ["gan nhiễm mỡ", "gan nhiem mo", "máu nhiễm mỡ gan", "fatty liver",
+                   "nafld", "nash", "liver", "gan", "steatosis"],
+    },
+    "Diet for Gout Patients_ Recommended Foods, Dietary Patterns, and Foods to Avoid.pdf": {
+        "disease_key": "gout",
+        "title": "Chế độ ăn cho người Gút (Gout)",
+        "labels": ["gút", "gut", "gout", "uric", "axit uric", "acid uric",
+                   "hyperuricemia", "tăng axit uric", "purine", "purin"],
+    },
+    "Diet for High Cholesterol_ Recommended Foods, Patterns, and Foods to Avoid.pdf": {
+        "disease_key": "high_cholesterol",
+        "title": "Chế độ ăn cho người Mỡ máu cao / Cholesterol cao (High Cholesterol)",
+        "labels": ["mỡ máu", "mo mau", "cholesterol", "rối loạn lipid", "roi loan lipid",
+                   "lipid máu", "lipid mau", "máu nhiễm mỡ", "mau nhiem mo",
+                   "high cholesterol", "ldl", "hyperlipidemia", "dyslipidemia",
+                   "triglyceride", "mỡ trong máu"],
+    },
+    "Kidney Disease Diet Recommendations, Food Choices, and Foods to Avoid.pdf": {
+        "disease_key": "kidney",
+        "title": "Chế độ ăn cho người Bệnh thận (Kidney Disease)",
+        "labels": ["bệnh thận", "benh than", "suy thận", "suy than", "thận", "than",
+                   "kidney", "renal", "ckd", "chạy thận", "chay than", "lọc máu",
+                   "creatinine", "gfr"],
+    },
+    "Recommended Diet and Avoided Foods for Gastrointestinal Problems.pdf": {
+        "disease_key": "gastrointestinal",
+        "title": "Chế độ ăn cho người Bệnh tiêu hóa / Dạ dày (Gastrointestinal)",
+        "labels": ["tiêu hóa", "tieu hoa", "dạ dày", "da day", "đường ruột", "duong ruot",
+                   "đại tràng", "dai trang", "viêm dạ dày", "viem da day", "gerd",
+                   "trào ngược", "trao nguoc", "ibs", "ruột kích thích", "ruot kich thich",
+                   "gastrointestinal", "stomach", "gut health", "ulcer", "loét", "loet",
+                   "táo bón", "tao bon", "tiêu chảy", "tieu chay"],
+    },
+}
+
+CHUNK_WORDS = 260    
+OVERLAP_WORDS = 40   
+
+def extract_text(path):
+    """Extract text; prefer pdfplumber, fall back to pdftotext."""
+    try:
+        import pdfplumber
+        pages = []
+        with pdfplumber.open(path) as pdf:
+            for pg in pdf.pages:
+                pages.append(pg.extract_text() or "")
+        return "\n".join(pages)
+    except Exception as e:
+        sys.stderr.write(f"[pdfplumber failed: {e}] falling back to pdftotext\n")
+        import subprocess
+        out = subprocess.run(
+            ["pdftotext", "-enc", "UTF-8", path, "-"],
+            capture_output=True, text=True
+        )
+        return out.stdout
+
+
+def clean_text(text):
+    text = text.replace("\x0c", "\n")       
+    text = text.replace("\u201c", '"').replace("\u201d", '"')
+    text = text.replace("\u2018", "'").replace("\u2019", "'")
+    text = re.sub(r"[ \t]+", " ", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+_CITE_PATTERNS = [
+    r"\((?:[A-ZÀ-Ỹ][\wÀ-ỹ.''\-]*\.?)(?:\s+(?:et al\.?|and|&)\s*[\wÀ-ỹ.''\-]*)?(?:_\d+)?,?\s*\d{4}[a-z]?\)",
+    r"\(\s*\d+\s*sources?\s*\)",
+    r"\(\s*LLM Memory\s*\)",
+    r"\(\s*Model-?Generated\s*\)",
+]
+
+
+def strip_citations(text):
+    for pat in _CITE_PATTERNS:
+        text = re.sub(pat, "", text)
+    text = re.sub(r"\(\s*\)", "", text)
+    text = re.sub(r"\s+([.,;:])", r"\1", text)
+    text = re.sub(r"[ \t]{2,}", " ", text)
+    text = re.sub(r"\n[ \t]+", "\n", text)
+    return text.strip()
+
+
+def split_sections(text):
+    """
+    These PDFs are generated by `pdfmake` with a fixed layout:
+      Title
+      "Table of Contents"
+      <heading 1>
+      <heading 2>
+      ...
+      <heading 1>      <- body starts here (heading 1 reappears)
+      ...narrative...
+      "Evidence"       <- long verbatim study abstracts (we DROP these)
+      <heading 2>
+      ...narrative...
+      "Evidence"
+      ...
+
+    Strategy:
+      1. Read the ToC heading list (lines after "Table of Contents", stopping
+         when the first heading reappears OR a prose line is hit).
+      2. In the body, mark the FIRST occurrence of each heading and EVERY
+         "Evidence" line as boundaries.
+      3. Keep only the narrative between a heading and the next boundary;
+         skip anything that follows an "Evidence" boundary.
+
+    Returns list of (section_title, narrative_body) with Evidence removed.
+    """
+    lines = [l.rstrip() for l in text.split("\n")]
+
+    toc_idx = next((i for i, l in enumerate(lines)
+                    if l.strip().lower() == "table of contents"), None)
+    if toc_idx is None:
+        return [("Nội dung", text)]
+
+    toc_titles = []
+    j = toc_idx + 1
+    body_start = None
+    while j < len(lines):
+        ln = lines[j].strip()
+        if ln == "":
+            j += 1
+            continue
+        if toc_titles and ln == toc_titles[0]:
+            body_start = j
+            break
+        if len(ln.split()) > 14 or ln.endswith("."):
+            body_start = j
+            break
+        toc_titles.append(ln)
+        j += 1
+    if body_start is None:
+        body_start = j
+
+    if not toc_titles:
+        return [("Nội dung", text)]
+
+    body = "\n".join(lines[body_start:])
+
+    markers = []  
+    for title in dict.fromkeys(toc_titles):         
+        m = re.search(r"(?m)^\s*" + re.escape(title) + r"\s*$", body)
+        if m:
+            markers.append((m.start(), "toc", title))
+    for m in re.finditer(r"(?m)^\s*Evidence\s*$", body):
+        markers.append((m.start(), "evidence", None))
+
+    markers.sort()
+    if not markers:
+        return [("Nội dung", body)]
+
+    sections = []
+    for idx, (start, kind, title) in enumerate(markers):
+        if kind != "toc":
+            continue 
+        end = markers[idx + 1][0] if idx + 1 < len(markers) else len(body)
+        seg = body[start:end]
+        seg = re.sub(r"^\s*" + re.escape(title) + r"\s*\n?", "", seg, count=1)
+        seg = seg.strip()
+        if seg:
+            sections.append((title, seg))
+    return sections
+
+
+def chunk_section(words):
+    """Yield word-lists of ~CHUNK_WORDS with OVERLAP_WORDS overlap."""
+    if len(words) <= CHUNK_WORDS:
+        yield words
+        return
+    start = 0
+    step = CHUNK_WORDS - OVERLAP_WORDS
+    while start < len(words):
+        yield words[start:start + CHUNK_WORDS]
+        start += step
+
+
+def build():
+    files = sorted(os.listdir(SRC_DIR))
+    pdfs = [f for f in files if f.lower().endswith(".pdf")]
+    chunks = []
+    cid = 0
+    doc_summaries = {}
+
+    for fname in pdfs:
+        meta = DISEASE_MAP.get(fname)
+        if not meta:
+            sys.stderr.write(f"[warn] no disease mapping for {fname}, skipping\n")
+            continue
+        raw = clean_text(extract_text(os.path.join(SRC_DIR, fname)))
+        sections = split_sections(raw)
+
+        n_doc_chunks = 0
+        for sec_title, sec_body in sections:
+            sec_body = strip_citations(sec_body)
+            if not sec_body.strip():
+                continue
+            words = sec_body.split()
+            for w in chunk_section(words):
+                text = " ".join(w).strip()
+                if len(text) < 40:
+                    continue
+                chunks.append({
+                    "id": f"{meta['disease_key']}-{cid:03d}",
+                    "disease_key": meta["disease_key"],
+                    "disease_title": meta["title"],
+                    "labels": meta["labels"],
+                    "source": fname,
+                    "section": sec_title,
+                    "text": text,
+                    "word_count": len(w),
+                })
+                cid += 1
+                n_doc_chunks += 1
+        doc_summaries[meta["disease_key"]] = {
+            "title": meta["title"],
+            "source": fname,
+            "chunks": n_doc_chunks,
+        }
+
+    kb = {
+        "version": 1,
+        "generated_chunks": len(chunks),
+        "documents": doc_summaries,
+        "chunks": chunks,
+    }
+    with open(OUT_PATH, "w", encoding="utf-8") as f:
+        json.dump(kb, f, ensure_ascii=False, indent=2)
+
+    print(f"Wrote {OUT_PATH}")
+    print(f"Total chunks: {len(chunks)}")
+    for k, v in doc_summaries.items():
+        print(f"  - {k:18s} {v['chunks']:3d} chunks  ({v['title']})")
+
+
+if __name__ == "__main__":
+    build()

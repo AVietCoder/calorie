@@ -1,0 +1,74 @@
+
+══════════════════════════════════════════════════════════════════════
+STAGE 1 — Start offline embedding backend (float-returning, like embed_server.py)
+══════════════════════════════════════════════════════════════════════
+🧪 [embed-server-local] up on http://localhost:4790/v1 (model=bge-m3-local, dim=1024)
+✅ [embeddings] ping OK — backend=self-hosted model=bge-m3-local dim=1024 shape=data[] sample=[0.0000, 0.0000, 0.0000, 0.0000...]
+✅ embedding backend ping — dim=1024 shape=data[]
+✅ ping vectors are finite floats (not base64-corrupted) — sample=[0.0000, 0.0000, 0.0000, 0.0000...]
+
+══════════════════════════════════════════════════════════════════════
+STAGE 2 — Parse the PDF
+══════════════════════════════════════════════════════════════════════
+✅ PDF text extracted — 1339688 chars, 567 pages, 7256ms
+• file: VTN_FCT_2007.pdf
+
+══════════════════════════════════════════════════════════════════════
+STAGE 3 — Chunk
+══════════════════════════════════════════════════════════════════════
+✅ chunks produced — 1622 chunks, avg 945 chars
+✅ chunks are non-trivial — avg 945 chars
+
+══════════════════════════════════════════════════════════════════════
+STAGE 4 — Embed ALL chunks (this is what used to throw / corrupt)
+══════════════════════════════════════════════════════════════════════
+• embedding 1200 of 1622 chunks…
+✅ embedTexts completed without error — 1200 vectors in 1281ms
+✅ one vector per chunk — 1200 == 1200
+✅ consistent dimension — dim=1024
+✅ vectors are finite (NOT silently corrupted) — all values finite
+✅ vectors are normalized-ish (non-zero norm) — no all-zero vectors
+
+══════════════════════════════════════════════════════════════════════
+STAGE 5 — Semantic search + retrieval + strict grounding
+══════════════════════════════════════════════════════════════════════
+• confidence gate: cosine ≥ 0.35 OR bm25 ≥ 3
+
+
+• Q: "thành phần dinh dưỡng của gạo tẻ"
+   mode=hybrid bestCosine=0.501 bestBM25=19.25 → ANSWER
+   top chunk (đoạn 9, cos=0.501): NAM Ở Việt Nam, năm 1941 M.Autret và Nguyễn Văn Mậu (Viện Pasteur Hà Nội), đã xuất bản Bảng thành phần thức ăn Đông D…
+✅ gate decision matches expectation for "thành phần dinh dưỡng của gạo tẻ…" — expected FOUND, got FOUND
+
+• strict grounding block preview (first 380 chars of 6774):
+   ================================================================
+   TRÍCH ĐOẠN TỪ KNOWLEDGE BASE (NGUỒN DUY NHẤT ĐƯỢC PHÉP DÙNG)
+   ================================================================
+   Hãy trả lời câu hỏi của người dùng CHỈ dựa trên các trích đoạn dưới đây, được
+   truy hồi từ tài liệu đã tải lên. Quy tắc bắt buộc:
+   1. CHỈ dùng dữ kiện/con số xuất hiện trong các trích đoạn nà …
+
+• Q: "protein trong thịt lợn"
+   mode=hybrid bestCosine=0.290 bestBM25=9.61 → ANSWER
+   top chunk (đoạn 6, cos=0.290): hợp lý, nâng cao sức khoẻ và nâng cao chất lượng cuộc sống. Hà nội ngày 15 tháng 10 năm 2007 VIỆN TRƯỞNG VIỆN DINH DƯỠN…
+✅ gate decision matches expectation for "protein trong thịt lợn…" — expected FOUND, got FOUND
+
+• Q: "hàm lượng vitamin C trong rau"
+   mode=hybrid bestCosine=0.469 bestBM25=17.08 → ANSWER
+   top chunk (đoạn 13, cos=0.469): thành phần thực phẩm Đan Mạch 2006, tham khảo hàm lượng biotin (vitamin H) và một số thực phẩm khác. 6. Bảng thành phần…
+✅ gate decision matches expectation for "hàm lượng vitamin C trong rau…" — expected FOUND, got FOUND
+
+• Q: "quarterly revenue forecast spreadsheet pivot formulas"
+   mode=hybrid bestCosine=0.130 bestBM25=0.00 → Không tìm thấy trong Knowledge Base
+✅ gate decision matches expectation for "quarterly revenue forecast spreadsheet p…" — expected NOT-FOUND, got NOT-FOUND
+
+• Q: "kubernetes ingress TLS certificate renewal cronjob"
+   mode=hybrid bestCosine=0.181 bestBM25=0.00 → Không tìm thấy trong Knowledge Base
+✅ gate decision matches expectation for "kubernetes ingress TLS certificate renew…" — expected NOT-FOUND, got NOT-FOUND
+
+• (Set LLM_BASE_URL + LLM_MODEL to also test a full grounded LLM answer.)
+
+══════════════════════════════════════════════════════════════════════
+RESULT
+══════════════════════════════════════════════════════════════════════
+✅ ALL CHECKS PASSED — parse → chunk → embed → vector search → retrieval → grounding all work.

@@ -1,0 +1,16 @@
+{
+  "projectId": "prj_tiQ85HtQ8HZSAKz2jHaSaaQMRvmo",
+  "orgId": "team_6ycOfxEz28z9D3AVca0YLYyP",
+  "projectName": "tht-d3",
+  "settings": {
+    "createdAt": 1767884217065,
+    "framework": null,
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": null,
+    "directoryListing": false,
+    "nodeVersion": "24.x"
+  }
+}

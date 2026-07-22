@@ -1,0 +1,74 @@
+/* menu-library.css — Thư viện thực đơn: filter chip, grid card, upload form. */
+
+.tag-filter { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+.tag-chip {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-gray);
+  background: var(--surface);
+  color: var(--text-sub);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.tag-chip.selected, .tag-chip:hover { background: var(--sage-50); color: var(--dark-green); border-color: var(--primary); }
+
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+  margin-bottom: 34px;
+}
+.template-card {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.template-card:hover { box-shadow: var(--shadow); }
+.template-card .tpl-score {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--dark-green);
+  background: var(--sage-50);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.template-card h4 { font-size: 17px; color: var(--text-main); margin: 0; }
+.template-card .tpl-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.template-card .tpl-tag {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--accent-gray);
+  color: var(--text-sub);
+}
+.template-card button { margin-top: auto; }
+
+.upload-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.upload-row label {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-sub);
+}
+.upload-row input, .upload-row select {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent-gray);
+  font-family: inherit;
+  font-size: 14px;
+}

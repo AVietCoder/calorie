@@ -1,0 +1,267 @@
+.content
+{
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 32px 24px;
+}
+
+.setup-card
+{
+    width: 100%;
+    max-width: 700px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-xl);
+    padding: 36px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.setup-card::before
+{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: var(--gradient-primary);
+}
+
+.progress-container
+{
+    display: flex;
+    gap: 8px;
+    margin-bottom: 30px;
+}
+
+.progress-step
+{
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--cream-2);
+    transition: background .4s ease;
+}
+
+.progress-step.active
+{
+    background:var(--gradient-primary)
+}
+
+.step
+{
+    display: none;
+    animation: slideIn .35s ease;
+}
+
+.step.active
+{
+    display:block
+}
+
+@keyframes slideIn
+{
+    from
+    {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to
+    {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.step h2
+{
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0 0 6px;
+    letter-spacing: -0.5px;
+}
+
+.step > p
+{
+    color: var(--text-sub);
+    margin: 0 0 24px;
+    font-size: 14px;
+}
+
+.form-grid
+{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 16px;
+}
+
+.input-group
+{
+    margin-bottom:14px
+}
+
+.input-group.full
+{
+    grid-column:1/-1
+}
+
+.goal-options
+{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.goal-item
+{
+    padding: 18px 16px;
+    border-radius: 16px;
+    background: var(--cream-0);
+    border: 1px solid var(--border-soft);
+    cursor: pointer;
+    transition: all .25s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.goal-item i
+{
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--sage-50);
+    color: var(--primary-deep);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.goal-item:hover
+{
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.goal-item.selected
+{
+    border-color: var(--primary);
+    background: var(--sage-50);
+    box-shadow: 0 6px 16px -6px rgba(125,155,118,0.3);
+}
+
+.goal-item.selected i
+{
+    background: var(--gradient-primary);
+    color: #fff;
+}
+
+textarea
+{
+    resize: vertical;
+    min-height: 70px;
+    font-family: inherit;
+}
+
+.btn-group
+{
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 28px;
+}
+
+.btn
+{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px 24px;
+    border-radius: 14px;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all .25s;
+}
+
+.btn-prev
+{
+    background: var(--cream-2);
+    color: var(--text-main);
+}
+
+.btn-prev:hover
+{
+    background:var(--accent-gray)
+}
+
+.btn-next
+{
+    background: var(--gradient-primary);
+    color: #fff;
+    margin-left: auto;
+    box-shadow: 0 8px 20px -8px rgba(125,155,118,0.6);
+}
+
+.btn-next:hover
+{
+    transform: translateY(-1px);
+    box-shadow: 0 12px 26px -10px rgba(125,155,118,0.7);
+}
+
+.btn:disabled
+{
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+@media (max-width:600px)
+{
+    .setup-card
+    {
+        padding:24px 20px
+    }
+    .form-grid,.goal-options
+    {
+        grid-template-columns:1fr
+    }
+    .step h2
+    {
+        font-size:20px
+    }
+}
+
+.goal-wide
+{
+    grid-column: 1 / -1;
+    width: 100%;
+    justify-content: flex-start;
+    padding: 20px 18px;
+}
+
+.goal-wide div
+{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.goal-wide small
+{
+    font-size: 12px;
+    color: var(--text-sub);
+    font-weight: 500;
+}
