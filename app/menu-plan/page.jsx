@@ -1,7 +1,7 @@
 'use client';
 import { Fragment, Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import PageShell from '../../components/PageShell';
 import { useApi } from '../../lib-client/useApi';
 import { useToast } from '../../lib-client/ToastContext';
@@ -35,6 +35,7 @@ function MenuPlanInner() {
   const { get, post } = useApi();
   const showToast = useToast();
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   function findDay(dayIndex) { return (plan?.plan_days || []).find((d) => d.day_index === dayIndex); }
   function findMeal(day, mealType) { return (day?.plan_meals || []).find((m) => m.meal_type === mealType); }
@@ -63,6 +64,8 @@ function MenuPlanInner() {
   }
 
   useEffect(() => {
+    const token = window.localStorage.getItem('calorie_ai_token');
+    if (!token) { router.push('/signin'); return; }
     (async () => {
       let hid = searchParams.get('household_id');
       try {

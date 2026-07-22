@@ -11,6 +11,12 @@
     gap: 28px;
     max-width: 1280px;
     margin: 0 auto;
+    min-width: 0;
+}
+
+.guide-shell > *
+{
+    min-width: 0;
 }
 
 .toc
@@ -212,7 +218,7 @@ section.guide-section li
 .step-grid
 {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
     margin-top: 14px;
 }
@@ -265,7 +271,7 @@ section.guide-section li
 .feature-list
 {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;
     margin-top: 12px;
 }
@@ -337,7 +343,7 @@ section.guide-section li
 .page-cards
 {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
     margin-top: 14px;
 }
@@ -510,7 +516,7 @@ section.guide-section li
     }
     .step-grid, .feature-list, .page-cards
     {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     }
     .guide-hero h1
     {

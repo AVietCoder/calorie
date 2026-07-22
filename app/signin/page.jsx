@@ -46,7 +46,7 @@ export default function SignInPage() {
     <div className="auth-container">
       <div className="auth-header">
         <Link href="/" className="logo" style={{ marginBottom: 10, fontSize: '1.5rem', textDecoration: 'none' }}>
-          <i className="fa-solid fa-leaf" style={{ color: '#2ecc71' }} />{' '}
+          <i className="fa-solid fa-leaf"/>{' '}
           <span style={{ fontWeight: 700, color: '#333' }}>Calorie AI</span>
         </Link>
         <h2>{t('auth.signin_title', 'Chào mừng trở lại')}</h2>

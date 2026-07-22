@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PageShell from '../../components/PageShell';
+import { useAuth } from '../../lib-client/AuthContext';
 import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
 import '../../styles/chat.css';
@@ -176,6 +177,7 @@ export default function ChatPage() {
   const voiceRecognitionRef = useRef(null);
   const msgIdRef = useRef(1);
 
+  const { logout } = useAuth();
   const showToast = useToast();
   const { t, lang } = useTranslation();
   const router = useRouter();
