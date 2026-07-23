@@ -5,13 +5,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import PageShell from '../../components/PageShell';
 import { useApi } from '../../lib-client/useApi';
 import { useToast } from '../../lib-client/ToastContext';
+import { useTranslation } from '../../lib-client/I18nContext';
 import '../../styles/menu-plan.css';
 
 const MEAL_TYPES = [
-  { key: 'breakfast', label: 'Sáng' },
-  { key: 'lunch', label: 'Trưa' },
-  { key: 'dinner', label: 'Tối' },
-  { key: 'snack', label: 'Phụ' },
+  { key: 'breakfast', tkey: 'mp.meal_breakfast', label: 'Sáng' },
+  { key: 'lunch', tkey: 'mp.meal_lunch', label: 'Trưa' },
+  { key: 'dinner', tkey: 'mp.meal_dinner', label: 'Tối' },
+  { key: 'snack', tkey: 'mp.meal_snack', label: 'Phụ' },
 ];
 
 export default function MenuPlanPage() {
@@ -34,6 +35,7 @@ function MenuPlanInner() {
 
   const { get, post } = useApi();
   const showToast = useToast();
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -84,10 +86,10 @@ function MenuPlanInner() {
   }, []);
 
   async function regenerateWeek() {
-    if (!window.confirm('Làm lại toàn bộ thực đơn tuần này?')) return;
+    if (!window.confirm(t('mp.confirm_regen', 'Làm lại toàn bộ thực đơn tuần này?'))) return;
     try {
       await post('/api/family-menu', { action: 'regenerate_plan', plan_id: plan.id, scope: 'week' });
-      showToast('Đã tạo lại thực đơn tuần!', 'success');
+      showToast(t('mp.toast_regen', 'Đã tạo lại thực đơn tuần!'), 'success');
       await loadPlan(householdId);
     } catch (e) {
       showToast(e.message, 'error');
@@ -98,7 +100,7 @@ function MenuPlanInner() {
     if (!activeDish) return;
     try {
       await post('/api/family-menu', { action: 'swap_dish', plan_dish_id: activeDish.id });
-      showToast('Đã đổi món!', 'success');
+      showToast(t('mp.toast_swapped', 'Đã đổi món!'), 'success');
       setActiveDish(null);
       await loadPlan(householdId);
     } catch (e) {
@@ -125,7 +127,7 @@ function MenuPlanInner() {
   if (noHouseholdMsg) {
     return (
       <PageShell>
-        <div className="card"><p>Bạn cần tạo hồ sơ gia đình trước. <Link href="/household">Tạo ngay →</Link></p></div>
+        <div className="card"><p>{t('fm.need_household', 'Bạn cần tạo hồ sơ gia đình trước.')} <Link href="/household">{t('fm.create_now', 'Tạo ngay →')}</Link></p></div>
       </PageShell>
     );
   }
@@ -136,32 +138,32 @@ function MenuPlanInner() {
         <div className="schedule-hero-text">
           <div className="schedule-hero-icon"><i className="fa-solid fa-calendar-week" /></div>
           <div>
-            <h1>Thực đơn tuần của gia đình</h1>
-            <p>Được chọn từ thư viện chuẩn, tự động điều chỉnh theo dị ứng/bệnh lý từng người</p>
+            <h1>{t('mp.title', 'Thực đơn tuần của gia đình')}</h1>
+            <p>{t('mp.subtitle', 'Được chọn từ thư viện chuẩn, tự động điều chỉnh theo dị ứng/bệnh lý từng người')}</p>
           </div>
         </div>
       </div>
 
       {!plan ? (
-        <div className="card"><p>Gia đình chưa có thực đơn nào. <Link href="/menu-library">Chọn thực đơn từ thư viện →</Link></p></div>
+        <div className="card"><p>{t('mp.no_plan', 'Gia đình chưa có thực đơn nào.')} <Link href="/menu-library">{t('mp.pick_from_lib', 'Chọn thực đơn từ thư viện →')}</Link></p></div>
       ) : (
         <div>
           <div className="plan-toolbar">
             <div className="tabs">
-              <button className={`tab-btn${tab === 'grid' ? ' active' : ''}`} onClick={() => switchTab('grid')}>Thực đơn</button>
-              <button className={`tab-btn${tab === 'shopping' ? ' active' : ''}`} onClick={() => switchTab('shopping')}>Danh sách mua sắm</button>
+              <button className={`tab-btn${tab === 'grid' ? ' active' : ''}`} onClick={() => switchTab('grid')}>{t('mp.tab_menu', 'Thực đơn')}</button>
+              <button className={`tab-btn${tab === 'shopping' ? ' active' : ''}`} onClick={() => switchTab('shopping')}>{t('mp.tab_shopping', 'Danh sách mua sắm')}</button>
             </div>
-            <button className="btn btn-secondary" onClick={regenerateWeek}><i className="fa-solid fa-rotate" /> Làm lại cả tuần</button>
+            <button className="btn btn-secondary" onClick={regenerateWeek}><i className="fa-solid fa-rotate" /> {t('mp.regen_week', 'Làm lại cả tuần')}</button>
           </div>
 
           {tab === 'grid' && (
             <div className="plan-grid">
               <div />
-              {[1, 2, 3, 4, 5, 6, 7].map((d) => <div className="plan-cell-head" key={d}>Ngày {d}</div>)}
+              {[1, 2, 3, 4, 5, 6, 7].map((d) => <div className="plan-cell-head" key={d}>{t('mp.day', 'Ngày')} {d}</div>)}
 
               {MEAL_TYPES.map((mt) => (
                 <Fragment key={mt.key}>
-                  <div className="plan-meal-label">{mt.label}</div>
+                  <div className="plan-meal-label">{t(mt.tkey, mt.label)}</div>
                   {[1, 2, 3, 4, 5, 6, 7].map((d) => {
                     const dishes = findMeal(findDay(d), mt.key)?.plan_dishes || [];
                     if (!dishes.length) return <div key={`${mt.key}-${d}`} />;
@@ -186,16 +188,16 @@ function MenuPlanInner() {
 
           {tab === 'shopping' && (
             <div className="card">
-              <h3><i className="fa-solid fa-cart-shopping" /> Danh sách nguyên liệu cần mua (cả tuần)</h3>
+              <h3><i className="fa-solid fa-cart-shopping" /> {t('mp.shopping_title', 'Danh sách nguyên liệu cần mua (cả tuần)')}</h3>
               {shoppingError ? (
                 <p style={{ color: 'var(--danger)' }}>{shoppingError}</p>
               ) : shoppingItems === null ? (
-                <p style={{ color: 'var(--text-sub)' }}>Đang tải...</p>
+                <p style={{ color: 'var(--text-sub)' }}>{t('common.loading', 'Đang tải...')}</p>
               ) : shoppingItems.length === 0 ? (
-                <p style={{ color: 'var(--text-sub)' }}>Chưa có nguyên liệu.</p>
+                <p style={{ color: 'var(--text-sub)' }}>{t('mp.no_ingredients', 'Chưa có nguyên liệu.')}</p>
               ) : (
                 <table>
-                  <thead><tr><th>Nguyên liệu</th><th>Số lượng</th></tr></thead>
+                  <thead><tr><th>{t('mp.ingredient', 'Nguyên liệu')}</th><th>{t('mp.quantity', 'Số lượng')}</th></tr></thead>
                   <tbody>
                     {shoppingItems.map((it, i) => <tr key={i}><td>{it.name}</td><td>{it.total_qty ?? ''} {it.unit || 'g'}</td></tr>)}
                   </tbody>
@@ -211,7 +213,7 @@ function MenuPlanInner() {
           <div className="dish-modal card">
             <h3>{activeDish.name}</h3>
             <p style={{ color: 'var(--text-sub)' }}>
-              {Math.round(activeDish.calories || 0)} kcal · Đạm {activeDish.protein || 0}g · Béo {activeDish.fat || 0}g · Tinh bột {activeDish.carbs || 0}g{activeDish.grams ? ` · ${activeDish.grams}g` : ''}
+              {Math.round(activeDish.calories || 0)} kcal · {t('mp.protein', 'Đạm')} {activeDish.protein || 0}g · {t('mp.fat', 'Béo')} {activeDish.fat || 0}g · {t('mp.carbs', 'Tinh bột')} {activeDish.carbs || 0}g{activeDish.grams ? ` · ${activeDish.grams}g` : ''}
             </p>
             <div>
               {(auditByDish.get(activeDish.id) || []).map((a, i) => (
@@ -219,8 +221,8 @@ function MenuPlanInner() {
               ))}
             </div>
             <div className="dish-modal-actions">
-              <button className="btn btn-secondary" onClick={() => setActiveDish(null)}>Đóng</button>
-              <button className="btn btn-primary" onClick={swapActiveDish}><i className="fa-solid fa-shuffle" /> Đổi món khác</button>
+              <button className="btn btn-secondary" onClick={() => setActiveDish(null)}>{t('common.close', 'Đóng')}</button>
+              <button className="btn btn-primary" onClick={swapActiveDish}><i className="fa-solid fa-shuffle" /> {t('mp.swap_dish', 'Đổi món khác')}</button>
             </div>
           </div>
         )}

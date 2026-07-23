@@ -7,7 +7,7 @@ const ITEMS = [
   { href: '/chat', icon: 'fa-comment', key: 'nav.ai', fallback: 'AI' },
   { href: '/diet-details', icon: 'fa-fire-flame-curved', key: 'nav.diet', fallback: 'DIET' },
   { href: '/schedule', icon: 'fa-calendar-days', key: 'nav.plan', fallback: 'PLAN' },
-  { href: '/household', icon: 'fa-people-roof', key: 'nav.family', fallback: 'GIA ĐÌNH' },
+  { href: '/household', icon: 'fa-kitchen-set', key: 'nav.kitchen', fallback: 'KITCHEN' },
   { href: '/setup', icon: 'fa-user', key: 'nav.profile', fallback: 'PROFILE' },
   { href: '/guide', icon: 'fa-circle-question', key: 'nav.guide', fallback: 'GUIDE' },
 ];

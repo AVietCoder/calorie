@@ -4,6 +4,7 @@
 // WebAudio 3-note alarm chime, floating bell + management panel + full-screen
 // alarm overlay, 20s tick loop while the tab is open.
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from '../lib-client/I18nContext';
 import '../styles/reminders.css';
 
@@ -182,7 +183,7 @@ export default function RemindersBell() {
         <i className="fa-regular fa-bell" /><span className="rem-dot" />
       </button>
 
-      {panelOpen && (
+      {panelOpen && typeof document !== 'undefined' && createPortal(
         <div className="rem-overlay open" onClick={(e) => { if (e.target === e.currentTarget) setPanelOpen(false); }}>
           <div className="rem-panel" role="dialog" aria-modal="true">
             <div className="rem-head">
@@ -232,10 +233,11 @@ export default function RemindersBell() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {alarm && (
+      {alarm && typeof document !== 'undefined' && createPortal(
         <div className={`rem-alarm-overlay open${alarm.type === 'med' ? ' med' : ''}`} onClick={(e) => { if (e.target === e.currentTarget) setAlarm(null); }}>
           <div className="rem-alarm-card" role="dialog" aria-modal="true">
             <button className="rem-alarm-x" aria-label="Close" onClick={() => setAlarm(null)}>&times;</button>
@@ -246,7 +248,8 @@ export default function RemindersBell() {
             <div className="rem-alarm-time">{alarm.time || ''}</div>
             <button className="rem-alarm-dismiss" onClick={() => setAlarm(null)}>{t('rem.alarm_dismiss', 'Đã hiểu')}</button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
