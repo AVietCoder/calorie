@@ -1,19 +1,21 @@
-body
+/* Chat = bố cục full-height 2 cột. TẤT CẢ được SCOPE dưới .app-shell--chat /
+   .content--chat để KHÔNG override .content/.main-wrapper/body TOÀN CỤC — chính
+   là nguyên nhân gốc khiến layout Household/Diet vỡ trên production khi CSS chat
+   đã nạp còn "dính" sang các trang khác (App Router giữ CSS qua điều hướng SPA).
+   Chat cần chiều cao cố định + cuộn nội bộ: đặt trên .app-shell--chat thay vì body. */
+.app-shell--chat
 {
-    height: 100vh;
+    height: 100dvh;
     overflow: hidden;
 }
 
-.main-wrapper
+.app-shell--chat .main-wrapper
 {
-    height: 100vh;
+    min-height: 0;
     overflow: hidden;
 }
 
-/* Chỉ thêm phần bố cục 2 cột riêng của trang chat.
-   padding / max-width / margin của .content dùng chung từ both.css
-   để Chat và Plan luôn thẳng hàng nhau (không override lại ở đây). */
-.content
+.content--chat
 {
     display: grid;
     grid-template-columns: 1.6fr 1fr;
@@ -588,17 +590,17 @@ body
 
 @media (max-width: 1024px)
 {
-    body
-    {
-        height: auto;
-        overflow: auto;
-    }
-    .main-wrapper
+    .app-shell--chat
     {
         height: auto;
         overflow: visible;
     }
-    .content
+    .app-shell--chat .main-wrapper
+    {
+        min-height: 0;
+        overflow: visible;
+    }
+    .content--chat
     {
         grid-template-columns: 1fr;
         height: auto;
@@ -617,7 +619,7 @@ body
 @media (max-width: 720px)
 {
     /* padding lấy theo both.css (20px 16px + chừa 90px cho bottom-nav) */
-    .content
+    .content--chat
     {
         gap: 16px;
     }

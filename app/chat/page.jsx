@@ -551,7 +551,7 @@ export default function ChatPage() {
   }, []);
 
   return (
-    <PageShell>
+    <PageShell variant="chat">
       <section className="chat-section">
         <div className="chat-window" id="chat-window" ref={chatWindowRef}>
           {messages.map((m) => {

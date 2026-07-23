@@ -1,4 +1,6 @@
-.content
+/* Scope dưới .content--setup (không override .content toàn cục — tránh rò rỉ
+   flex layout sang các trang khác qua điều hướng SPA). */
+.content--setup
 {
     display: flex;
     align-items: flex-start;
@@ -181,7 +183,7 @@ textarea
     margin-top: 28px;
 }
 
-.btn
+.content--setup .btn
 {
     display: inline-flex;
     align-items: center;
@@ -222,7 +224,7 @@ textarea
     box-shadow: 0 12px 26px -10px rgba(125,155,118,0.7);
 }
 
-.btn:disabled
+.content--setup .btn:disabled
 {
     opacity: .6;
     cursor: not-allowed;

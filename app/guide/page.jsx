@@ -83,7 +83,7 @@ export default function GuidePage() {
           </div>
         </header>
 
-        <main className="content">
+        <main className="content content--guide">
           <div className="guide-shell">
             <nav className="toc">
               <h4>{t('guide.toc_title', 'Mục lục')}</h4>

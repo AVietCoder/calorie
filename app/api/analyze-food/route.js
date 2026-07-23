@@ -3,7 +3,7 @@ import { supabase } from "../../../lib/supabase.js";
 import { analyzeFoodImage } from "../../../lib/vision.js";
 // Validation cuối trước khi trả kết quả: chặn số âm + đối chiếu công thức
 // Atwater (kcal ~ 4P + 4C + 9F, sai số 15%) -> tự hiệu chỉnh kcal nếu lệch.
-import { validateAndFixNutrition } from "../../../lib/nutrition.js";
+import { validateAndFixNutrition, caloriesRange } from "../../../lib/nutrition.js";
 // RAG: đối chiếu dinh dưỡng với Knowledge Base (PDF calo chuẩn admin upload) để
 // ưu tiên số liệu chính xác, chống hallucination của vision (graceful, không chặn).
 import { nutritionFromKnowledgeBase } from "../../../lib/rag/kb-answer.js";
@@ -284,8 +284,14 @@ Nếu KHÔNG phải món ăn: <data>{"calories":0,"protein":"0g","fat":"0g","car
       // items[]: danh sách phần tử + số lượng model đếm được (tổng đã được
       // vision.js tự nhân bằng code — quantity × calories_per_unit).
       items: Array.isArray(obj.items) ? obj.items : undefined,
+      // ── Field MỚI (backward-compatible) — bằng chứng / candidate / checklist ──
+      evidence: Array.isArray(obj.evidence) ? obj.evidence : undefined,
+      alternative_candidates: Array.isArray(obj.alternative_candidates) ? obj.alternative_candidates : undefined,
+      meal_completeness_check: obj.meal_completeness_check || undefined,
+      uncertainty_note: obj.uncertainty_note || undefined,
       source: "ai",
     };
+    const _visionCalories = food.calories; // calo TRƯỚC postprocessing (DB/KB/Atwater) — cho debug
 
     // Back-fill macro thiếu NGAY sau vision: nếu để trống thì các bước sau
     // (DB lookup / Atwater) coi = 0 và hạ nhầm calories (80 -> 44 như hình 2).
@@ -401,6 +407,20 @@ Nếu KHÔNG phải món ăn: <data>{"calories":0,"protein":"0g","fat":"0g","car
     delete food._dbConfidence;
     if (fixed.corrected) {
       console.log(`[analyze-food] Atwater hiệu chỉnh kcal -> ${food.calories}`);
+    }
+
+    // ── Yêu cầu #3: KHOẢNG calo (min-max) từ calo cuối + độ tin cậy ──────────
+    // Additive — GIỮ NGUYÊN food.calories (mobile/web cũ vẫn đọc số điểm này).
+    const _range = caloriesRange(food.calories, food.confidence);
+    food.calories_min = _range.min;
+    food.calories_max = _range.max;
+    if (!food.uncertainty_note) {
+      food.uncertainty_note = lang === "en"
+        ? "Range reflects unknown exact portion and hidden oil/sauce."
+        : "Khoảng calo do khẩu phần và lượng dầu/mỡ, nước sốt chưa xác định chính xác từ ảnh.";
+    }
+    if (process.env.NODE_ENV !== "production" || process.env.VISION_DEBUG === "1") {
+      console.log(`[analyze-food:debug] calo trước=${_visionCalories} → sau(${food.source})=${food.calories} | range=[${food.calories_min}-${food.calories_max}] | items=${Array.isArray(food.items) ? food.items.length : 0} | conf=${food.confidence}`);
     }
 
     // D: lưu ảnh vào nhật ký (fire-and-forget — không chặn/không làm chậm response)

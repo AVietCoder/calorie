@@ -189,7 +189,7 @@ function SetupInner() {
 
   if (loading) {
     return (
-      <PageShell>
+      <PageShell variant="setup">
         <div className="setup-card" style={{ minHeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="typing-indicator"><div className="typing-dot" /><div className="typing-dot" /><div className="typing-dot" /></div>
         </div>
@@ -200,7 +200,7 @@ function SetupInner() {
   const isLastStep = step === STEP_IDS.length - 1;
 
   return (
-    <PageShell>
+    <PageShell variant="setup">
       <div className="setup-card">
         {showExtendBanner && (
           <div style={{ background: 'var(--sage-50)', padding: 16, borderRadius: 16, marginBottom: 20, borderLeft: '4px solid var(--primary)' }}>

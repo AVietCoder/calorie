@@ -1,5 +1,7 @@
 
-.content
+/* Scope padding riêng của Guide dưới .content--guide (không override .content
+   toàn cục — tránh rò rỉ padding sang trang khác qua điều hướng SPA). */
+.content--guide
 {
     padding: 28px 40px 60px;
 }
@@ -472,7 +474,7 @@ section.guide-section li
         grid-template-columns: 220px 1fr;
         gap: 20px;
     }
-    .content
+    .content--guide
     {
         padding: 24px 24px 50px;
     }

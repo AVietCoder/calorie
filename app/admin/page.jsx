@@ -161,7 +161,7 @@ export default function AdminPage() {
 
   if (phase === 'loading') {
     return (
-      <PageShell>
+      <PageShell variant="admin">
         <div className="admin-page-loader" style={{ position: 'relative' }}>
           <div className="admin-loader-inner">
             <div className="admin-loader-spinner" />
@@ -174,7 +174,7 @@ export default function AdminPage() {
 
   if (phase === 'denied') {
     return (
-      <PageShell>
+      <PageShell variant="admin">
         <div className="admin-denied">
           <i className="fa-solid fa-lock" />
           <h2>{t('adm.denied_title', 'Khu vực quản trị')}</h2>
@@ -188,7 +188,7 @@ export default function AdminPage() {
   const store = statusData?.store || {};
 
   return (
-    <PageShell>
+    <PageShell variant="admin">
       <div className="admin-head">
         <div>
           <h1><i className="fa-solid fa-book-medical" /> {t('adm.title', 'Knowledge Base cho AI')}</h1>
