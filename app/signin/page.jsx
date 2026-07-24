@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../lib-client/AuthContext';
@@ -12,6 +12,7 @@ export default function SignInPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const submitting = useRef(false);
   const { login } = useAuth();
   const showToast = useToast();
   const { t } = useTranslation();
@@ -19,6 +20,10 @@ export default function SignInPage() {
 
   async function onSubmit(e) {
     e.preventDefault();
+    // Chống double-submit: ref đồng bộ nên chặn được cả click nhanh 2 lần / giữ Enter
+    // trong cùng 1 nhịp render (disabled theo state không kịp chặn).
+    if (submitting.current) return;
+    submitting.current = true;
     setLoading(true);
     try {
       const response = await fetch('/api/auth', {
@@ -31,14 +36,17 @@ export default function SignInPage() {
       if (response.ok) {
         showToast('Đăng nhập thành công!', 'success');
         login(result);
+        // Thành công → GIỮ khoá tới lúc chuyển trang (không nhả submitting/loading)
         setTimeout(() => router.push('/guide'), 800);
       } else {
         showToast(result.error, 'error');
         setLoading(false);
+        submitting.current = false;
       }
     } catch {
       showToast('Lỗi kết nối hệ thống.', 'error');
       setLoading(false);
+      submitting.current = false;
     }
   }
 

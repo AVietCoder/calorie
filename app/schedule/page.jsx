@@ -2,6 +2,7 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PageShell from '../../components/PageShell';
+import ActionButton from '../../components/ActionButton';
 import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
 import {
@@ -154,9 +155,9 @@ function MealDetailModal({ item, pendingFood, onClose, onAction, t, localizeFood
             )}
             {showSaveFooter && (
               <div className="save-plan-footer" style={{ display: 'block' }}>
-                <button className="btn-save-all" onClick={() => onAction('save-and-close')}>
+                <ActionButton className="btn-save-all" onClick={() => onAction('save-and-close')} loadingText={t('common.saving', 'Đang lưu...')}>
                   <i className="fa-solid fa-floppy-disk" /> <span>{t('common.save', 'Lưu thay đổi')}</span>
-                </button>
+                </ActionButton>
               </div>
             )}
           </div>
@@ -570,7 +571,7 @@ export default function SchedulePage() {
           item={modalItem}
           pendingFood={modifiedMap.get(`${modalItem.day}-${modalItem.meal}`)?.food}
           onClose={closeModal}
-          onAction={(kind, altFood) => { handleModalAction(kind, altFood); if (kind === 'save-and-close') submitPlanChanges(); }}
+          onAction={(kind, altFood) => { handleModalAction(kind, altFood); if (kind === 'save-and-close') return submitPlanChanges(); }}
           t={t}
           localizeFood={localizeFood}
           router={router}
@@ -708,9 +709,9 @@ export default function SchedulePage() {
                 <div className="extra-field"><label>Carbs (g)</label><input type="number" min="0" value={extraForm.c} onChange={(e) => setExtraForm((f) => ({ ...f, c: e.target.value }))} /></div>
               </div>
               <div className="extra-actions">
-                <button type="button" className="btn-extra-ai" disabled={aiEstimating} onClick={estimateExtraFoodAI}>
-                  {aiEstimating ? <><i className="fa-solid fa-spinner fa-spin" /> {t('extra.estimating', 'AI đang ước tính...')}</> : <><i className="fa-solid fa-wand-magic-sparkles" /> {t('extra.estimate', 'Tự động tính bằng AI')}</>}
-                </button>
+                <ActionButton type="button" className="btn-extra-ai" disabled={aiEstimating} onClick={estimateExtraFoodAI} loadingText={t('extra.estimating', 'AI đang ước tính...')}>
+                  <i className="fa-solid fa-wand-magic-sparkles" /> {t('extra.estimate', 'Tự động tính bằng AI')}
+                </ActionButton>
                 <button type="button" className="btn-extra-add" onClick={addExtra}><i className="fa-solid fa-check" /> {t('common.add', 'Thêm')}</button>
               </div>
             </div>

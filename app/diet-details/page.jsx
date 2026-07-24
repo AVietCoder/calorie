@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Chart } from 'chart.js/auto';
 import PageShell from '../../components/PageShell';
+import ActionButton from '../../components/ActionButton';
 import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
 import '../../styles/diet-details.css';
@@ -522,13 +523,14 @@ export default function DietDetailsPage() {
                   )}
                 </div>
               )}
-              <button
+              <ActionButton
                 disabled={healthChecking}
                 onClick={runHealthCheck}
+                loadingText={t('week.analyzing', 'AI đang phân tích...')}
                 style={{ marginTop: 14, width: '100%', border: 'none', borderRadius: 12, padding: 12, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', color: '#fff', background: 'var(--gradient-primary,linear-gradient(135deg,#58a677,#3d7353))', boxShadow: '0 6px 16px -6px rgba(88,166,119,.6)' }}
               >
-                {healthChecking ? <><i className="fa-solid fa-spinner fa-spin" /> {t('week.analyzing', 'AI đang phân tích...')}</> : <><i className="fa-solid fa-wand-magic-sparkles" /> {t('week.analyze', 'Phân tích bằng AI')}</>}
-              </button>
+                <i className="fa-solid fa-wand-magic-sparkles" /> {t('week.analyze', 'Phân tích bằng AI')}
+              </ActionButton>
             </div>
           </div>
         </div>

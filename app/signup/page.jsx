@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '../../lib-client/ToastContext';
@@ -10,6 +10,7 @@ import '../../styles/signup.css';
 export default function SignUpPage() {
   const [form, setForm] = useState({ username: '', password: '', birthYear: '', weight: '', height: '' });
   const [loading, setLoading] = useState(false);
+  const submitting = useRef(false);
   const showToast = useToast();
   const { t } = useTranslation();
   const router = useRouter();
@@ -18,6 +19,9 @@ export default function SignUpPage() {
 
   async function onSubmit(e) {
     e.preventDefault();
+    // Chống double-submit (click nhanh 2 lần / giữ Enter) — ref đồng bộ.
+    if (submitting.current) return;
+    submitting.current = true;
     setLoading(true);
     try {
       const response = await fetch('/api/auth', {
@@ -41,11 +45,13 @@ export default function SignUpPage() {
       } else {
         showToast('Lỗi đăng ký: ' + result.error, 'error');
         setLoading(false);
+        submitting.current = false;
       }
     } catch (err) {
       console.error('Lỗi kết nối:', err);
       showToast('Không thể kết nối tới máy chủ.', 'error');
       setLoading(false);
+      submitting.current = false;
     }
   }
 

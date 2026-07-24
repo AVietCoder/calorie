@@ -250,6 +250,8 @@ const buildDataTag = (n = {}) =>
     // Khẩu phần đã tính (vd "2 quả", "300ml") — client hiện tại bỏ qua field lạ
     // nên an toàn; giữ lại để hiển thị/ghi nhận đúng định lượng về sau.
     ...(n.amount ? { amount: n.amount } : {}),
+    // Độ tin cậy nhận diện → client dùng để hiển thị KHOẢNG dinh dưỡng (min-max).
+    ...(n.confidence ? { confidence: n.confidence } : {}),
   })}</data>`;
 
 // Quét lịch sử chat từ DƯỚI LÊN, lấy MÓN ĐÃ PHÂN TÍCH gần nhất (khối <data> ở tin
@@ -480,6 +482,9 @@ const FOOD_MENTION_RE = /\b(ăn|uống|món|tô|bát|đĩa|ly|cốc|miếng|ph�
 // Chỉ những câu THỰC SỰ muốn đổi thực đơn mới vào nhánh coach (nặng). Các câu kiểu
 // "lỡ ăn / vừa ăn" là GHI NHẬN món -> để nhánh analyze (nhanh) xử lý + hỏi lại bữa.
 const UPDATE_RE = /\b(đổi|sửa|thay|cập nhật|thứ [2-7]|chủ nhật|ngày mai|thực đơn|kế hoạch ăn)\b/i;
+// NGƯỜI DÙNG MUỐN TẠO LẠI TOÀN BỘ thực đơn tuần (không phải chỉnh 1 bữa). Yêu cầu
+// động từ tạo/làm/lên... + "lại|mới" gần với danh từ kế hoạch → tránh nhầm "đổi bữa trưa".
+const FULL_REGEN_RE = /\b(tạo|làm|lên|dựng|xây|lập)\b[^\n]{0,15}\b(lại|mới)\b[^\n]{0,15}\b(thực đơn|lịch ăn|kế hoạch|menu|lộ trình)\b|\b(tạo|làm|lên|dựng|xây|lập)\b[^\n]{0,15}\b(thực đơn|lịch ăn|kế hoạch|menu|lộ trình)\b[^\n]{0,10}\b(mới|lại)\b/i;
 const CASUAL_RE = /\b(thời tiết|bóng đá|phim|nhạc|code|lập trình|chính trị|kinh tế|đầu tư|crypto|game|trò chơi|học|thi|công việc|tình yêu|yêu|hẹn hò|du lịch|vui|buồn|chán|stress|mệt|ngủ)\b/i;
 
 const detectIntent = (message = "") => {
@@ -935,6 +940,14 @@ INTERNATIONAL DISHES:
 • Steak: thick beef slice with grain, usually sauce/vegetables.
 • If unsure, pick the most likely common name — NEVER invent.
 
+EVIDENCE-BASED RECOGNITION — DO NOT GUESS BY COLOR (MANDATORY):
+- Before naming a dish, observe SHAPE, TEXTURE/SURFACE, POSITION, CONTEXT — never conclude from color alone.
+- With ≥2 plausible options, state the key difference before choosing; weak evidence → pick the most common/safe name, never invent.
+- Use the CORRECT name (distinguish by SIZE + SPINE/SKIN + FLESH, not color):
+  • Red skin, SOFT hair-like spines, translucent WHITE flesh, small ~3-5cm = "Chôm chôm" (rambutan) — NOT mulberry ("dâu tằm"), NOT durian ("sầu riêng").
+  • Durian: VERY large, HARD sharp spikes, yellow segmented flesh. Lychee/longan: bumpy/smooth skin, NO spines.
+- Assign a "confidence" (high|medium|low) by evidence strength and put it in <data>.
+
 PORTION & INGREDIENTS (MANDATORY — analyze from image):
 - OBSERVE the actual QUANTITY and SIZE: count pieces/slices/rolls, estimate bowl/plate/glass size and fullness; encode in amount (e.g. "1 small piece", "2 slices", "half a bowl", "1 large bowl ~500ml").
 - calories and macros must match the VISIBLE portion — do NOT reuse a full-serving number when the image shows only a small piece (e.g. 1 sushi piece ~40-60 kcal, NOT 350-450 kcal for a whole set).
@@ -956,7 +969,8 @@ IF IT IS A FOOD — WRITE A NATURAL, FRIENDLY REPLY WITH THIS EXACT STRUCTURE (E
    - 2-4 bullet suggestions (what to pair with, what to reduce/swap/avoid) to make the dish fit your goal better.
 
 4) Data block (MANDATORY, at the END, VALID JSON on ONE line — broken JSON breaks the system):
-<data>{"calories":[CAL],"protein":"[PRO]g","fat":"[FAT]g","carbs":"[CARB]g","fiber":"[FIB]g","sugar":"[SUG]g","sodium":"[SOD]mg","description":"[DISH NAME]","amount":"[PORTION]","items":[{"name":"[NAME]","quantity":[N],"calories_per_unit":[KC],"protein_per_unit":[P1],"fat_per_unit":[F1],"carbs_per_unit":[C1]}]}</data>
+<data>{"calories":[CAL],"protein":"[PRO]g","fat":"[FAT]g","carbs":"[CARB]g","fiber":"[FIB]g","sugar":"[SUG]g","sodium":"[SOD]mg","description":"[DISH NAME]","amount":"[PORTION]","confidence":"[high|medium|low]","items":[{"name":"[NAME]","quantity":[N],"calories_per_unit":[KC],"protein_per_unit":[P1],"fat_per_unit":[F1],"carbs_per_unit":[C1]}]}</data>
+- "confidence": recognition certainty (high/medium/low) — the system uses it to show a nutrition RANGE (higher confidence → narrower range).
 - "amount": visible portion in the image, e.g. "3 pieces", "1 small piece", "1 serving". 3 cookies in the image → "3 pieces", NOT "1 serving".
 - "items": one entry per ITEM TYPE. quantity = integer count in the image; *_per_unit = plain numbers for ONE unit only. The system multiplies quantity × per_unit — do NOT pre-sum.
 - Counts in the prose ("with 3 cookies") must match items[].quantity.
@@ -983,10 +997,10 @@ A single roll piece is light and moderate in calories, so it fits a weight-manag
 - Skip or halve the soy sauce to lower sodium.
 - Pair with a side of edamame or miso soup to add protein and fiber.
 - Choose sashimi or brown-rice rolls for a leaner, higher-protein option.
-<data>{"calories":45,"protein":"1.2g","fat":"1g","carbs":"8g","fiber":"0.5g","sugar":"1g","sodium":"90mg","description":"California roll sushi","amount":"1 piece","items":[{"name":"california roll piece","quantity":1,"calories_per_unit":45,"protein_per_unit":1.2,"fat_per_unit":1,"carbs_per_unit":8}]}</data>
+<data>{"calories":45,"protein":"1.2g","fat":"1g","carbs":"8g","fiber":"0.5g","sugar":"1g","sodium":"90mg","description":"California roll sushi","amount":"1 piece","confidence":"high","items":[{"name":"california roll piece","quantity":1,"calories_per_unit":45,"protein_per_unit":1.2,"fat_per_unit":1,"carbs_per_unit":8}]}</data>
 
 EXAMPLE 2 — image with MULTIPLE identical items (count 3, per-unit values, do NOT pre-sum):
-<data>{"calories":540,"protein":"12g","fat":"30g","carbs":"60g","fiber":"3g","sugar":"30g","sodium":"300mg","description":"Chocolate chip cookie","amount":"3 pieces","items":[{"name":"chocolate chip cookie","quantity":3,"calories_per_unit":180,"protein_per_unit":4,"fat_per_unit":10,"carbs_per_unit":20}]}</data>
+<data>{"calories":540,"protein":"12g","fat":"30g","carbs":"60g","fiber":"3g","sugar":"30g","sodium":"300mg","description":"Chocolate chip cookie","amount":"3 pieces","confidence":"medium","items":[{"name":"chocolate chip cookie","quantity":3,"calories_per_unit":180,"protein_per_unit":4,"fat_per_unit":10,"carbs_per_unit":20}]}</data>
 
 /no_think`;
   }
@@ -1053,6 +1067,14 @@ MÓN QUỐC TẾ:
 • Steak: thịt bò cắt lát dày, có vân, thường kèm sốt/rau củ.
 • Không chắc → chọn tên món phổ biến nhất phù hợp, KHÔNG bịa.
 
+NHẬN DIỆN DỰA TRÊN BẰNG CHỨNG — KHÔNG ĐOÁN THEO MÀU (BẮT BUỘC):
+- Trước khi kết luận tên món, quan sát HÌNH DẠNG, KẾT CẤU/BỀ MẶT, VỊ TRÍ, NGỮ CẢNH — TUYỆT ĐỐI KHÔNG kết luận chỉ vì màu sắc.
+- Khi có ≥2 khả năng, nêu điểm khác biệt then chốt rồi mới chọn; bằng chứng yếu → chọn tên PHỔ BIẾN & AN TOÀN nhất, KHÔNG bịa.
+- DÙNG ĐÚNG TÊN TIẾNG VIỆT (lỗi rất hay gặp — phân biệt theo KÍCH THƯỚC + LOẠI GAI/VỎ + RUỘT, KHÔNG theo màu):
+  • Quả vỏ ĐỎ, GAI MỀM như sợi tóc, ruột TRẮNG TRONG, quả nhỏ ~3-5cm = "Chôm chôm" — KHÔNG phải "dâu tằm", KHÔNG phải "sầu riêng".
+  • Sầu riêng: quả RẤT TO, gai CỨNG nhọn, ruột múi VÀNG. Vải/nhãn: vỏ sần/nhẵn, KHÔNG gai, ruột trắng.
+- Gán độ tin cậy "confidence" (high|medium|low) theo độ mạnh bằng chứng và điền vào <data>.
+
 ƯỚC LƯỢNG KHẨU PHẦN & THÀNH PHẦN (BẮT BUỘC — PHÂN TÍCH THEO ẢNH):
 - QUAN SÁT kỹ SỐ LƯỢNG và KÍCH THƯỚC THỰC TẾ trong ảnh: đếm số miếng/cái/lát/viên, ước lượng cỡ bát/tô/đĩa/ly và độ đầy; ghi vào amount (vd "1 miếng nhỏ", "2 lát", "nửa bát", "1 tô lớn ~500ml").
 - calories và macro phải TÍNH THEO ĐÚNG KHẨU PHẦN NHÌN THẤY, KHÔNG dùng số liệu suất chuẩn khi ảnh chỉ có một phần nhỏ (vd 1 miếng sushi lẻ ~40-60 kcal, KHÔNG phải 350-450 kcal của cả phần).
@@ -1075,7 +1097,8 @@ NẾU LÀ MÓN ĂN — VIẾT REPLY TỰ NHIÊN, THÂN THIỆN, ĐÚNG CẤU TR�
    - 2-4 gạch đầu dòng gợi ý thực tế (ăn kèm gì, giảm/thay/tránh gì) để món phù hợp hơn với mục tiêu.
 
 4) Khối dữ liệu (BẮT BUỘC, đặt CUỐI CÙNG, JSON HỢP LỆ trên MỘT dòng — sai JSON là hỏng cả hệ thống):
-<data>{"calories":[CAL],"protein":"[PRO]g","fat":"[FAT]g","carbs":"[CARB]g","fiber":"[FIB]g","sugar":"[SUG]g","sodium":"[SOD]mg","description":"[TÊN MÓN]","amount":"[KHẨU PHẦN]","items":[{"name":"[TÊN]","quantity":[N],"calories_per_unit":[KC],"protein_per_unit":[P1],"fat_per_unit":[F1],"carbs_per_unit":[C1]}]}</data>
+<data>{"calories":[CAL],"protein":"[PRO]g","fat":"[FAT]g","carbs":"[CARB]g","fiber":"[FIB]g","sugar":"[SUG]g","sodium":"[SOD]mg","description":"[TÊN MÓN]","amount":"[KHẨU PHẦN]","confidence":"[high|medium|low]","items":[{"name":"[TÊN]","quantity":[N],"calories_per_unit":[KC],"protein_per_unit":[P1],"fat_per_unit":[F1],"carbs_per_unit":[C1]}]}</data>
+- "confidence": độ chắc chắn khi nhận diện món (high/medium/low) — hệ thống dùng để hiển thị KHOẢNG dinh dưỡng (tin cao → khoảng hẹp).
 - "amount": khẩu phần NHÌN THẤY trong ảnh, vd "3 cái", "1 miếng nhỏ", "1 phần". Ảnh có 3 cái bánh → "3 cái", KHÔNG ghi "1 phần".
 - "items": mỗi LOẠI phần tử một mục. quantity = SỐ NGUYÊN đếm được trong ảnh; các *_per_unit = CHỈ LÀ SỐ (không kèm chữ), là dinh dưỡng của ĐÚNG 1 đơn vị. Hệ thống tự nhân quantity × per_unit — bạn KHÔNG tự cộng tổng, chỉ cần ĐẾM ĐÚNG.
 - Số lượng trong phần CHỮ (vd "gồm 3 chiếc bánh") phải KHỚP quantity trong items.
@@ -1102,10 +1125,10 @@ Món này khá nhiều năng lượng và chất béo bão hoà từ sườn nư
 - Giảm bớt lượng cơm để hạ carbs và năng lượng.
 - Ưu tiên phần thịt nạc, hạn chế bì và phần mỡ.
 - Ăn kèm thêm rau xanh để tăng chất xơ và no lâu hơn.
-<data>{"calories":650,"protein":"35g","fat":"24g","carbs":"70g","fiber":"4g","sugar":"6g","sodium":"1200mg","description":"Cơm tấm sườn bì chả","amount":"1 phần","items":[{"name":"cơm tấm sườn bì chả","quantity":1,"calories_per_unit":650,"protein_per_unit":35,"fat_per_unit":24,"carbs_per_unit":70}]}</data>
+<data>{"calories":650,"protein":"35g","fat":"24g","carbs":"70g","fiber":"4g","sugar":"6g","sodium":"1200mg","description":"Cơm tấm sườn bì chả","amount":"1 phần","confidence":"high","items":[{"name":"cơm tấm sườn bì chả","quantity":1,"calories_per_unit":650,"protein_per_unit":35,"fat_per_unit":24,"carbs_per_unit":70}]}</data>
 
 VÍ DỤ 2 — ảnh có NHIỀU cái giống nhau (đếm 3 cái, số liệu cho 1 cái, KHÔNG tự cộng):
-<data>{"calories":540,"protein":"12g","fat":"30g","carbs":"60g","fiber":"3g","sugar":"30g","sodium":"300mg","description":"Bánh quy chocolate chip","amount":"3 cái","items":[{"name":"bánh quy chocolate chip","quantity":3,"calories_per_unit":180,"protein_per_unit":4,"fat_per_unit":10,"carbs_per_unit":20}]}</data>
+<data>{"calories":540,"protein":"12g","fat":"30g","carbs":"60g","fiber":"3g","sugar":"30g","sodium":"300mg","description":"Bánh quy chocolate chip","amount":"3 cái","confidence":"medium","items":[{"name":"bánh quy chocolate chip","quantity":3,"calories_per_unit":180,"protein_per_unit":4,"fat_per_unit":10,"carbs_per_unit":20}]}</data>
 
 /no_think`;
 };
@@ -1737,6 +1760,42 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
         : detectIntent(finalMessage);
 
     console.log(`[chat] intent=${intent} queryOnly=${effectiveIsQueryOnly} msg="${finalMessage.slice(0, 60)}"`);
+
+    // ── NGƯỜI DÙNG NHẮN "TẠO LẠI THỰC ĐƠN" → tái tạo TOÀN BỘ tuần ──────────────
+    // Không cần nút: chỉ cần nhắn. Dùng CHUNG bộ tạo ROBUST của /api/coach-dynamic
+    // (force_regenerate) — đã có completeness-guard + đủ 4 bữa/ngày kể cả bữa Phụ —
+    // để KHÔNG nhân đôi logic tạo thực đơn.
+    if (!isMealFollowup && !effectiveIsQueryOnly && !isDeadlinePassed && FULL_REGEN_RE.test(finalMessage)) {
+      try {
+        const origin = new URL(request.url).origin;
+        const rr = await fetch(`${origin}/api/coach-dynamic`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ force_regenerate: true }),
+        });
+        const dd = await rr.json().catch(() => ({}));
+        if (rr.ok && dd.success && Array.isArray(dd.newPlan) && dd.newPlan.length) {
+          const reply = isEn
+            ? "Done! I regenerated your full 7-day plan — 4 meals a day including a snack. Open the **Plan** tab to see it. 🍽️"
+            : "Đã xong! Mình vừa **tạo lại thực đơn 7 ngày** đầy đủ — 4 bữa mỗi ngày, có cả **bữa Phụ**. Bạn mở tab **Lịch (PLAN)** để xem nhé! 🍽️";
+          const regenHistory = truncateHistory([
+            ...history,
+            { role: "user", content: finalMessage },
+            { role: "assistant", content: reply },
+          ], 20);
+          await supabase.from("profiles").update({ chat_history: regenHistory }).eq("id", user.id);
+          logUsage({ userId: user.id, kind: "chat_regen_plan", durationMs: Date.now() - _t0 });
+          return res.status(200).json({
+            success: true, reply, action: "update_plan", needsClarification: false,
+            clarifyQuestion: "", newPlan: dd.newPlan, username: profile.username, isDeadlinePassed,
+          });
+        }
+        console.warn(`[chat] full-regen: coach-dynamic không trả plan hợp lệ (HTTP ${rr.status})`);
+      } catch (e) {
+        console.warn("[chat] full-regen internal call lỗi:", e.message);
+      }
+      // Lỗi → rơi xuống luồng coach thường bên dưới (vẫn cố gắng cập nhật)
+    }
 
     // FAST PATH: Với câu hỏi phân tích món/định lượng rõ ràng, resolveNutrition đã cho số
     // deterministic (log: [nutrition] scale ...). Không cần gọi LLM chỉ để viết 1 câu,

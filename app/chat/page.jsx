@@ -10,7 +10,27 @@ import '../../styles/chat.css';
 const DEFAULT_ANALYZE_TEXTS = ['Phân tích hình ảnh này', 'Analyze this image'];
 const isDefaultAnalyzeText = (s) => DEFAULT_ANALYZE_TEXTS.includes(String(s || '').trim());
 const DEFAULT_FOOD_IMG = 'https://i.pinimg.com/736x/9d/51/c3/9d51c32cccb77dcf89cc2fb11aa20a17.jpg';
-const DEFAULT_SIDEBAR = { calories: 0, description: '', protein: '--', fat: '--', carbs: '--', fiber: '--', sugar: '--', sodium: '--' };
+const DEFAULT_SIDEBAR = { calories: 0, description: '', protein: '--', fat: '--', carbs: '--', fiber: '--', sugar: '--', sodium: '--', confidence: 'medium' };
+
+// Hiển thị MỌI chỉ số dinh dưỡng dạng KHOẢNG (min - max) từ 1 giá trị điểm + độ
+// tin cậy. Bề rộng tỉ lệ NGHỊCH confidence (high hẹp ~±9%, medium ~±16%, low ~±25%).
+// Dùng chung cho kcal + protein/fat/carbs/fiber/sugar/sodium. Giữ nguyên "--"/rỗng.
+const RANGE_WIDTH = { high: 0.18, medium: 0.32, low: 0.5 };
+function metricRange(raw, confidence, calorie = false) {
+  const s = String(raw ?? '').trim();
+  const m = s.match(/-?\d+(?:\.\d+)?/);
+  if (!m) return calorie ? (s || '0') : (s || '--');
+  const val = parseFloat(m[0]);
+  if (!Number.isFinite(val) || val <= 0) return calorie ? String(Math.round(val || 0)) : s;
+  const unit = s.slice(m.index + m[0].length).trim(); // 'g' | 'mg' | ''
+  const half = (RANGE_WIDTH[confidence] ?? RANGE_WIDTH.medium) / 2;
+  const step = unit === 'mg' ? 10 : (calorie ? 5 : 1);
+  let lo = Math.floor((val * (1 - half)) / step) * step;
+  let hi = Math.ceil((val * (1 + half)) / step) * step;
+  if (lo < 0) lo = 0;
+  if (hi <= lo) hi = lo + step;
+  return `${lo} - ${hi}${unit}`;
+}
 
 function escapeHtml(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -174,6 +194,7 @@ export default function ChatPage() {
   const sessionPhotosRef = useRef([]);
   const lastNutritionDataRef = useRef(null);
   const flagRef = useRef(false);
+  const sendingRef = useRef(false); // khoá chống double-send (spam click / giữ Enter)
   const voiceRecognitionRef = useRef(null);
   const msgIdRef = useRef(1);
 
@@ -210,6 +231,7 @@ export default function ChatPage() {
       fiber: data.fiber || '--',
       sugar: data.sugar || '--',
       sodium: data.sodium || '--',
+      confidence: data.confidence || 'medium',
     });
   }
 
@@ -403,7 +425,19 @@ export default function ChatPage() {
 
   /* ── Send message ──────────────────────────────────────────────── */
   async function sendMessage() {
+    // Ref đồng bộ: chặn double-click / Enter giữ liên tục ngay trong cùng 1 nhịp
+    // render (state isAnalyzing cập nhật bất đồng bộ nên không kịp chặn).
+    if (sendingRef.current) return;
     if (isAnalyzing || isLoadingHistory) return;
+    sendingRef.current = true;
+    try {
+      await doSendMessage();
+    } finally {
+      sendingRef.current = false;
+    }
+  }
+
+  async function doSendMessage() {
     const token = window.localStorage.getItem('calorie_ai_token');
     if (!token) {
       showToast(t('common.please_login', 'Vui lòng đăng nhập!'), 'info');
@@ -631,18 +665,18 @@ export default function ChatPage() {
 
           <div className="calories-box">
             <div className="title"><i className="fa-solid fa-utensils" /> <span>{t('chat.total_energy', 'Tổng năng lượng')}</span></div>
-            <div className="value">{sidebar.calories} <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-sub)' }}>{t('common.kcal', 'kcal')}</span></div>
+            <div className="value">{metricRange(sidebar.calories, sidebar.confidence, true)} <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-sub)' }}>{t('common.kcal', 'kcal')}</span></div>
           </div>
 
           <div className="desc-text">{sidebar.description || t('chat.info_update', 'Thông tin sẽ cập nhật sau khi phân tích.')}</div>
 
           <div className="stats-grid-mini">
-            <div className="stat-item-mini"><span>{t('chat.protein', 'Protein')}</span><b>{sidebar.protein}</b></div>
-            <div className="stat-item-mini"><span>{t('chat.fat', 'Chất béo')}</span><b>{sidebar.fat}</b></div>
-            <div className="stat-item-mini"><span>{t('chat.carbs', 'Carbs')}</span><b>{sidebar.carbs}</b></div>
-            <div className="stat-item-mini"><span>{t('chat.fiber', 'Chất xơ')}</span><b>{sidebar.fiber}</b></div>
-            <div className="stat-item-mini"><span>{t('chat.sugar', 'Đường')}</span><b>{sidebar.sugar}</b></div>
-            <div className="stat-item-mini"><span>{t('chat.sodium', 'Natri')}</span><b>{sidebar.sodium}</b></div>
+            <div className="stat-item-mini"><span>{t('chat.protein', 'Protein')}</span><b>{metricRange(sidebar.protein, sidebar.confidence)}</b></div>
+            <div className="stat-item-mini"><span>{t('chat.fat', 'Chất béo')}</span><b>{metricRange(sidebar.fat, sidebar.confidence)}</b></div>
+            <div className="stat-item-mini"><span>{t('chat.carbs', 'Carbs')}</span><b>{metricRange(sidebar.carbs, sidebar.confidence)}</b></div>
+            <div className="stat-item-mini"><span>{t('chat.fiber', 'Chất xơ')}</span><b>{metricRange(sidebar.fiber, sidebar.confidence)}</b></div>
+            <div className="stat-item-mini"><span>{t('chat.sugar', 'Đường')}</span><b>{metricRange(sidebar.sugar, sidebar.confidence)}</b></div>
+            <div className="stat-item-mini"><span>{t('chat.sodium', 'Natri')}</span><b>{metricRange(sidebar.sodium, sidebar.confidence)}</b></div>
           </div>
         </div>
       </aside>

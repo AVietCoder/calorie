@@ -1,5 +1,5 @@
 'use client';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import PageShell from '../../components/PageShell';
 import { useApi } from '../../lib-client/useApi';
@@ -49,6 +49,7 @@ function SetupInner() {
   const [selectedGoals, setSelectedGoals] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
   const [showExtendBanner, setShowExtendBanner] = useState(false);
 
   const { get, post } = useApi();
@@ -171,6 +172,10 @@ function SetupInner() {
   }
 
   async function submitForm() {
+    // Chống double-submit: ref đồng bộ chặn cả 2 click liên tiếp trong 1 nhịp render.
+    // Thành công → GIỮ khoá tới lúc chuyển trang; lỗi mới nhả để user thử lại.
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setSubmitting(true);
     try {
       const payload = {
@@ -184,6 +189,7 @@ function SetupInner() {
     } catch (error) {
       showToast('Có lỗi xảy ra: ' + error.message, 'error');
       setSubmitting(false);
+      submittingRef.current = false;
     }
   }
 

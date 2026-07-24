@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import PageShell from '../../components/PageShell';
+import ActionButton from '../../components/ActionButton';
 import { useApi } from '../../lib-client/useApi';
 import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
@@ -129,9 +130,9 @@ export default function MenuLibraryPage() {
                   <span className="tpl-score">{t('ml.score', 'Độ phù hợp')}: {r.score}</span>
                   <h4>{r.template.title}</h4>
                   <div className="tpl-tags">{(r.template.tags || []).map((tg, i) => <span className="tpl-tag" key={i}>{tg}</span>)}</div>
-                  <button className="btn btn-primary" onClick={() => generatePlanFromTemplate(r.template.id)}>
+                  <ActionButton className="btn btn-primary" onClick={() => generatePlanFromTemplate(r.template.id)} loadingText={t('common.creating', 'Đang tạo...')}>
                     <i className="fa-solid fa-wand-magic-sparkles" /> {t('ml.generate', 'Tạo thực đơn cho gia đình')}
-                  </button>
+                  </ActionButton>
                 </div>
               ))
             )}
@@ -155,7 +156,7 @@ export default function MenuLibraryPage() {
             </div>
             <div className="upload-row">
               <label>{t('ml.f_excel', 'File Excel (.xlsx)')} <input ref={fileInputRef} type="file" accept=".xlsx,.xls" /></label>
-              <button className="btn btn-primary" style={{ alignSelf: 'flex-end' }} onClick={uploadTemplate}><i className="fa-solid fa-upload" /> {t('ml.upload_btn', 'Tải lên')}</button>
+              <ActionButton className="btn btn-primary" style={{ alignSelf: 'flex-end' }} onClick={uploadTemplate} loadingText={t('common.uploading', 'Đang tải lên...')}><i className="fa-solid fa-upload" /> {t('ml.upload_btn', 'Tải lên')}</ActionButton>
             </div>
             <p style={{ color: 'var(--text-sub)', fontSize: 13, marginTop: 8 }}>
               {t('ml.excel_cols', 'Cột Excel')}: day_index, meal_type, dish_name, base_grams, calories, protein, fat, carbs, fiber, sugar, sodium, dish_tags, ingredient_name, ingredient_grams, ingredient_unit, ingredient_tags

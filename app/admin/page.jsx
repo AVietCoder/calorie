@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PageShell from '../../components/PageShell';
+import ActionButton from '../../components/ActionButton';
 import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
 import '../../styles/admin.css';
@@ -226,7 +227,7 @@ export default function AdminPage() {
             {files.length > 3 && <span>{tn('adm.selected_count', { n: files.length }, `Đã chọn ${files.length} file`)}</span>}
           </label>
 
-          <button className="btn-primary" disabled={uploading} onClick={doUpload}><i className="fa-solid fa-upload" /> {t('adm.upload_btn', 'Tải lên & xử lý')}</button>
+          <ActionButton className="btn-primary" disabled={uploading} onClick={doUpload} loadingText={t('common.processing', 'Đang xử lý...')}><i className="fa-solid fa-upload" /> {t('adm.upload_btn', 'Tải lên & xử lý')}</ActionButton>
           {uploading && (
             <div className="progress" style={{ display: 'flex' }}>
               <div className="spinner" />
@@ -240,7 +241,7 @@ export default function AdminPage() {
           <div className="card-head-row">
             <h2><i className="fa-solid fa-folder-open" /> {t('adm.docs_title', 'Tài liệu đã tải lên')}</h2>
             <div className="card-actions">
-              <button className="btn-ghost" onClick={() => loadPdfs(window.localStorage.getItem('calorie_ai_token'))}><i className="fa-solid fa-rotate" /> {t('adm.refresh', 'Làm mới')}</button>
+              <ActionButton className="btn-ghost" onClick={() => loadPdfs(window.localStorage.getItem('calorie_ai_token'))}><i className="fa-solid fa-rotate" /> {t('adm.refresh', 'Làm mới')}</ActionButton>
             </div>
           </div>
 
@@ -280,7 +281,7 @@ export default function AdminPage() {
                               </a>
                             ) : <span className="cross" title={t('adm.no_file', 'Chưa có file gốc để tải')}>—</span>}
                           </td>
-                          <td><button className="icon-btn" title={t('common.delete', 'Xóa')} onClick={() => deletePdf(p.id)}><i className="fa-solid fa-trash" /></button></td>
+                          <td><ActionButton className="icon-btn" title={t('common.delete', 'Xóa')} onClick={() => deletePdf(p.id)}><i className="fa-solid fa-trash" /></ActionButton></td>
                         </tr>
                       );
                     })

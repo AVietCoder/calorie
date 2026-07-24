@@ -428,18 +428,20 @@ HỒ SƠ NGƯỜI DÙNG
 
 const PLAN_FORMAT_SPEC = `
 ĐỊNH DẠNG TRẢ VỀ (BẮT BUỘC):
-JSON object có key "plan" là MẢNG ${TOTAL_DAYS} NGÀY. Mỗi ngày 4 bữa: ${MEALS_PER_DAY.join(", ")}.
+JSON object có key "plan" là MẢNG ${TOTAL_DAYS} NGÀY. Mỗi ngày BẮT BUỘC ĐỦ 4 BỮA theo ĐÚNG thứ tự: ${MEALS_PER_DAY.join(", ")}.
+⚠️ TUYỆT ĐỐI KHÔNG bỏ bữa "Phụ": bữa phụ là bữa nhẹ giữa các bữa chính (vd: sữa chua, trái cây, các loại hạt, sinh tố, bánh yến mạch, khoai lang...). MỖI ngày "meals" PHẢI có ĐỦ 4 mục Sáng + Trưa + Tối + Phụ — thiếu bất kỳ bữa nào (nhất là Phụ) là SAI.
 Mỗi bữa BẮT BUỘC có đủ 10 trường: meal, food, amount, calories, protein, fat, carbs, fiber, sugar, sodium.
 
-Ví dụ:
+Ví dụ 1 ngày (PHẢI đủ 4 bữa NHƯ VẦY cho CẢ ${TOTAL_DAYS} ngày):
 {
   "plan": [
     {
       "day": 1,
       "meals": [
-        { "meal": "Sáng", "food": "Phở gà", "amount": "1 bát (400ml)",
-          "calories": 450, "protein": "28g", "fat": "12g", "carbs": "58g",
-          "fiber": "2g", "sugar": "4g", "sodium": "920mg" }
+        { "meal": "Sáng", "food": "Phở gà", "amount": "1 bát (400ml)", "calories": 450, "protein": "28g", "fat": "12g", "carbs": "58g", "fiber": "2g", "sugar": "4g", "sodium": "920mg" },
+        { "meal": "Trưa", "food": "Cơm tấm sườn bì chả", "amount": "1 phần", "calories": 620, "protein": "34g", "fat": "22g", "carbs": "68g", "fiber": "3g", "sugar": "5g", "sodium": "1100mg" },
+        { "meal": "Tối", "food": "Canh chua cá + cơm trắng", "amount": "1 phần", "calories": 480, "protein": "30g", "fat": "10g", "carbs": "60g", "fiber": "4g", "sugar": "6g", "sodium": "900mg" },
+        { "meal": "Phụ", "food": "Sữa chua Hy Lạp + trái cây", "amount": "1 hũ", "calories": 150, "protein": "10g", "fat": "3g", "carbs": "18g", "fiber": "1g", "sugar": "12g", "sodium": "50mg" }
       ]
     }
   ]
@@ -582,35 +584,58 @@ const callAIForPlan = async ({ systemPrompt, userPayload, traceId }) => {
     payloadChars: userPayload ? JSON.stringify(userPayload).length : 0,
   });
 
-  let parsed, raw;
-  try {
-    // Chống lặp + tự retry: plan 7 ngày dài, dễ bị model "degenerate" giữa chừng →
-    // completeJsonWithRetry phạt lặp và thử lại 1 lần với seed khác trước khi bỏ cuộc.
-    ({ parsed, raw } = await completeJsonWithRetry({
-      messages,
-      temperature: 0.2,
-      max_tokens: 6000,  // 7-day plan đầy đủ, tránh JSON bị cụt (gây lỗi parse)
-      traceId,
-      tag: "create_plan",
-    }));
-  } catch (err) {
-    log.error(`${traceId} | OpenAI/plan`, err);
-    throw new Error(`OpenAI lỗi: ${err.message}`);
+  // RCA "menu chỉ hiện 1-2 món": JSON 28 bữa dễ bị model cắt cụt/lặp giữa chừng;
+  // repairer vá lại thành plan CỤT (vd 1 ngày × 2 bữa) mà bản cũ vẫn NHẬN vì chỉ
+  // kiểm tra length>0 → lưu + render thiếu. Nay ĐẾM ĐỘ PHỦ và CHẶN plan cụt: thử
+  // lại (khác seed/nhiệt độ) cho tới khi đủ 7 ngày & gần đủ bữa; nếu không, dùng
+  // plan phủ NHIỀU bữa nhất trong các lần thử.
+  const REQUIRED_MEALS = TOTAL_DAYS * MEALS_PER_DAY.length; // 28
+  const MIN_ACCEPT_MEALS = REQUIRED_MEALS - 4;              // cho phép hụt tối đa 4 bữa
+  const MIN_SNACKS = TOTAL_DAYS - 2;                        // bữa "Phụ" phải có ở ≥5/7 ngày
+  const coverage = (planArr) => {
+    const flat = toFlatMeals(planArr);
+    const days = new Set(flat.map((m) => Number(m.day)).filter((d) => d >= 1 && d <= TOTAL_DAYS)).size;
+    // Đếm riêng bữa "Phụ" (snack) — model hay BỎ QUÊN bữa này khiến hàng Phụ trống.
+    const snacks = flat.filter((m) => /ph[uụ]|snack/i.test(String(m.meal || ""))).length;
+    return { flat, days, meals: flat.length, snacks };
+  };
+
+  let best = null, bestScore = -1, lastErr = null;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    let parsed, raw;
+    try {
+      ({ parsed, raw } = await completeJsonWithRetry({
+        messages,
+        temperature: attempt === 1 ? 0.2 : 0.4,
+        max_tokens: 8000, // 28 bữa × 10 trường — nới rộng để KHÔNG bị cụt
+        seed: attempt === 1 ? null : 20240607,
+        traceId,
+        tag: `create_plan#${attempt}`,
+      }));
+    } catch (err) {
+      lastErr = err;
+      log.warn(`${traceId} | plan attempt ${attempt} lỗi: ${err.message}`);
+      continue;
+    }
+    const planArr = extractPlanArray(parsed);
+    const { days, meals, snacks } = coverage(planArr);
+    log.info(`${traceId} | AI response#${attempt}`, {
+      ms: Date.now() - t0, chars: raw.length, days, meals, snacks, preview: raw.slice(0, 160),
+    });
+    // Điểm ưu tiên plan NHIỀU bữa + CÓ bữa phụ (snack đếm gấp đôi để không bỏ quên).
+    const score = meals + snacks;
+    if (score > bestScore) { best = planArr; bestScore = score; }
+    // ĐỦ → dùng ngay (7 ngày, gần đủ 28 bữa, VÀ có đủ bữa Phụ)
+    if (days >= TOTAL_DAYS && meals >= MIN_ACCEPT_MEALS && snacks >= MIN_SNACKS) return planArr;
+    log.warn(`${traceId} | plan CHƯA ĐỦ (lần ${attempt}): ${days}/${TOTAL_DAYS} ngày, ${meals}/${REQUIRED_MEALS} bữa, ${snacks} bữa phụ — thử lại`);
   }
 
-  log.info(`${traceId} | AI response`, {
-    ms: Date.now() - t0,
-    chars: raw.length,
-    preview: raw.slice(0, 200),
-  });
-
-  const planArr = extractPlanArray(parsed);
-  if (!Array.isArray(planArr) || planArr.length === 0) {
-    throw new Error(
-      "AI không trả về plan hợp lệ. Keys: " + Object.keys(parsed || {}).join(", ")
-    );
+  if (best && bestScore > 0) {
+    log.warn(`${traceId} | dùng plan tốt-nhất-có-thể (score=${bestScore})`);
+    return best;
   }
-  return planArr;
+  log.error(`${traceId} | OpenAI/plan`, lastErr || new Error("no plan"));
+  throw new Error("AI không trả về plan hợp lệ sau 2 lần thử." + (lastErr ? ` (${lastErr.message})` : ""));
 };
 
 /* =========================================================

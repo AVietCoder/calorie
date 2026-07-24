@@ -471,6 +471,40 @@ canvas
     border-color: var(--primary);
 }
 
+/* ── Chống double-click (ActionButton / useAction) ────────────────────────────
+   Spinner + trạng thái loading/disabled dùng chung cho MỌI nút gọi API. */
+.btn-spinner
+{
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    margin-right: 7px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    vertical-align: -0.15em;
+    animation: btn-spin .6s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes btn-spin
+{
+    to { transform: rotate(360deg); }
+}
+
+/* Nút đang xử lý: mờ nhẹ + con trỏ "cấm", KHÔNG gây layout shift. */
+.is-loading
+{
+    opacity: .7;
+    cursor: not-allowed !important;
+}
+
+button:disabled,
+button[disabled]
+{
+    cursor: not-allowed;
+}
+
 .loading-overlay
 {
     position: fixed;

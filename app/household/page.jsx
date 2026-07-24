@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import PageShell from '../../components/PageShell';
+import ActionButton from '../../components/ActionButton';
 import { useApi } from '../../lib-client/useApi';
 import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
@@ -175,16 +176,16 @@ export default function HouseholdPage() {
           <h3><i className="fa-solid fa-house" /> {t('hh.start', 'Bắt đầu')}</h3>
           <p style={{ color: 'var(--text-sub)', marginBottom: 18 }}>{t('hh.start_desc', 'Bạn chưa có hồ sơ gia đình. Chọn chế độ để bắt đầu:')}</p>
           <div className="mode-choice">
-            <button className="mode-card" onClick={() => createHousehold('chef')}>
+            <ActionButton className="mode-card" onClick={() => createHousehold('chef')}>
               <i className="fa-solid fa-kitchen-set" />
               <strong>{t('hh.mode_chef', 'Chế độ đầu bếp')}</strong>
               <span>{t('hh.mode_chef_desc', 'Bạn quản lý hồ sơ cho nhiều người (không cần họ đăng nhập) — phù hợp 1 người nấu cho cả nhà.')}</span>
-            </button>
-            <button className="mode-card" onClick={() => createHousehold('family')}>
+            </ActionButton>
+            <ActionButton className="mode-card" onClick={() => createHousehold('family')}>
               <i className="fa-solid fa-people-group" />
               <strong>{t('hh.mode_family', 'Chế độ gia đình')}</strong>
               <span>{t('hh.mode_family_desc', 'Mời các thành viên khác dùng tài khoản riêng của họ tham gia vào gia đình.')}</span>
-            </button>
+            </ActionButton>
           </div>
         </div>
       ) : (
@@ -194,7 +195,7 @@ export default function HouseholdPage() {
               <h3 style={{ marginBottom: 4 }}><i className="fa-solid fa-house-user" /> <span>{isFamily ? t('hh.mode_family', 'Chế độ gia đình') : t('hh.mode_chef', 'Chế độ đầu bếp')}</span></h3>
               <p style={{ color: 'var(--text-sub)', margin: 0 }}>{isFamily ? t('hh.mode_family_note', 'Các thành viên có thể tự đăng nhập tài khoản riêng.') : t('hh.mode_chef_note', 'Bạn quản lý hồ sơ dinh dưỡng cho các thành viên (không cần họ đăng nhập).')}</p>
             </div>
-            <button className="btn btn-secondary" onClick={switchMode}>{t('hh.switch_mode', 'Chuyển chế độ')}</button>
+            <ActionButton className="btn btn-secondary" onClick={switchMode} loadingText={t('common.processing', 'Đang xử lý...')}>{t('hh.switch_mode', 'Chuyển chế độ')}</ActionButton>
           </div>
 
           {isFamily && (
@@ -202,12 +203,12 @@ export default function HouseholdPage() {
               <h3><i className="fa-solid fa-user-plus" /> {t('hh.invite_title', 'Mời thành viên')}</h3>
               <div className="invite-row">
                 <input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder={t('hh.invite_email_ph', 'Email người được mời')} />
-                <button className="btn btn-primary" onClick={inviteMember}>{t('hh.invite_btn', 'Tạo mã mời')}</button>
+                <ActionButton className="btn btn-primary" onClick={inviteMember} loadingText={t('common.creating', 'Đang tạo...')}>{t('hh.invite_btn', 'Tạo mã mời')}</ActionButton>
               </div>
               {inviteResult && <p style={{ color: 'var(--text-sub)', marginTop: 10 }}>{inviteResult}</p>}
               <div className="invite-row" style={{ marginTop: 14 }}>
                 <input type="text" value={acceptCode} onChange={(e) => setAcceptCode(e.target.value)} placeholder={t('hh.accept_ph', 'Nhập mã mời để tham gia gia đình khác')} />
-                <button className="btn btn-secondary" onClick={acceptInvite}>{t('hh.accept_btn', 'Tham gia')}</button>
+                <ActionButton className="btn btn-secondary" onClick={acceptInvite} loadingText={t('common.processing', 'Đang xử lý...')}>{t('hh.accept_btn', 'Tham gia')}</ActionButton>
               </div>
             </div>
           )}
@@ -230,7 +231,7 @@ export default function HouseholdPage() {
                   <div className="m-chips">{(m.allergies || []).map((a, i) => <span className="m-chip" key={i}>{a}</span>)}</div>
                   <div className="m-actions">
                     <button onClick={() => openMemberModal(m.id)}><i className="fa-solid fa-pen" /> {t('hh.edit', 'Sửa')}</button>
-                    {!isOwner && <button onClick={() => removeMember(m.id)}><i className="fa-solid fa-trash" /> {t('common.delete', 'Xóa')}</button>}
+                    {!isOwner && <ActionButton onClick={() => removeMember(m.id)} loadingText={t('common.deleting', 'Đang xóa...')}><i className="fa-solid fa-trash" /> {t('common.delete', 'Xóa')}</ActionButton>}
                   </div>
                 </div>
               );
@@ -276,7 +277,7 @@ export default function HouseholdPage() {
           </div>
           <div className="member-modal-actions">
             <button className="btn btn-secondary" onClick={closeMemberModal}>{t('common.cancel', 'Hủy')}</button>
-            <button className="btn btn-primary" onClick={saveMember}>{t('hh.save_member', 'Lưu')}</button>
+            <ActionButton className="btn btn-primary" onClick={saveMember} loadingText={t('common.saving', 'Đang lưu...')}>{t('hh.save_member', 'Lưu')}</ActionButton>
           </div>
         </div>
       </div>

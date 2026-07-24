@@ -3,6 +3,7 @@ import { Fragment, Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import PageShell from '../../components/PageShell';
+import ActionButton from '../../components/ActionButton';
 import { useApi } from '../../lib-client/useApi';
 import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
@@ -153,7 +154,7 @@ function MenuPlanInner() {
               <button className={`tab-btn${tab === 'grid' ? ' active' : ''}`} onClick={() => switchTab('grid')}>{t('mp.tab_menu', 'Thực đơn')}</button>
               <button className={`tab-btn${tab === 'shopping' ? ' active' : ''}`} onClick={() => switchTab('shopping')}>{t('mp.tab_shopping', 'Danh sách mua sắm')}</button>
             </div>
-            <button className="btn btn-secondary" onClick={regenerateWeek}><i className="fa-solid fa-rotate" /> {t('mp.regen_week', 'Làm lại cả tuần')}</button>
+            <ActionButton className="btn btn-secondary" onClick={regenerateWeek} loadingText={t('common.creating', 'Đang tạo...')}><i className="fa-solid fa-rotate" /> {t('mp.regen_week', 'Làm lại cả tuần')}</ActionButton>
           </div>
 
           {tab === 'grid' && (
@@ -222,7 +223,7 @@ function MenuPlanInner() {
             </div>
             <div className="dish-modal-actions">
               <button className="btn btn-secondary" onClick={() => setActiveDish(null)}>{t('common.close', 'Đóng')}</button>
-              <button className="btn btn-primary" onClick={swapActiveDish}><i className="fa-solid fa-shuffle" /> {t('mp.swap_dish', 'Đổi món khác')}</button>
+              <ActionButton className="btn btn-primary" onClick={swapActiveDish} loadingText={t('common.processing', 'Đang xử lý...')}><i className="fa-solid fa-shuffle" /> {t('mp.swap_dish', 'Đổi món khác')}</ActionButton>
             </div>
           </div>
         )}
