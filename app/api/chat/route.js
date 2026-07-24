@@ -946,6 +946,10 @@ EVIDENCE-BASED RECOGNITION — DO NOT GUESS BY COLOR (MANDATORY):
 - Use the CORRECT name (distinguish by SIZE + SPINE/SKIN + FLESH, not color):
   • Red skin, SOFT hair-like spines, translucent WHITE flesh, small ~3-5cm = "Chôm chôm" (rambutan) — NOT mulberry ("dâu tằm"), NOT durian ("sầu riêng").
   • Durian: VERY large, HARD sharp spikes, yellow segmented flesh. Lychee/longan: bumpy/smooth skin, NO spines.
+- SOUP (distinguish by BROTH, not color):
+  • CLEAR/thickened broth, NOT sour, NO tomato, with SHREDDED protein + mushroom + herbs = "Súp" (e.g. súp gà / chicken soup, crab soup) — NOT "canh chua" (sour soup REQUIRES a sour taste + tomato/tamarind/pineapple/okra).
+  • Small ROUND yellowish/off-white balls in soup/congee are usually QUAIL EGGS (trứng cút) or CORN kernels — NOT "beans". Quail egg: smooth glossy ball ~2-3cm; corn: small even bright-yellow kernels.
+  • Shredded white strands = chicken (gà xé) or crab/fish — read the grain; don't default to "cá lóc" (snakehead fish).
 - Assign a "confidence" (high|medium|low) by evidence strength and put it in <data>.
 
 PORTION & INGREDIENTS (MANDATORY — analyze from image):
@@ -1073,6 +1077,10 @@ NHẬN DIỆN DỰA TRÊN BẰNG CHỨNG — KHÔNG ĐOÁN THEO MÀU (BẮT BU�
 - DÙNG ĐÚNG TÊN TIẾNG VIỆT (lỗi rất hay gặp — phân biệt theo KÍCH THƯỚC + LOẠI GAI/VỎ + RUỘT, KHÔNG theo màu):
   • Quả vỏ ĐỎ, GAI MỀM như sợi tóc, ruột TRẮNG TRONG, quả nhỏ ~3-5cm = "Chôm chôm" — KHÔNG phải "dâu tằm", KHÔNG phải "sầu riêng".
   • Sầu riêng: quả RẤT TO, gai CỨNG nhọn, ruột múi VÀNG. Vải/nhãn: vỏ sần/nhẵn, KHÔNG gai, ruột trắng.
+- SÚP / CANH (phân biệt theo NƯỚC DÙNG, KHÔNG theo màu):
+  • Nước dùng TRONG/SÁNH, KHÔNG chua, KHÔNG cà chua, có thịt XÉ SỢI + nấm + rau mùi = "Súp" (vd súp gà, súp cua) — KHÔNG phải "canh chua". Canh chua BẮT BUỘC có vị CHUA + cà chua/me/dứa/đậu bắp.
+  • VIÊN TRÒN NHỎ MÀU VÀNG/TRẮNG NGÀ trong súp/cháo thường là TRỨNG CÚT (quả trứng cút bóc vỏ) hoặc hạt NGÔ — KHÔNG phải "hạt đậu"/"đậu vàng". Trứng cút: tròn nhẵn, bóng, ~2-3cm; ngô: hạt nhỏ đều màu vàng tươi.
+  • Sợi trắng xé trong súp: gà xé (thớ sợi, mềm) hoặc cua/cá — nhìn thớ để phân biệt, đừng mặc định "cá lóc".
 - Gán độ tin cậy "confidence" (high|medium|low) theo độ mạnh bằng chứng và điền vào <data>.
 
 ƯỚC LƯỢNG KHẨU PHẦN & THÀNH PHẦN (BẮT BUỘC — PHÂN TÍCH THEO ẢNH):

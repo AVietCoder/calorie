@@ -806,6 +806,8 @@ export const DICT = {
     "ml.scope_private": "My family only",
     "ml.f_excel": "Excel file (.xlsx)",
     "ml.upload_btn": "Upload",
+    "ml.download_template": "Download template (.xlsx)",
+    "ml.template_downloaded": "Template downloaded — fill it in, then upload!",
     "ml.excel_cols": "Excel columns",
     "ml.toast_generated": "Menu created for your family!",
     "ml.toast_pick_excel": "Pick an Excel file first.",

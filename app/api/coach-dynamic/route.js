@@ -638,6 +638,64 @@ const callAIForPlan = async ({ systemPrompt, userPayload, traceId }) => {
   throw new Error("AI không trả về plan hợp lệ sau 2 lần thử." + (lastErr ? ` (${lastErr.message})` : ""));
 };
 
+/** Liệt kê các ô (ngày × bữa) CÒN THIẾU so với 7 ngày × 4 bữa chuẩn. */
+const findMissingSlots = (flat) => {
+  const have = new Set((flat || []).map((m) => `${Number(m.day)}|${String(m.meal || "").trim().toLowerCase()}`));
+  const missing = [];
+  for (let d = 1; d <= TOTAL_DAYS; d++) {
+    for (const meal of MEALS_PER_DAY) {
+      if (!have.has(`${d}|${meal.toLowerCase()}`)) missing.push({ day: d, meal });
+    }
+  }
+  return missing;
+};
+
+/** "Tạo lại đến khi ĐẦY ĐỦ": sau khi có plan, TỰ BỔ SUNG các bữa còn thiếu bằng
+ *  các lượt gọi NHỎ (chỉ hỏi đúng những bữa thiếu → nhanh & không bị cắt cụt),
+ *  lặp tối đa 3 vòng. Giữ đúng mục tiêu/bệnh lý người dùng. */
+async function fillMissingMeals(flatPlan, { profile, foodsDB, knowledgeBlock = "", traceId = "" }) {
+  let out = Array.isArray(flatPlan) ? [...flatPlan] : [];
+  for (let round = 1; round <= 3; round++) {
+    const missing = findMissingSlots(out);
+    if (!missing.length) break;
+    log.warn(`${traceId} | fill vòng ${round}: còn thiếu ${missing.length} bữa`);
+    const list = missing.map((s) => `- Ngày ${s.day}, bữa "${s.meal}"`).join("\n");
+    const sys = `${buildProfileSection(profile)}
+Bạn là chuyên gia dinh dưỡng. BỔ SUNG CHÍNH XÁC các bữa còn thiếu dưới đây cho thực đơn tuần, PHÙ HỢP mục tiêu "${profile.goal || "của bạn"}"${profile.disease && profile.disease !== "không có" ? ` và tránh gây hại cho bệnh "${profile.disease}"` : ""}. CHỈ trả về ĐÚNG các bữa được liệt kê, KHÔNG thêm bữa/ngày khác. Bữa "Phụ" là bữa nhẹ (sữa chua, trái cây, các loại hạt, sinh tố...).
+CÁC BỮA CẦN BỔ SUNG:
+${list}
+${buildFoodsSection(foodsDB)}${knowledgeBlock ? "\n" + knowledgeBlock + "\n" : ""}
+Trả về DUY NHẤT JSON: {"plan":[{"day":<số>,"meals":[{"meal":"<Sáng|Trưa|Tối|Phụ>","food":"...","amount":"...","calories":<số>,"protein":"Xg","fat":"Xg","carbs":"Xg","fiber":"Xg","sugar":"Xg","sodium":"Xmg"}]}]}. Mỗi bữa ĐỦ 10 trường. Không markdown, không giải thích.`;
+    let parsed;
+    try {
+      ({ parsed } = await completeJsonWithRetry({
+        messages: [{ role: "system", content: sys }],
+        temperature: 0.3,
+        max_tokens: 3500,
+        traceId,
+        tag: `fill_meals#${round}`,
+      }));
+    } catch (e) {
+      log.warn(`${traceId} | fill vòng ${round} lỗi: ${e.message}`);
+      break;
+    }
+    const addFlat = toFlatMeals(extractPlanArray(parsed));
+    const missSet = new Set(missing.map((s) => `${s.day}|${s.meal.toLowerCase()}`));
+    let added = 0;
+    for (const m of addFlat) {
+      const key = `${Number(m.day)}|${String(m.meal || "").trim().toLowerCase()}`;
+      // chỉ nhận bữa ĐÚNG là bữa đang thiếu và CHƯA có
+      if (missSet.has(key) && !out.some((x) => `${Number(x.day)}|${String(x.meal || "").trim().toLowerCase()}` === key)) {
+        out.push(m);
+        added++;
+      }
+    }
+    log.info(`${traceId} | fill vòng ${round}: bổ sung ${added} bữa`);
+    if (added === 0) break; // model không bù được nữa → dừng, tránh lặp vô ích
+  }
+  return out;
+}
+
 /* =========================================================
  * 5b. DINH DƯỠNG CHÍNH XÁC CHO TỪNG MÓN
  *     (FIX: khi đổi món -> tính lại dinh dưỡng món đó cho chính xác)
@@ -1164,7 +1222,13 @@ export async function POST(request) {
         }
         return sendError(res, 503, "plan_generate_retry", "Chưa tạo được thực đơn lúc này, bạn vui lòng thử lại sau ít phút nhé!", { traceId });
       }
-      currentPlan = groupPlanByDay(newFlatPlan);
+      // "Tạo lại đến khi ĐẦY ĐỦ": tự bổ sung các bữa còn thiếu (nhất là bữa Phụ)
+      // bằng các lượt gọi nhỏ cho tới khi đủ 7 ngày × 4 bữa (hoặc model chịu thua).
+      let filledFlat = toFlatMeals(newFlatPlan);
+      filledFlat = await fillMissingMeals(filledFlat, { profile, foodsDB, knowledgeBlock, traceId });
+      currentPlan = groupPlanByDay(filledFlat);
+      const stillMissing = findMissingSlots(filledFlat).length;
+      log.info(`${traceId} | plan hoàn tất: ${filledFlat.length}/${TOTAL_DAYS * MEALS_PER_DAY.length} bữa (còn thiếu ${stillMissing})`);
       foodsInserted = await syncMissingFoodsToDB(currentPlan, foodsDB);
 
       const { error: updateErr } = await supabase
@@ -1195,7 +1259,29 @@ export async function POST(request) {
       aiReply =
         "Chúc mừng bạn đã hoàn thành lộ trình! Hãy đặt một mục tiêu mới để tiếp tục nhé 🎉";
     } else {
-      aiReply = "Lộ trình tuần này của bạn vẫn đang được áp dụng rất tốt!";
+      // TỰ BÙ KHI LOAD: plan đã lưu (kể cả plan CŨ tạo trước bản fix) nếu còn
+      // THIẾU bữa (vd trống bữa Phụ) → tự bổ sung tới khi đủ 7×4 rồi lưu lại,
+      // KHÔNG cần user bấm tạo lại. Chỉ chạy 1 lần cho mỗi plan thiếu (lần load
+      // sau đã đủ nên không gọi lại). Đáp ứng: "load lại thì tạo lại đến khi đầy đủ".
+      const flatNow = toFlatMeals(currentPlan);
+      const missingNow = findMissingSlots(flatNow);
+      if (missingNow.length > 0) {
+        log.warn(`${traceId} | plan đã lưu thiếu ${missingNow.length} bữa → tự bù khi load`);
+        const filled = await fillMissingMeals(flatNow, { profile, foodsDB, traceId });
+        currentPlan = groupPlanByDay(filled);
+        const { error: healErr } = await supabase
+          .from("profiles")
+          .update({ weekly_plan: currentPlan, plan_updated_at: now.toISOString() })
+          .eq("id", user.id);
+        if (healErr) log.warn(`${traceId} | lưu plan tự-bù lỗi: ${healErr.message}`);
+        syncMissingFoodsToDB(currentPlan, foodsDB).catch(() => {});
+        const left = findMissingSlots(toFlatMeals(currentPlan)).length;
+        aiReply = left === 0
+          ? "HLV AI đã bổ sung các bữa còn thiếu — thực đơn tuần của bạn giờ đã đầy đủ!"
+          : "HLV AI đã bổ sung thêm các bữa còn thiếu cho thực đơn tuần của bạn.";
+      } else {
+        aiReply = "Lộ trình tuần này của bạn vẫn đang được áp dụng rất tốt!";
+      }
     }
 
     return res.status(200).json({

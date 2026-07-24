@@ -60,6 +60,41 @@ export default function MenuLibraryPage() {
     }
   }
 
+  // Tạo & tải file Excel MẪU đúng cấu trúc cột để người dùng điền theo. Dùng
+  // dynamic import 'xlsx' (chỉ nạp khi bấm → không phình bundle) + tải bằng Blob
+  // (an toàn trên trình duyệt, không phụ thuộc fs).
+  async function downloadTemplate() {
+    const XLSX = await import('xlsx');
+    const headers = [
+      'day_index', 'meal_type', 'dish_name', 'base_grams', 'calories', 'protein', 'fat',
+      'carbs', 'fiber', 'sugar', 'sodium', 'dish_tags', 'ingredient_name',
+      'ingredient_grams', 'ingredient_unit', 'ingredient_tags',
+    ];
+    // Vài dòng mẫu: 2 nguyên liệu cho 1 món (lặp thông tin món) + các bữa khác.
+    const rows = [
+      { day_index: 1, meal_type: 'breakfast', dish_name: 'Phở gà', base_grams: 400, calories: 450, protein: 28, fat: 12, carbs: 58, fiber: 2, sugar: 4, sodium: 920, dish_tags: 'gà,healthy', ingredient_name: 'Bánh phở', ingredient_grams: 180, ingredient_unit: 'g', ingredient_tags: 'tinh bột' },
+      { day_index: 1, meal_type: 'breakfast', dish_name: 'Phở gà', base_grams: 400, calories: 450, protein: 28, fat: 12, carbs: 58, fiber: 2, sugar: 4, sodium: 920, dish_tags: 'gà,healthy', ingredient_name: 'Thịt gà', ingredient_grams: 100, ingredient_unit: 'g', ingredient_tags: 'đạm' },
+      { day_index: 1, meal_type: 'lunch', dish_name: 'Cơm tấm sườn bì chả', base_grams: 500, calories: 620, protein: 34, fat: 22, carbs: 68, fiber: 3, sugar: 5, sodium: 1100, dish_tags: '', ingredient_name: 'Cơm tấm', ingredient_grams: 250, ingredient_unit: 'g', ingredient_tags: 'tinh bột' },
+      { day_index: 1, meal_type: 'dinner', dish_name: 'Canh chua cá + cơm', base_grams: 450, calories: 480, protein: 30, fat: 10, carbs: 60, fiber: 4, sugar: 6, sodium: 900, dish_tags: '', ingredient_name: '', ingredient_grams: '', ingredient_unit: '', ingredient_tags: '' },
+      { day_index: 1, meal_type: 'snack', dish_name: 'Sữa chua Hy Lạp + trái cây', base_grams: 150, calories: 150, protein: 10, fat: 3, carbs: 18, fiber: 1, sugar: 12, sodium: 50, dish_tags: 'snack', ingredient_name: '', ingredient_grams: '', ingredient_unit: '', ingredient_tags: '' },
+    ];
+    const ws = XLSX.utils.json_to_sheet(rows, { header: headers });
+    ws['!cols'] = headers.map((h) => ({ wch: Math.max(11, h.length + 2) }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Menu');
+    const buf = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+    const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'calorie-ai-menu-template.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast(t('ml.template_downloaded', 'Đã tải file mẫu — điền theo mẫu rồi tải lên nhé!'), 'success');
+  }
+
   async function uploadTemplate() {
     const file = fileInputRef.current?.files?.[0];
     if (!file) { showToast(t('ml.toast_pick_excel', 'Chọn file Excel trước.'), 'error'); return; }
@@ -156,7 +191,10 @@ export default function MenuLibraryPage() {
             </div>
             <div className="upload-row">
               <label>{t('ml.f_excel', 'File Excel (.xlsx)')} <input ref={fileInputRef} type="file" accept=".xlsx,.xls" /></label>
-              <ActionButton className="btn btn-primary" style={{ alignSelf: 'flex-end' }} onClick={uploadTemplate} loadingText={t('common.uploading', 'Đang tải lên...')}><i className="fa-solid fa-upload" /> {t('ml.upload_btn', 'Tải lên')}</ActionButton>
+              <div style={{ display: 'flex', gap: 10, alignSelf: 'flex-end', flexWrap: 'wrap' }}>
+                <ActionButton className="btn btn-secondary" onClick={downloadTemplate}><i className="fa-solid fa-file-arrow-down" /> {t('ml.download_template', 'Tải file mẫu (.xlsx)')}</ActionButton>
+                <ActionButton className="btn btn-primary" onClick={uploadTemplate} loadingText={t('common.uploading', 'Đang tải lên...')}><i className="fa-solid fa-upload" /> {t('ml.upload_btn', 'Tải lên')}</ActionButton>
+              </div>
             </div>
             <p style={{ color: 'var(--text-sub)', fontSize: 13, marginTop: 8 }}>
               {t('ml.excel_cols', 'Cột Excel')}: day_index, meal_type, dish_name, base_grams, calories, protein, fat, carbs, fiber, sugar, sodium, dish_tags, ingredient_name, ingredient_grams, ingredient_unit, ingredient_tags
