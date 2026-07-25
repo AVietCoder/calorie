@@ -114,8 +114,6 @@ function MealDetailModal({ item, pendingFood, onClose, onAction, t, localizeFood
     router.push('/chat');
   }
 
-  const showSaveFooter = action === 'change' && altFood.trim() !== '';
-
   return (
     <div className="meal-modal-overlay open" id="meal-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="meal-modal" id="meal-modal">
@@ -146,18 +144,34 @@ function MealDetailModal({ item, pendingFood, onClose, onAction, t, localizeFood
               )}
             </div>
             {action === 'change' && (
-              <input type="text" className="alt-food-input" value={altFood} onChange={(e) => onAltInput(e.target.value)} placeholder={t('sch.alt_ph', 'Bạn muốn ăn món gì khác?')} />
+              <>
+                <input
+                  type="text"
+                  className="alt-food-input"
+                  value={altFood}
+                  autoFocus
+                  onChange={(e) => onAltInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && altFood.trim()) onAction('save-and-close'); }}
+                  placeholder={t('sch.alt_ph', 'Bạn muốn ăn món gì khác?')}
+                />
+                <div className="save-plan-footer">
+                  <ActionButton
+                    className="btn-save-all"
+                    disabled={!altFood.trim()}
+                    onClick={() => onAction('save-and-close')}
+                    loadingText={t('common.saving', 'Đang lưu...')}
+                  >
+                    <i className="fa-solid fa-floppy-disk" /> <span>{t('sch.confirm_change', 'Xác nhận đổi món')}</span>
+                  </ActionButton>
+                  {!altFood.trim() && (
+                    <div className="alt-hint">{t('sch.alt_hint', 'Nhập tên món bạn muốn đổi rồi bấm xác nhận')}</div>
+                  )}
+                </div>
+              </>
             )}
             {action === 'skip' && (
               <div className="meal-skip-note" style={{ display: 'flex' }}>
                 <i className="fa-solid fa-ban" /> <span>{t('sch.skip_saved', 'Đã đánh dấu bỏ bữa này')}</span>
-              </div>
-            )}
-            {showSaveFooter && (
-              <div className="save-plan-footer" style={{ display: 'block' }}>
-                <ActionButton className="btn-save-all" onClick={() => onAction('save-and-close')} loadingText={t('common.saving', 'Đang lưu...')}>
-                  <i className="fa-solid fa-floppy-disk" /> <span>{t('common.save', 'Lưu thay đổi')}</span>
-                </ActionButton>
               </div>
             )}
           </div>

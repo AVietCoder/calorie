@@ -664,12 +664,29 @@
     border-radius: 8px;
     border: 1px solid var(--border-soft);
     font-size: 13px;
-    display: none;
+    /* React tự render input này CHỈ khi chọn "Đổi món" → KHÔNG ẩn cứng bằng CSS
+       (display:none cũ từ bản vanilla là nguyên nhân ô nhập không hiện). */
+    display: block;
+    margin-top: 6px;
+}
+.alt-food-input:focus
+{
+    border-color: var(--primary);
+    outline: none;
 }
 
+/* React điều khiển hiển thị footer (render có điều kiện) → mặc định block. */
 .save-plan-footer
 {
-    display: none;
+    display: block;
+    margin-top: 10px;
+}
+.alt-hint
+{
+    font-size: 12px;
+    color: var(--text-sub);
+    margin-top: 6px;
+    text-align: center;
 }
 
 .btn-save-all
@@ -1498,12 +1515,29 @@
     border-radius: 8px;
     border: 1px solid var(--border-soft);
     font-size: 13px;
-    display: none;
+    /* React tự render input này CHỈ khi chọn "Đổi món" → KHÔNG ẩn cứng bằng CSS
+       (display:none cũ từ bản vanilla là nguyên nhân ô nhập không hiện). */
+    display: block;
+    margin-top: 6px;
+}
+.alt-food-input:focus
+{
+    border-color: var(--primary);
+    outline: none;
 }
 
+/* React điều khiển hiển thị footer (render có điều kiện) → mặc định block. */
 .save-plan-footer
 {
-    display: none;
+    display: block;
+    margin-top: 10px;
+}
+.alt-hint
+{
+    font-size: 12px;
+    color: var(--text-sub);
+    margin-top: 6px;
+    text-align: center;
 }
 
 .btn-save-all
