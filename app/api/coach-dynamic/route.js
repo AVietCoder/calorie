@@ -340,6 +340,62 @@ const syncMissingFoodsToDB = async (plan, foodsDB) => {
  *   - Grouped: [{day, meals:[{meal, food, ...}, ...]}, ...]
  *   - Lồng:    [{day, meals:[{meals:[{...}]}]}]  (do bug AI trả lồng)
  */
+// DỌN 1 bữa ăn: model (nhất là bước fill) đôi khi nhét cả "Tên | 420kcal | P:30 |
+// F:8 | C:50 | Fi:5 | Su:4 | Na:50" hoặc dấu nháy vào field "food". Bóc TÊN thuần,
+// và CỨU số liệu vào đúng field nếu field đó đang trống. Chạy ở toFlatMeals nên
+// dọn cho MỌI đường (fill/group/flatten/hiển thị + cả plan cũ đã lưu bị bẩn).
+const cleanMealFields = (meal) => {
+  if (!meal || typeof meal !== "object") return meal;
+  let food = String(meal.food || "").replace(/^\s*['"]+|['"]+\s*$/g, "").trim();
+  const salv = { kcal: null, p: null, f: null, c: null, fi: null, su: null, na: null };
+  if (food.includes("|")) {
+    const parts = food.split("|");
+    food = parts[0].replace(/^\s*['"]+|['"]+\s*$/g, "").trim();
+    for (const seg of parts.slice(1)) {
+      let m;
+      if ((m = seg.match(/(\d+(?:\.\d+)?)\s*kcal/i))) salv.kcal = Number(m[1]);
+      else if ((m = seg.match(/\bFi\s*[:=]?\s*(\d+(?:\.\d+)?)/i))) salv.fi = Number(m[1]);
+      else if ((m = seg.match(/\bSu\s*[:=]?\s*(\d+(?:\.\d+)?)/i))) salv.su = Number(m[1]);
+      else if ((m = seg.match(/\bNa\s*[:=]?\s*(\d+(?:\.\d+)?)/i))) salv.na = Number(m[1]);
+      else if ((m = seg.match(/\bP\s*[:=]?\s*(\d+(?:\.\d+)?)/i))) salv.p = Number(m[1]);
+      else if ((m = seg.match(/\bF\s*[:=]?\s*(\d+(?:\.\d+)?)/i))) salv.f = Number(m[1]);
+      else if ((m = seg.match(/\bC\s*[:=]?\s*(\d+(?:\.\d+)?)/i))) salv.c = Number(m[1]);
+    }
+  }
+  const out = { ...meal, food: food || "Món ăn" };
+  const empty = (v) => v == null || String(v).trim() === "" || String(v).trim() === "0g";
+  if ((out.calories == null || Number(out.calories) === 0) && salv.kcal != null) out.calories = salv.kcal;
+  if (empty(out.protein) && salv.p != null) out.protein = `${salv.p}g`;
+  if (empty(out.fat) && salv.f != null) out.fat = `${salv.f}g`;
+  if (empty(out.carbs) && salv.c != null) out.carbs = `${salv.c}g`;
+  if (empty(out.fiber) && salv.fi != null) out.fiber = `${salv.fi}g`;
+  if (empty(out.sugar) && salv.su != null) out.sugar = `${salv.su}g`;
+  if (empty(out.sodium) && salv.na != null) out.sodium = `${salv.na}mg`;
+
+  // CHUẨN HOÁ KHẨU PHẦN (khắc phục: chỗ hiện "1 phần", chỗ chỉ "1"/"[1 phần]"/trống).
+  // Bỏ [] () '' bao quanh; số trần "1" → "1 phần"; rỗng/"—"/"0" → "1 phần".
+  let amount = String(out.amount ?? "").trim()
+    .replace(/^\[(.*)\]$/, "$1")
+    .replace(/^\((.*)\)$/, "$1")
+    .replace(/^['"](.*)['"]$/, "$1")
+    .trim();
+  if (!amount || amount === "—" || amount === "0") amount = "1 phần";
+  else if (/^\d+(?:[.,]\d+)?$/.test(amount)) amount = `${amount} phần`;
+  out.amount = amount;
+
+  // CỨU CALO nếu còn thiếu: bóc "…kcal" trong amount → cuối cùng suy Atwater từ macro.
+  if (out.calories == null || Number(out.calories) === 0) {
+    const km = amount.match(/(\d+(?:\.\d+)?)\s*kcal/i);
+    if (km) out.calories = Math.round(Number(km[1]));
+  }
+  if (out.calories == null || Number(out.calories) === 0) {
+    const P = parseFloat(out.protein) || 0, F = parseFloat(out.fat) || 0, C = parseFloat(out.carbs) || 0;
+    const at = 4 * P + 4 * C + 9 * F;
+    if (at > 0) out.calories = Math.round(at);
+  }
+  return out;
+};
+
 const toFlatMeals = (rawPlan) => {
   if (!Array.isArray(rawPlan)) return [];
   const out = [];
@@ -353,7 +409,7 @@ const toFlatMeals = (rawPlan) => {
     }
     if (!meal.meal && !meal.food) return; // bỏ qua object rỗng
     const { day: _d, ...rest } = meal;
-    out.push({ ...rest, day: Number(day) });
+    out.push(cleanMealFields({ ...rest, day: Number(day) }));
   };
 
   for (const entry of rawPlan) {
@@ -638,9 +694,19 @@ const callAIForPlan = async ({ systemPrompt, userPayload, traceId }) => {
   throw new Error("AI không trả về plan hợp lệ sau 2 lần thử." + (lastErr ? ` (${lastErr.message})` : ""));
 };
 
-/** Liệt kê các ô (ngày × bữa) CÒN THIẾU so với 7 ngày × 4 bữa chuẩn. */
+const slotKey = (m) => `${Number(m.day)}|${String(m.meal || "").trim().toLowerCase()}`;
+// Bữa "thật": có TÊN MÓN cụ thể (không phải placeholder "Món ăn"/rỗng) VÀ có calo > 0.
+// Placeholder (bữa rỗng lọt qua) sẽ bị coi là THIẾU để được bù lại bằng bữa thật.
+const isRealMeal = (m) => {
+  if (!m) return false;
+  const food = String(m.food || "").trim().toLowerCase();
+  if (!food || food === "món ăn" || food === "mon an") return false;
+  return (Number(m.calories) || 0) > 0;
+};
+
+/** Liệt kê các ô (ngày × bữa) CÒN THIẾU (chưa có bữa THẬT) so với 7 ngày × 4 bữa. */
 const findMissingSlots = (flat) => {
-  const have = new Set((flat || []).map((m) => `${Number(m.day)}|${String(m.meal || "").trim().toLowerCase()}`));
+  const have = new Set((flat || []).filter(isRealMeal).map(slotKey));
   const missing = [];
   for (let d = 1; d <= TOTAL_DAYS; d++) {
     for (const meal of MEALS_PER_DAY) {
@@ -664,8 +730,9 @@ async function fillMissingMeals(flatPlan, { profile, foodsDB, knowledgeBlock = "
 Bạn là chuyên gia dinh dưỡng. BỔ SUNG CHÍNH XÁC các bữa còn thiếu dưới đây cho thực đơn tuần, PHÙ HỢP mục tiêu "${profile.goal || "của bạn"}"${profile.disease && profile.disease !== "không có" ? ` và tránh gây hại cho bệnh "${profile.disease}"` : ""}. CHỈ trả về ĐÚNG các bữa được liệt kê, KHÔNG thêm bữa/ngày khác. Bữa "Phụ" là bữa nhẹ (sữa chua, trái cây, các loại hạt, sinh tố...).
 CÁC BỮA CẦN BỔ SUNG:
 ${list}
-${buildFoodsSection(foodsDB)}${knowledgeBlock ? "\n" + knowledgeBlock + "\n" : ""}
-Trả về DUY NHẤT JSON: {"plan":[{"day":<số>,"meals":[{"meal":"<Sáng|Trưa|Tối|Phụ>","food":"...","amount":"...","calories":<số>,"protein":"Xg","fat":"Xg","carbs":"Xg","fiber":"Xg","sugar":"Xg","sodium":"Xmg"}]}]}. Mỗi bữa ĐỦ 10 trường. Không markdown, không giải thích.`;
+${knowledgeBlock ? "\n" + knowledgeBlock + "\n" : ""}
+⚠️ QUAN TRỌNG: field "food" CHỈ chứa TÊN MÓN thuần (vd "Phở gà", "Sữa chua Hy Lạp"), TUYỆT ĐỐI KHÔNG kèm số liệu calo/macro và KHÔNG dùng ký hiệu "|". Các con số phải nằm ĐÚNG field riêng (calories, protein, fat...).
+Trả về DUY NHẤT JSON: {"plan":[{"day":<số>,"meals":[{"meal":"<Sáng|Trưa|Tối|Phụ>","food":"<chỉ tên món>","amount":"1 phần","calories":<số>,"protein":"Xg","fat":"Xg","carbs":"Xg","fiber":"Xg","sugar":"Xg","sodium":"Xmg"}]}]}. Mỗi bữa ĐỦ 10 trường. Không markdown, không giải thích.`;
     let parsed;
     try {
       ({ parsed } = await completeJsonWithRetry({
@@ -683,17 +750,20 @@ Trả về DUY NHẤT JSON: {"plan":[{"day":<số>,"meals":[{"meal":"<Sáng|Trư
     const missSet = new Set(missing.map((s) => `${s.day}|${s.meal.toLowerCase()}`));
     let added = 0;
     for (const m of addFlat) {
-      const key = `${Number(m.day)}|${String(m.meal || "").trim().toLowerCase()}`;
-      // chỉ nhận bữa ĐÚNG là bữa đang thiếu và CHƯA có
-      if (missSet.has(key) && !out.some((x) => `${Number(x.day)}|${String(x.meal || "").trim().toLowerCase()}` === key)) {
-        out.push(m);
-        added++;
-      }
+      const key = slotKey(m);
+      // chỉ nhận bữa THẬT, đúng ô đang thiếu, và ô đó chưa có bữa thật
+      if (!missSet.has(key) || !isRealMeal(m)) continue;
+      if (out.some((x) => slotKey(x) === key && isRealMeal(x))) continue;
+      out = out.filter((x) => slotKey(x) !== key); // bỏ placeholder cũ cùng ô (nếu có)
+      out.push(m);
+      added++;
     }
     log.info(`${traceId} | fill vòng ${round}: bổ sung ${added} bữa`);
     if (added === 0) break; // model không bù được nữa → dừng, tránh lặp vô ích
   }
-  return out;
+  // Bỏ mọi bữa placeholder còn sót (ô không bù được) → hiển thị "-" thay vì
+  // "Món ăn — kcal"; lần load sau findMissingSlots sẽ tự thử bù lại ô đó.
+  return out.filter(isRealMeal);
 }
 
 /* =========================================================
