@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../lib-client/AuthContext';
 import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
+import LangSwitch from '../../components/LangSwitch';
 import '../../styles/style.css';
 import '../../styles/signin.css';
 
@@ -53,10 +54,12 @@ export default function SignInPage() {
   return (
     <div className="auth-container">
       <div className="auth-header">
-        <Link href="/" className="logo" style={{ marginBottom: 10, fontSize: '1.5rem', textDecoration: 'none' }}>
-          <i className="fa-solid fa-leaf"/>{' '}
-          <span style={{ fontWeight: 700, color: '#333' }}>Calorie AI</span>
-        </Link>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <Link href="/" className="logo" style={{ fontSize: '1.5rem', textDecoration: 'none' }}>
+            <img src="white.jpg" alt="" style={{ height: 36, width: 'auto' }} />
+          </Link>
+          <LangSwitch /> {/* <-- CHÈN NÚT LANGSWITCH VÀO ĐÂY */}
+        </div>
         <h2>{t('auth.signin_title', 'Chào mừng trở lại')}</h2>
         <p style={{ color: '#666' }}>{t('auth.signin_sub', 'Tiếp tục theo dõi sức khỏe của bạn')}</p>
       </div>

@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from '../lib-client/I18nContext';
+import LangSwitch from '../components/LangSwitch';
 import { useToast } from '../lib-client/ToastContext';
 import '../styles/style.css';
 import '../styles/index.css';
@@ -56,9 +57,10 @@ export default function LandingPage() {
     <>
       <header className="navbar">
         <div className="logo">
-          <i className="fa-solid fa-leaf" /> <span>Calorie AI</span>
+          <img src="banner.jpg" alt="ELTIVN" style={{ height: 67, width: 'auto' }} />
         </div>
         <nav className="nav-auth" id="auth-zone">
+          <LangSwitch />
           {authState === 'loading' && (
             <div className="nav-loading">
               <span /><span /><span />
@@ -113,7 +115,7 @@ export default function LandingPage() {
       </main>
 
       <footer>
-        <p>{t('land.footer', '© 2026 Calorie AI. Phân tích dinh dưỡng thông minh.')}</p>
+        <p>{t('land.footer', '© 2026 ELTIVN. Phân tích dinh dưỡng thông minh.')}</p>
       </footer>
     </>
   );

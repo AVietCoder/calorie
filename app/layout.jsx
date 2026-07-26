@@ -5,7 +5,7 @@ import { I18nProvider } from '../lib-client/I18nContext';
 import { ToastProvider } from '../lib-client/ToastContext';
 
 export const metadata = {
-  title: 'Calorie AI',
+  title: 'ELITVN',
   icons: { icon: '/logo.png' },
 };
 
