@@ -1,0 +1,258 @@
+/* review.css - Giao diện Khảo sát Người dùng */
+
+:root {
+  --primary-color: #0ea5e9;
+  --primary-hover: #0284c7;
+  --primary-light: #e0f2fe;
+  --primary-glow: rgba(14, 165, 233, 0.25);
+  
+  --bg-surface: #ffffff;
+  --bg-card: #f8fafc;
+  --bg-hover: #f1f5f9;
+  
+  --text-main: #0f172a;
+  --text-sub: #64748b;
+  --border-color: #e2e8f0;
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Container chính */
+.survey-container {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 100%;
+  max-width: 860px;
+}
+
+/* Hero Section */
+.guide-hero {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-sm);
+}
+
+.guide-hero .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary-color);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.guide-hero h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 12px;
+  line-height: 1.25;
+}
+
+.guide-hero p {
+  color: var(--text-sub);
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--bg-hover);
+  color: var(--text-sub);
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+}
+
+/* Từng nhóm câu hỏi (Guide Section) */
+.guide-section {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+  scroll-margin-top: 100px;
+}
+
+.guide-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--bg-hover);
+}
+
+.guide-section h2 .num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: var(--primary-light);
+  color: var(--primary-color);
+  border-radius: 50%;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* Thẻ câu hỏi */
+.survey-questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.survey-question-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.survey-question-card:hover {
+  background: var(--bg-surface);
+  border-color: #cbd5e1;
+  box-shadow: var(--shadow-sm);
+}
+
+.survey-question-text {
+  font-size: 0.975rem;
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.5;
+}
+
+/* Bộ nút chấm điểm 1-5 */
+.rating-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rating-btn {
+  flex: 1;
+  max-width: 56px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  outline: none;
+}
+
+.rating-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: var(--primary-light);
+  transform: translateY(-2px);
+}
+
+.rating-btn.active {
+  background: var(--primary-color);
+  color: #ffffff;
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 12px var(--primary-glow);
+  transform: translateY(-2px);
+}
+
+/* Chú thích 1 (Không đồng ý) -> 5 (Đồng ý) */
+.rating-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-sub);
+  margin-top: -4px;
+  padding: 0 2px;
+}
+
+/* Nút Submit */
+.survey-submit-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0 32px;
+}
+
+.btn-submit-survey {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 40px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  border: none;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md), 0 4px 14px var(--primary-glow);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-submit-survey:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), 0 6px 20px var(--primary-glow);
+}
+
+.btn-submit-survey:active {
+  transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .guide-hero, .guide-section {
+    padding: 18px;
+  }
+
+  .rating-group {
+    gap: 6px;
+  }
+
+  .rating-btn {
+    height: 40px;
+    font-size: 0.9rem;
+  }
+
+  .btn-submit-survey {
+    width: 100%;
+  }
+}
