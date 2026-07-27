@@ -11,7 +11,7 @@ export default function Header() {
 
   return (
     <header className="header">
-      <Link href="/" className="logo"><img src="white.jpg" alt="" style={{ height: 67, width: 'auto' }} /></Link>
+      <Link href="/" className="logo"><img src="../white.jpg" alt="" style={{ height: 67, width: 'auto' }} /></Link>
       <div id="auth-zone" className="header-tools">
         <LangSwitch />
         {isAuthenticated && <RemindersBell />}

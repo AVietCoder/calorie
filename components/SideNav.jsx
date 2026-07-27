@@ -48,8 +48,13 @@ export default function SideNav() {
         </div>
       ))}
       {isAdmin && (
-        <div className={`nav-item${pathname?.startsWith('/admin') ? ' active' : ''}`} title="Quản trị tài liệu RAG" onClick={() => router.push('/admin')}>
+        <div className={`nav-item${pathname === '/admin' ? ' active' : ''}`} title="Quản trị tài liệu RAG" onClick={() => router.push('/admin')}>
           <i className="fa-solid fa-shield-halved" /><span>ADMIN</span>
+        </div>
+      )}
+      {isAdmin && (
+        <div className={`nav-item${pathname?.startsWith('/admin/survey') ? ' active' : ''}`} title="Thống kê khảo sát người dùng" onClick={() => router.push('/admin/survey')}>
+          <i className="fa-solid fa-chart-column" /><span>KHẢO SÁT</span>
         </div>
       )}
     </aside>
