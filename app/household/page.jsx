@@ -16,24 +16,51 @@ const EMPTY_MEMBER_FORM = {
   target_weight: '', goal: 'maintain', activity_level: '1.2', disease: '', allergies: '', dislikes: '', likes: '',
 };
 
+/** Initials for the pending-request avatar — there is no avatar column on profiles. */
+function initialsOf(name, email) {
+  const src = String(name || email || '?').trim();
+  const words = src.split(/\s+/).filter(Boolean);
+  if (words.length >= 2) return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+  return src.slice(0, 2).toUpperCase();
+}
+
+/** Stable per-person hue so each requester's avatar keeps the same color. */
+function avatarHue(seed) {
+  const s = String(seed || '');
+  let h = 0;
+  for (let i = 0; i < s.length; i += 1) h = (h * 31 + s.charCodeAt(i)) % 360;
+  return String(h);
+}
+
 export default function HouseholdPage() {
   const [household, setHousehold] = useState(null);
   const [members, setMembers] = useState([]);
+  const [isOwner, setIsOwner] = useState(false);
+  const [joinRequests, setJoinRequests] = useState([]);
+  const [myRequest, setMyRequest] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteResult, setInviteResult] = useState('');
-  const [acceptCode, setAcceptCode] = useState('');
+  const [joinCode, setJoinCode] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [memberForm, setMemberForm] = useState(EMPTY_MEMBER_FORM);
 
   const { get, post } = useApi();
   const showToast = useToast();
-  const { t, tn } = useTranslation();
+  const { t, tn, lang } = useTranslation();
   const router = useRouter();
 
   function goalLabel(goal) {
     return String(goal || '').split(',').map((g) => t(GOAL_KEY[g.trim()], GOAL_LABEL[g.trim()] || g.trim())).filter(Boolean).join(', ') || '—';
+  }
+
+  function requestedAt(iso) {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    const mins = Math.floor((Date.now() - d.getTime()) / 60000);
+    if (mins < 1) return t('hh.just_now', 'Vừa xong');
+    if (mins < 60) return tn('hh.mins_ago', { n: mins }, `${mins} phút trước`);
+    if (mins < 1440) return tn('hh.hours_ago', { n: Math.floor(mins / 60) }, `${Math.floor(mins / 60)} giờ trước`);
+    return d.toLocaleDateString(lang === 'en' ? 'en-US' : 'vi-VN');
   }
 
   async function loadHousehold() {
@@ -41,6 +68,9 @@ export default function HouseholdPage() {
       const data = await get('/api/family-menu', { resource: 'household' });
       setHousehold(data?.household || null);
       setMembers(data?.members || []);
+      setIsOwner(!!data?.is_owner);
+      setJoinRequests(data?.join_requests || []);
+      setMyRequest(data?.my_pending_request || null);
     } catch (e) {
       showToast(e.message, 'error');
     } finally {
@@ -76,24 +106,49 @@ export default function HouseholdPage() {
     }
   }
 
-  async function inviteMember() {
-    const email = inviteEmail.trim();
-    if (!email) { showToast(t('hh.toast_need_email', 'Nhập email trước.'), 'error'); return; }
+  async function copyJoinCode() {
     try {
-      const invite = await post('/api/family-menu', { action: 'invite_member', household_id: household.id, email });
-      setInviteResult(tn('hh.invite_result', { code: invite.code, email }, `Mã mời: ${invite.code} — chia sẻ mã này cho ${email} để họ tham gia (mục "Tham gia gia đình khác" ở dưới).`));
-      showToast(t('hh.toast_invite_created', 'Đã tạo mã mời!'), 'success');
+      await navigator.clipboard.writeText(household.join_code);
+      showToast(t('hh.toast_code_copied', 'Đã sao chép mã!'), 'success');
+    } catch {
+      showToast(t('hh.toast_copy_failed', 'Không sao chép được — hãy chọn và copy thủ công.'), 'error');
+    }
+  }
+
+  async function regenerateCode() {
+    if (!window.confirm(t('hh.confirm_regenerate', 'Tạo mã mới? Mã cũ sẽ ngừng hoạt động ngay lập tức.'))) return;
+    try {
+      await post('/api/family-menu', { action: 'regenerate_join_code', household_id: household.id });
+      showToast(t('hh.toast_code_regenerated', 'Đã tạo mã mới!'), 'success');
+      await loadHousehold();
     } catch (e) {
       showToast(e.message, 'error');
     }
   }
 
-  async function acceptInvite() {
-    const code = acceptCode.trim();
-    if (!code) { showToast(t('hh.toast_need_code', 'Nhập mã mời trước.'), 'error'); return; }
+  async function submitJoinCode() {
+    const code = joinCode.trim();
+    if (code.length !== 6) { showToast(t('hh.toast_need_code', 'Nhập đủ 6 chữ số.'), 'error'); return; }
     try {
-      await post('/api/family-menu', { action: 'accept_invite', code });
-      showToast(t('hh.toast_joined', 'Đã tham gia gia đình!'), 'success');
+      await post('/api/family-menu', { action: 'join_by_code', code });
+      setJoinCode('');
+      showToast(t('hh.toast_request_sent', 'Đã gửi yêu cầu — đang chờ chủ hộ duyệt.'), 'success');
+      await loadHousehold();
+    } catch (e) {
+      showToast(e.message, 'error');
+    }
+  }
+
+  async function decideRequest(requestId, accept) {
+    try {
+      await post('/api/family-menu', {
+        action: accept ? 'approve_join_request' : 'reject_join_request',
+        request_id: requestId,
+      });
+      showToast(
+        accept ? t('hh.toast_request_accepted', 'Đã duyệt thành viên mới!') : t('hh.toast_request_rejected', 'Đã từ chối yêu cầu.'),
+        'success'
+      );
       await loadHousehold();
     } catch (e) {
       showToast(e.message, 'error');
@@ -159,6 +214,41 @@ export default function HouseholdPage() {
 
   const isFamily = household?.mode === 'family';
 
+  // Same panel on the empty state and inside the family-mode card: either the
+  // 6-digit input, or the "waiting for approval" notice once a request is filed.
+  const joinPanel = myRequest ? (
+    <div className="join-pending">
+      <i className="fa-solid fa-hourglass-half" />
+      <div>
+        <strong>{t('hh.waiting_title', 'Đang chờ chủ hộ duyệt')}</strong>
+        <p>{t('hh.waiting_desc', 'Yêu cầu của bạn đã được gửi. Bạn sẽ vào gia đình ngay khi chủ hộ chấp nhận.')}</p>
+      </div>
+    </div>
+  ) : (
+    <div className="join-row">
+      <input
+        className="code-input"
+        type="text"
+        inputMode="numeric"
+        autoComplete="one-time-code"
+        maxLength={6}
+        value={joinCode}
+        onChange={(e) => setJoinCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+        onKeyDown={(e) => { if (e.key === 'Enter' && joinCode.length === 6) submitJoinCode(); }}
+        placeholder="••••••"
+        aria-label={t('hh.join_input_label', 'Mã tham gia 6 chữ số')}
+      />
+      <ActionButton
+        className="btn btn-primary"
+        onClick={submitJoinCode}
+        disabled={joinCode.length !== 6}
+        loadingText={t('common.sending', 'Đang gửi...')}
+      >
+        {t('hh.join_btn', 'Tham gia')}
+      </ActionButton>
+    </div>
+  );
+
   return (
     <PageShell>
       <div className="schedule-hero">
@@ -172,22 +262,30 @@ export default function HouseholdPage() {
       </div>
 
       {!household ? (
-        <div className="card">
-          <h3><i className="fa-solid fa-house" /> {t('hh.start', 'Bắt đầu')}</h3>
-          <p style={{ color: 'var(--text-sub)', marginBottom: 18 }}>{t('hh.start_desc', 'Bạn chưa có hồ sơ gia đình. Chọn chế độ để bắt đầu:')}</p>
-          <div className="mode-choice">
-            <ActionButton className="mode-card" onClick={() => createHousehold('chef')}>
-              <i className="fa-solid fa-kitchen-set" />
-              <strong>{t('hh.mode_chef', 'Chế độ đầu bếp')}</strong>
-              <span>{t('hh.mode_chef_desc', 'Bạn quản lý hồ sơ cho nhiều người (không cần họ đăng nhập) — phù hợp 1 người nấu cho cả nhà.')}</span>
-            </ActionButton>
-            <ActionButton className="mode-card" onClick={() => createHousehold('family')}>
-              <i className="fa-solid fa-people-group" />
-              <strong>{t('hh.mode_family', 'Chế độ gia đình')}</strong>
-              <span>{t('hh.mode_family_desc', 'Mời các thành viên khác dùng tài khoản riêng của họ tham gia vào gia đình.')}</span>
-            </ActionButton>
+        <>
+          <div className="card">
+            <h3><i className="fa-solid fa-house" /> {t('hh.start', 'Bắt đầu')}</h3>
+            <p style={{ color: 'var(--text-sub)', marginBottom: 18 }}>{t('hh.start_desc', 'Bạn chưa có hồ sơ gia đình. Chọn chế độ để bắt đầu:')}</p>
+            <div className="mode-choice">
+              <ActionButton className="mode-card" onClick={() => createHousehold('chef')}>
+                <i className="fa-solid fa-kitchen-set" />
+                <strong>{t('hh.mode_chef', 'Chế độ đầu bếp')}</strong>
+                <span>{t('hh.mode_chef_desc', 'Bạn quản lý hồ sơ cho nhiều người (không cần họ đăng nhập) — phù hợp 1 người nấu cho cả nhà.')}</span>
+              </ActionButton>
+              <ActionButton className="mode-card" onClick={() => createHousehold('family')}>
+                <i className="fa-solid fa-people-group" />
+                <strong>{t('hh.mode_family', 'Chế độ gia đình')}</strong>
+                <span>{t('hh.mode_family_desc', 'Chia sẻ mã 6 chữ số để các thành viên khác tham gia bằng tài khoản riêng của họ.')}</span>
+              </ActionButton>
+            </div>
           </div>
-        </div>
+
+          <div className="card">
+            <h3><i className="fa-solid fa-right-to-bracket" /> {t('hh.join_title_new', 'Đã có mã tham gia?')}</h3>
+            <p className="join-hint">{t('hh.join_desc', 'Nhập mã 6 chữ số do chủ hộ chia sẻ.')}</p>
+            {joinPanel}
+          </div>
+        </>
       ) : (
         <div>
           <div className="card mode-bar">
@@ -198,18 +296,64 @@ export default function HouseholdPage() {
             <ActionButton className="btn btn-secondary" onClick={switchMode} loadingText={t('common.processing', 'Đang xử lý...')}>{t('hh.switch_mode', 'Chuyển chế độ')}</ActionButton>
           </div>
 
+          {isFamily && isOwner && (
+            <div className="card">
+              <h3><i className="fa-solid fa-hashtag" /> {t('hh.code_title', 'Mã tham gia gia đình')}</h3>
+              <p className="join-hint">{t('hh.code_desc', 'Chia sẻ mã 6 chữ số này. Người nhập mã sẽ hiện ở mục "Yêu cầu tham gia" bên dưới để bạn duyệt.')}</p>
+              <div className="join-code-box">
+                <span className="join-code-value">{household.join_code || '——————'}</span>
+                <div className="join-code-actions">
+                  <button className="btn btn-secondary" onClick={copyJoinCode} disabled={!household.join_code}>
+                    <i className="fa-regular fa-copy" /> {t('hh.copy', 'Sao chép')}
+                  </button>
+                  <ActionButton className="btn btn-secondary" onClick={regenerateCode} loadingText={t('common.processing', 'Đang xử lý...')}>
+                    <i className="fa-solid fa-rotate" /> {t('hh.regenerate', 'Tạo mã mới')}
+                  </ActionButton>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isFamily && isOwner && (
+            <div className="card">
+              <h3>
+                <i className="fa-solid fa-user-clock" /> {t('hh.requests_title', 'Yêu cầu tham gia')}
+                {joinRequests.length > 0 && <span className="req-count">{joinRequests.length}</span>}
+              </h3>
+              {joinRequests.length === 0 ? (
+                <p className="join-hint">{t('hh.requests_empty', 'Chưa có yêu cầu nào.')}</p>
+              ) : (
+                <div className="request-list">
+                  {joinRequests.map((r) => (
+                    <div className="request-card" key={r.id}>
+                      <div className="req-avatar" style={{ '--req-hue': avatarHue(r.user_id) }} aria-hidden="true">
+                        {initialsOf(r.display_name, r.email)}
+                      </div>
+                      <div className="req-info">
+                        <strong>{r.display_name || t('hh.unknown_user', 'Người dùng')}</strong>
+                        {r.email && <span className="req-email">{r.email}</span>}
+                        <span className="req-time">{requestedAt(r.created_at)}</span>
+                      </div>
+                      <div className="req-actions">
+                        <ActionButton className="btn btn-primary" onClick={() => decideRequest(r.id, true)} loadingText={t('common.processing', 'Đang xử lý...')}>
+                          <i className="fa-solid fa-check" /> {t('hh.accept', 'Chấp nhận')}
+                        </ActionButton>
+                        <ActionButton className="btn btn-secondary" onClick={() => decideRequest(r.id, false)} loadingText={t('common.processing', 'Đang xử lý...')}>
+                          <i className="fa-solid fa-xmark" /> {t('hh.reject', 'Từ chối')}
+                        </ActionButton>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {isFamily && (
             <div className="card">
-              <h3><i className="fa-solid fa-user-plus" /> {t('hh.invite_title', 'Mời thành viên')}</h3>
-              <div className="invite-row">
-                <input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder={t('hh.invite_email_ph', 'Email người được mời')} />
-                <ActionButton className="btn btn-primary" onClick={inviteMember} loadingText={t('common.creating', 'Đang tạo...')}>{t('hh.invite_btn', 'Tạo mã mời')}</ActionButton>
-              </div>
-              {inviteResult && <p style={{ color: 'var(--text-sub)', marginTop: 10 }}>{inviteResult}</p>}
-              <div className="invite-row" style={{ marginTop: 14 }}>
-                <input type="text" value={acceptCode} onChange={(e) => setAcceptCode(e.target.value)} placeholder={t('hh.accept_ph', 'Nhập mã mời để tham gia gia đình khác')} />
-                <ActionButton className="btn btn-secondary" onClick={acceptInvite} loadingText={t('common.processing', 'Đang xử lý...')}>{t('hh.accept_btn', 'Tham gia')}</ActionButton>
-              </div>
+              <h3><i className="fa-solid fa-right-to-bracket" /> {t('hh.join_title', 'Tham gia gia đình khác')}</h3>
+              <p className="join-hint">{t('hh.join_desc', 'Nhập mã 6 chữ số do chủ hộ chia sẻ.')}</p>
+              {joinPanel}
             </div>
           )}
 

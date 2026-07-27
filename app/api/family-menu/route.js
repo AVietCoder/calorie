@@ -13,6 +13,9 @@
  * menu_adjustment_audit.
  *
  * GET  ?resource=household                       -> current user's household + members
+ *                                                    (+ join code & pending join
+ *                                                     requests when owner)
+ * GET  ?resource=join-requests&household_id=      -> pending join requests (owner only)
  * GET  ?resource=templates[&tag=]                 -> ranked template list
  * GET  ?resource=template&id=                     -> full template detail
  * GET  ?resource=plan&household_id=                -> latest active plan for household
@@ -21,7 +24,8 @@
  *
  * POST { action: 'create_household' | 'update_household' | 'set_household_mode' |
  *                'add_member' | 'update_member' | 'remove_member' |
- *                'invite_member' | 'accept_invite' |
+ *                'regenerate_join_code' | 'join_by_code' |
+ *                'approve_join_request' | 'reject_join_request' |
  *                'upload_template_excel' (multipart) | 'create_template_manual' |
  *                'generate_plan' | 'regenerate_plan' | 'swap_dish', ... }
  */
@@ -37,6 +41,11 @@ import {
   isHouseholdOwner,
   getMembers,
   canSwitchMode,
+  generateUniqueJoinCode,
+  regenerateJoinCode,
+  ensureJoinCode,
+  findHouseholdByJoinCode,
+  JOIN_CODE_RE,
 } from '../../../lib/family-menu/household.js';
 import { recommendTemplates } from '../../../lib/family-menu/recommend.js';
 import {
@@ -222,10 +231,40 @@ export async function GET(request) {
     const resource = url.searchParams.get('resource');
 
     if (resource === 'household') {
-      const household = await getHouseholdForUser(user.id);
-      if (!household) return ok(null);
+      let household = await getHouseholdForUser(user.id);
+      // A user with no household still needs my_pending_request so the join
+      // screen can render "waiting for the owner's approval" instead of the form.
+      if (!household) {
+        return ok({
+          household: null,
+          members: [],
+          is_owner: false,
+          join_requests: [],
+          my_pending_request: await getMyPendingRequest(user.id),
+        });
+      }
+
+      const isOwner = household.owner_id === user.id;
+      // Households created before migrations/family_join_code.sql ran have no
+      // code yet — mint one lazily the first time the owner opens the page.
+      if (isOwner && household.mode === 'family' && !household.join_code) {
+        household = await ensureJoinCode(household);
+      }
+
       const members = await getMembers(household.id);
-      return ok({ household, members });
+      return ok({
+        household: isOwner ? household : { ...household, join_code: null, join_code_updated_at: null },
+        members,
+        is_owner: isOwner,
+        join_requests: isOwner ? await getPendingRequests(household.id) : [],
+        my_pending_request: await getMyPendingRequest(user.id),
+      });
+    }
+
+    if (resource === 'join-requests') {
+      const householdId = url.searchParams.get('household_id');
+      await requireOwnedHousehold(user, householdId);
+      return ok(await getPendingRequests(householdId));
     }
 
     if (resource === 'templates') {
@@ -325,10 +364,14 @@ export async function POST(request) {
         return ok(await updateMember(user, body));
       case 'remove_member':
         return ok(await removeMember(user, body));
-      case 'invite_member':
-        return ok(await inviteMember(user, body));
-      case 'accept_invite':
-        return ok(await acceptInvite(user, body));
+      case 'regenerate_join_code':
+        return ok(await regenerateHouseholdJoinCode(user, body));
+      case 'join_by_code':
+        return ok(await joinByCode(user, body));
+      case 'approve_join_request':
+        return ok(await approveJoinRequest(user, body));
+      case 'reject_join_request':
+        return ok(await rejectJoinRequest(user, body));
       case 'upload_template_excel':
         return ok(await uploadTemplateExcel(user, body, files));
       case 'create_template_manual':
@@ -383,6 +426,10 @@ async function createHousehold(user, body) {
       budget_week: body.budget_week ? Number(body.budget_week) : null,
       cooking_skill: asText(body.cooking_skill) || null,
       meals_per_day: body.meals_per_day ? Number(body.meals_per_day) : 3,
+      // Every family gets its 6-digit join code up front (chef mode too, so
+      // switching to family mode later needs no extra step).
+      join_code: await generateUniqueJoinCode(),
+      join_code_updated_at: new Date().toISOString(),
     })
     .select()
     .single();
@@ -478,42 +525,141 @@ async function removeMember(user, body) {
   return { removed: true };
 }
 
-function randomCode() {
-  return Math.random().toString(36).slice(2, 8).toUpperCase();
+/* ─────────────── join code: request → owner approval → membership ─────────────── */
+
+const REQUEST_FIELDS = 'id, household_id, user_id, status, display_name, email, created_at';
+
+async function getPendingRequests(householdId) {
+  const { data, error } = await supabaseAdmin
+    .from('household_join_requests')
+    .select(REQUEST_FIELDS)
+    .eq('household_id', householdId)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
 }
 
-async function inviteMember(user, body) {
+async function getMyPendingRequest(userId) {
+  const { data } = await supabaseAdmin
+    .from('household_join_requests')
+    .select(REQUEST_FIELDS)
+    .eq('user_id', userId)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data || null;
+}
+
+/** Best-effort label for the owner's pending-request list, snapshotted at request time. */
+async function requesterIdentity(user) {
+  let username = null;
+  try {
+    const { data } = await supabaseAdmin.from('profiles').select('username').eq('id', user.id).maybeSingle();
+    username = data?.username || null;
+  } catch {
+    /* profile is optional — fall through to auth metadata */
+  }
+  const email = user.email || null;
+  const display_name =
+    asText(username) || asText(user.user_metadata?.display_name) || (email ? email.split('@')[0] : '') || 'Thành viên';
+  return { display_name, email };
+}
+
+async function isLinkedMember(householdId, userId) {
+  const { data } = await supabaseAdmin
+    .from('household_members')
+    .select('id')
+    .eq('household_id', householdId)
+    .eq('user_id', userId)
+    .eq('kind', 'linked')
+    .maybeSingle();
+  return !!data;
+}
+
+async function regenerateHouseholdJoinCode(user, body) {
   const household = await requireOwnedHousehold(user, body.household_id);
-  const email = asText(body.email);
-  if (!email) throw new Error('Thiếu email');
+  // Overwriting the column IS the invalidation — there is only ever one active
+  // code per household, so the previous one stops resolving immediately.
+  return regenerateJoinCode(household.id);
+}
+
+async function joinByCode(user, body) {
+  const code = asText(body.code);
+  if (!JOIN_CODE_RE.test(code)) throw new Error('Mã tham gia phải gồm đúng 6 chữ số.');
+
+  const household = await findHouseholdByJoinCode(code);
+  if (!household) throw new Error('Mã tham gia không tồn tại hoặc đã hết hạn.');
+
+  if (household.owner_id === user.id) throw new Error('Đây là gia đình của bạn rồi.');
+  if (await isLinkedMember(household.id, user.id)) throw new Error('Bạn đã là thành viên của gia đình này.');
+
+  const { data: existing } = await supabaseAdmin
+    .from('household_join_requests')
+    .select('id')
+    .eq('household_id', household.id)
+    .eq('user_id', user.id)
+    .eq('status', 'pending')
+    .maybeSingle();
+  if (existing) throw new Error('Bạn đã gửi yêu cầu rồi — đang chờ chủ hộ duyệt.');
+
+  const identity = await requesterIdentity(user);
   const { data, error } = await supabaseAdmin
-    .from('household_invites')
-    .insert({ household_id: household.id, email, code: randomCode() })
-    .select()
+    .from('household_join_requests')
+    .insert({ household_id: household.id, user_id: user.id, status: 'pending', ...identity })
+    .select(REQUEST_FIELDS)
     .single();
   if (error) throw error;
   return data;
 }
 
-async function acceptInvite(user, body) {
-  const code = asText(body.code);
-  if (!code) throw new Error('Thiếu mã mời');
-  const { data: invite, error } = await supabaseAdmin.from('household_invites').select('*').eq('code', code).single();
-  if (error || !invite) throw new Error('Mã mời không hợp lệ.');
-  if (invite.status !== 'pending') throw new Error('Mã mời đã được dùng hoặc hết hạn.');
-  if (new Date(invite.expires_at) < new Date()) throw new Error('Mã mời đã hết hạn.');
+async function loadPendingRequestForOwner(user, requestId) {
+  if (!requestId) throw new Error('Thiếu request_id');
+  const { data: req, error } = await supabaseAdmin
+    .from('household_join_requests')
+    .select('*')
+    .eq('id', requestId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!req) throw new Error('Yêu cầu không tồn tại.');
+  if (req.status !== 'pending') throw new Error('Yêu cầu này đã được xử lý.');
+  const household = await requireOwnedHousehold(user, req.household_id);
+  return { req, household };
+}
 
-  const { data: member, error: insErr } = await supabaseAdmin
-    .from('household_members')
-    .insert({ household_id: invite.household_id, kind: 'linked', user_id: user.id, display_name: user.email || 'Thành viên' })
-    .select()
-    .single();
-  if (insErr) throw insErr;
+async function approveJoinRequest(user, body) {
+  const { req, household } = await loadPendingRequestForOwner(user, body.request_id);
 
-  await supabaseAdmin.from('household_invites').update({ status: 'accepted' }).eq('id', invite.id);
-  await supabaseAdmin.from('households').update({ mode: 'family' }).eq('id', invite.household_id).eq('mode', 'chef');
+  // Tolerate the race where the user was linked in by some other path already.
+  if (!(await isLinkedMember(household.id, req.user_id))) {
+    const { error: insErr } = await supabaseAdmin.from('household_members').insert({
+      household_id: household.id,
+      kind: 'linked',
+      user_id: req.user_id,
+      display_name: req.display_name || req.email || 'Thành viên',
+    });
+    if (insErr) throw insErr;
+  }
 
-  return member;
+  const { error } = await supabaseAdmin
+    .from('household_join_requests')
+    .update({ status: 'accepted', decided_at: new Date().toISOString(), decided_by: user.id })
+    .eq('id', req.id);
+  if (error) throw error;
+
+  // A household that gains a real linked account is a family by definition.
+  await supabaseAdmin.from('households').update({ mode: 'family' }).eq('id', household.id).eq('mode', 'chef');
+
+  return { approved: true, request_id: req.id, user_id: req.user_id };
+}
+
+async function rejectJoinRequest(user, body) {
+  const { req } = await loadPendingRequestForOwner(user, body.request_id);
+  // Rejection removes the request outright so the user is free to try again.
+  const { error } = await supabaseAdmin.from('household_join_requests').delete().eq('id', req.id);
+  if (error) throw error;
+  return { rejected: true, request_id: req.id };
 }
 
 async function uploadTemplateExcel(user, body, files) {
