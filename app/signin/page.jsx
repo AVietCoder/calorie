@@ -56,7 +56,7 @@ export default function SignInPage() {
       <div className="auth-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
           <Link href="/" className="logo" style={{ fontSize: '1.5rem', textDecoration: 'none' }}>
-            <img src="white.jpg" alt="" style={{ height: 36, width: 'auto' }} />
+            <img src="/banner.png" alt="Dr.Fit" style={{ height: 36, width: 'auto' }} />
           </Link>
           <LangSwitch /> {/* <-- CHÈN NÚT LANGSWITCH VÀO ĐÂY */}
         </div>

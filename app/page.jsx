@@ -57,7 +57,7 @@ export default function LandingPage() {
     <>
       <header className="navbar">
         <div className="logo">
-          <img src="banner.jpg" alt="ELTIVN" style={{ height: 67, width: 'auto' }} />
+          <img src="/banner.png" alt="Dr.Fit" style={{ height: 67, width: 'auto' }} />
         </div>
         <nav className="nav-auth" id="auth-zone">
           <LangSwitch />
@@ -115,7 +115,7 @@ export default function LandingPage() {
       </main>
 
       <footer>
-        <p>{t('land.footer', '© 2026 ELTIVN. Phân tích dinh dưỡng thông minh.')}</p>
+        <p>{t('land.footer', '© 2026 Dr.Fit. Phân tích dinh dưỡng thông minh.')}</p>
       </footer>
     </>
   );

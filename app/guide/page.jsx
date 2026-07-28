@@ -68,7 +68,7 @@ export default function GuidePage() {
       {!isGuest && <SideNav />}
       <div className="main-wrapper">
         <header className="header">
-          <Link href={isGuest ? '/' : '/chat'} className="logo"><img src="white.jpg" alt="" style={{ height: 67, width: 'auto' }} /></Link>
+          <Link href={isGuest ? '/' : '/chat'} className="logo"><img src="/banner.png" alt="Dr.Fit" style={{ height: 67, width: 'auto' }} /></Link>
           <div className="header-tools">
             <LangSwitch />
             {!isGuest ? (
@@ -97,7 +97,7 @@ export default function GuidePage() {
             <div>
               <div className="guide-hero" id="intro">
                 <span className="eyebrow"><i className="fa-solid fa-book-open" /> {t('guide.toc_intro', 'Giới thiệu')}</span>
-                <h1>{t('guide.intro_title', 'ELITVN là gì?')}</h1>
+                <h1>{t('guide.intro_title', 'Dr.Fit là gì?')}</h1>
                 <p dangerouslySetInnerHTML={{ __html: t('guide.intro_desc') }} />
                 <div className="hero-meta">
                   <span className="chip"><i className="fa-solid fa-clock" /> {t('guide.chip_read5', 'Đọc trong 5 phút')}</span>

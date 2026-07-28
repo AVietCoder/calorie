@@ -232,7 +232,7 @@ export default function SurveyPage() {
           <section className="review-hero" id="intro">
             <div className="review-hero__content">
               <span className="review-eyebrow"><i className="fa-solid fa-comment-dots" /> Tiếng nói của bạn</span>
-              <h1>Giúp ELITVN tốt hơn<br />sau mỗi trải nghiệm.</h1>
+              <h1>Giúp Dr.Fit tốt hơn<br />sau mỗi trải nghiệm.</h1>
               <p>
                 Những đánh giá chân thực sẽ giúp đội ngũ ưu tiên đúng tính năng và tạo ra
                 một hành trình dinh dưỡng phù hợp hơn với bạn.
@@ -348,7 +348,7 @@ export default function SurveyPage() {
                   <span className="review-section__number">{String(SURVEY_SECTIONS.length + 2).padStart(2, '0')}</span>
                   <div>
                     <span className="review-section__kicker">Câu hỏi mở</span>
-                    <h2>Bạn muốn ELITVN cải thiện điều gì?</h2>
+                    <h2>Bạn muốn Dr.Fit cải thiện điều gì?</h2>
                     <p>Một góp ý cụ thể luôn có giá trị hơn rất nhiều với đội ngũ phát triển.</p>
                   </div>
                 </div>
