@@ -1,3 +1,6 @@
 # Dùng cho scripts/build-knowledge-base.py (trích xuất văn bản từ PDF).
 # Cài đặt: pip install -r scripts/requirements.txt
 pdfplumber>=0.11.0
+
+# Dùng cho scripts/extract-excel-templates.py (trích design system từ file mẫu).
+openpyxl>=3.1.0

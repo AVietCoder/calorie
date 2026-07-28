@@ -84,3 +84,64 @@
 
 #shopping-list-body table { width: 100%; border-collapse: collapse; }
 #shopping-list-body th, #shopping-list-body td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border-soft); font-size: 14px; }
+
+/* ─────────────── Xuất Excel & danh sách đi chợ nâng cấp ─────────────── */
+
+.plan-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.servings-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-sub);
+}
+
+.servings-control input {
+  width: 76px;
+  padding: 8px 10px;
+  border: 1px solid var(--border, #d9e5df);
+  border-radius: 8px;
+  font: inherit;
+}
+
+.shopping-summary {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  background: #f0f7f3;
+  border-left: 3px solid #2f6b4f;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.shopping-summary strong { color: #2f6b4f; }
+.shopping-warn { color: #7a5814; }
+
+.shopping-group { margin-bottom: 22px; }
+
+.shopping-group-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2f6b4f;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.shopping-group table { width: 100%; }
+.shopping-group td:nth-child(2),
+.shopping-group td:nth-child(3),
+.shopping-group td:nth-child(4),
+.shopping-group th:nth-child(2),
+.shopping-group th:nth-child(3),
+.shopping-group th:nth-child(4) { text-align: right; white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .plan-actions { width: 100%; }
+  .plan-actions .btn { flex: 1 1 auto; }
+}

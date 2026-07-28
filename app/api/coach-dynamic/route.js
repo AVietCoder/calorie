@@ -36,6 +36,16 @@ const DEBUG =
 const MEALS_PER_DAY = ["Sáng", "Trưa", "Tối", "Phụ"];
 const TOTAL_DAYS = 7;
 
+/** Ngân sách thời gian cho TOÀN BỘ các lượt gọi LLM của một request sinh plan.
+ *
+ *  Các vòng retry lồng nhau (callAIForPlan 2 lượt × completeJsonWithRetry 3 lượt,
+ *  rồi fillMissingMeals 3 vòng × 3 lượt) có thể lên tới 15 lượt gọi tuần tự;
+ *  ở ~22s/lượt là ~330s, VƯỢT maxDuration=300 → request bị cắt giữa chừng và
+ *  KHÔNG kịp lưu gì cả. Chốt ngân sách thấp hơn maxDuration để luôn còn thời gian
+ *  lưu "plan tốt nhất có thể" và trả lời tử tế. */
+const AI_BUDGET_MS = 210_000;
+const outOfBudget = (deadline) => Number.isFinite(deadline) && Date.now() >= deadline;
+
 /* =========================================================
  * 0. DEBUG / LOGGER
  * ========================================================= */
@@ -196,7 +206,7 @@ const antiLoopParams = (boost = 0) => ({
  *  Degenerate thường phụ thuộc seed/thời điểm → thử lại với seed khác + phạt lặp
  *  mạnh hơn gần như luôn cứu được, thay vì bắn lỗi rác ra người dùng.
  *  @returns {Promise<{parsed:any, raw:string}>}  ném lỗi nếu cả 2 lần đều hỏng. */
-const completeJsonWithRetry = async ({ messages, temperature = 0.2, max_tokens = 2000, seed = null, traceId = "", tag = "json" }) => {
+const completeJsonWithRetry = async ({ messages, temperature = 0.2, max_tokens = 2000, seed = null, traceId = "", tag = "json", deadline = Infinity }) => {
   const build = (boost, seedShift, tempBump) => {
     const al = antiLoopParams(boost);
     return {
@@ -226,6 +236,10 @@ const completeJsonWithRetry = async ({ messages, temperature = 0.2, max_tokens =
   ];
   let lastErr;
   for (let k = 0; k < attempts.length; k++) {
+    if (k > 0 && outOfBudget(deadline)) {
+      log.warn(`${traceId} | ${tag} hết ngân sách thời gian, dừng retry ở lần ${k}`);
+      break;
+    }
     try {
       return await runOnce(...attempts[k]);
     } catch (e) {
@@ -233,7 +247,7 @@ const completeJsonWithRetry = async ({ messages, temperature = 0.2, max_tokens =
       log.warn(`${traceId} | ${tag} lần ${k + 1} hỏng (${e.message}).${k < attempts.length - 1 ? " Retry chống lặp..." : ""}`);
     }
   }
-  throw lastErr;
+  throw lastErr || new Error(`${tag}: hết ngân sách thời gian`);
 };
 
 const extractPlanArray = (parsed) => {
@@ -269,14 +283,44 @@ const fetchFoodsDB = async () => {
   }
 };
 
+/** Số món tối đa nhồi vào prompt. Bảng `foods` chỉ có tăng (mỗi lần sinh plan lại
+ *  insert thêm món mới), nên KHÔNG giới hạn thì prompt phình vô hạn theo thời gian
+ *  → model hết "ngân sách" context và trả plan cụt (1/7 ngày). */
+const MAX_FOODS_IN_PROMPT = 120;
+
+/** Làm sạch tên món trước khi ĐƯA VÀO hoặc GHI RA `foods.description`.
+ *
+ *  RCA: model đôi khi trả `food` kèm luôn số liệu, vd
+ *      "'Cơm trắng + cá thu hấp' | 420kcal | P:30 | F:8 | ..."
+ *  syncMissingFoodsToDB ghi NGUYÊN chuỗi đó thành description, rồi
+ *  formatFoodsForPrompt lại nối THÊM một bộ số nữa vào sau → prompt chứa
+ *  "... | Na:50 | 420kcal | P:3 | F:? | ..." và model học theo cái định dạng hỏng
+ *  này. Cắt phần đuôi từ dấu "|" đầu tiên + bỏ nháy bao ngoài là dứt vòng lặp. */
+const cleanFoodName = (raw) => {
+  let s = String(raw ?? "").trim();
+  if (!s) return "";
+  s = s.split("|")[0].trim();                 // bỏ mọi thứ từ "|" trở đi
+  s = s.replace(/^['"«»‹›“”‘’]+|['"«»‹›“”‘’]+$/g, "").trim(); // bỏ nháy bao ngoài
+  s = s.replace(/\s*[-–—]?\s*\d+\s*kcal\b.*$/i, "").trim();   // bỏ đuôi "- 420kcal ..."
+  return s.replace(/\s+/g, " ");
+};
+
 const formatFoodsForPrompt = (foods) => {
   if (!Array.isArray(foods) || foods.length === 0) return "(Chưa có dữ liệu)";
-  return foods
-    .map(
-      (f) =>
-        `- ${f.description} | ${f.calories ?? "?"}kcal | P:${f.protein ?? "?"} | F:${f.fat ?? "?"} | C:${f.carbs ?? "?"} | Fi:${f.fiber ?? "?"} | Su:${f.sugar ?? "?"} | Na:${f.sodium ?? "?"}`
-    )
-    .join("\n");
+  const seen = new Set();
+  const lines = [];
+  for (const f of foods) {
+    const name = cleanFoodName(f.description);
+    if (!name) continue;
+    const key = normalizeFoodName(name);
+    if (seen.has(key)) continue;              // bảng đang có rất nhiều bản trùng
+    seen.add(key);
+    lines.push(
+      `- ${name} | ${f.calories ?? "?"}kcal | P:${f.protein ?? "?"} | F:${f.fat ?? "?"} | C:${f.carbs ?? "?"} | Fi:${f.fiber ?? "?"} | Su:${f.sugar ?? "?"} | Na:${f.sodium ?? "?"}`
+    );
+    if (lines.length >= MAX_FOODS_IN_PROMPT) break;
+  }
+  return lines.length ? lines.join("\n") : "(Chưa có dữ liệu)";
 };
 
 const buildFoodsSection = (foodsDB) => {
@@ -298,13 +342,15 @@ QUY TẮC:
 const syncMissingFoodsToDB = async (plan, foodsDB) => {
   if (!Array.isArray(plan) || plan.length === 0) return 0;
   const existing = new Set(
-    (foodsDB || []).map((f) => normalizeFoodName(f.description))
+    (foodsDB || []).map((f) => normalizeFoodName(cleanFoodName(f.description)))
   );
   const seen = new Set();
   const missing = [];
   for (const dayEntry of plan) {
     for (const meal of dayEntry.meals || []) {
-      const foodName = meal.food?.trim();
+      // Làm sạch TRƯỚC khi ghi: nếu model trả "Phở gà | 450kcal | P:28..." mà ta
+      // lưu nguyên thì lần sinh sau prompt sẽ chứa tên món hỏng (xem cleanFoodName).
+      const foodName = cleanFoodName(meal.food);
       if (!foodName) continue;
       const key = normalizeFoodName(foodName);
       if (existing.has(key) || seen.has(key)) continue;
@@ -624,7 +670,7 @@ ${PLAN_FORMAT_SPEC}
 /* =========================================================
  * 5. AI CALL WRAPPER
  * ========================================================= */
-const callAIForPlan = async ({ systemPrompt, userPayload, traceId }) => {
+const callAIForPlan = async ({ systemPrompt, userPayload, traceId, deadline = Infinity }) => {
   const t0 = Date.now();
   const messages = [{ role: "system", content: systemPrompt }];
   if (userPayload) {
@@ -658,6 +704,10 @@ const callAIForPlan = async ({ systemPrompt, userPayload, traceId }) => {
 
   let best = null, bestScore = -1, lastErr = null;
   for (let attempt = 1; attempt <= 2; attempt++) {
+    if (attempt > 1 && outOfBudget(deadline)) {
+      log.warn(`${traceId} | hết ngân sách thời gian trước lượt sinh plan #${attempt}`);
+      break;
+    }
     let parsed, raw;
     try {
       ({ parsed, raw } = await completeJsonWithRetry({
@@ -667,6 +717,7 @@ const callAIForPlan = async ({ systemPrompt, userPayload, traceId }) => {
         seed: attempt === 1 ? null : 20240607,
         traceId,
         tag: `create_plan#${attempt}`,
+        deadline,
       }));
     } catch (err) {
       lastErr = err;
@@ -719,11 +770,15 @@ const findMissingSlots = (flat) => {
 /** "Tạo lại đến khi ĐẦY ĐỦ": sau khi có plan, TỰ BỔ SUNG các bữa còn thiếu bằng
  *  các lượt gọi NHỎ (chỉ hỏi đúng những bữa thiếu → nhanh & không bị cắt cụt),
  *  lặp tối đa 3 vòng. Giữ đúng mục tiêu/bệnh lý người dùng. */
-async function fillMissingMeals(flatPlan, { profile, foodsDB, knowledgeBlock = "", traceId = "" }) {
+async function fillMissingMeals(flatPlan, { profile, foodsDB, knowledgeBlock = "", traceId = "", deadline = Infinity }) {
   let out = Array.isArray(flatPlan) ? [...flatPlan] : [];
   for (let round = 1; round <= 3; round++) {
     const missing = findMissingSlots(out);
     if (!missing.length) break;
+    if (outOfBudget(deadline)) {
+      log.warn(`${traceId} | hết ngân sách thời gian, dừng bù bữa ở vòng ${round} (còn thiếu ${missing.length})`);
+      break;
+    }
     log.warn(`${traceId} | fill vòng ${round}: còn thiếu ${missing.length} bữa`);
     const list = missing.map((s) => `- Ngày ${s.day}, bữa "${s.meal}"`).join("\n");
     const sys = `${buildProfileSection(profile)}
@@ -741,6 +796,7 @@ Trả về DUY NHẤT JSON: {"plan":[{"day":<số>,"meals":[{"meal":"<Sáng|Trư
         max_tokens: 3500,
         traceId,
         tag: `fill_meals#${round}`,
+        deadline,
       }));
     } catch (e) {
       log.warn(`${traceId} | fill vòng ${round} lỗi: ${e.message}`);
@@ -1195,12 +1251,17 @@ export async function POST(request) {
     // 3) Đầu tuần mới (Thứ 2) và plan > 1 ngày tuổi → tạo mới
     // 4) User yêu cầu tường minh (force_regenerate)
     const forceRegenerate = req.body.force_regenerate === true;
-    const needsNewPlan =
-      !isDeadlinePassed &&
-      (forceRegenerate ||
-       currentPlan.length === 0 ||
-       diffDays >= 7 ||
-       (isMonday && diffDays >= 1));
+    const planIsStale =
+      currentPlan.length === 0 ||
+      diffDays >= 7 ||
+      (isMonday && diffDays >= 1);
+
+    // isQueryOnly = "CHỈ ĐỌC, KHÔNG gọi AI" — trang /schedule dùng cờ này khi load
+    // để hiện ngay thực đơn đã lưu. Trước đây cờ này được đọc ra rồi CHỈ đem đi log,
+    // nên mỗi lần mở trang vẫn chạy full sinh plan (tới 6 lượt gọi LLM ~22s mỗi lượt)
+    // → trang treo hàng phút. force_regenerate là yêu cầu tường minh nên luôn thắng.
+    const readOnly = !!isQueryOnly && !forceRegenerate;
+    const needsNewPlan = !isDeadlinePassed && !readOnly && (forceRegenerate || planIsStale);
 
     // Tính toán calo thực tế từ các bữa "isActuallyEaten" (user đã xác nhận ăn thực tế)
     // để so sánh với mục tiêu và điều chỉnh thực đơn những ngày còn lại
@@ -1271,11 +1332,16 @@ export async function POST(request) {
         }
       }
 
+      // Một ngân sách CHUNG cho mọi lượt gọi LLM của request này (sinh + bù bữa),
+      // để tổng thời gian không bao giờ chạm maxDuration.
+      const aiDeadline = startedAt + AI_BUDGET_MS;
+
       let newFlatPlan;
       try {
         newFlatPlan = await callAIForPlan({
           systemPrompt: buildCreatePlanPrompt(profile, foodsDB, knowledgeBlock, calorieDeviation),
           traceId,
+          deadline: aiDeadline,
         });
       } catch (planErr) {
         // AI dựng plan hỏng (kể cả sau retry). KHÔNG bắn JSON rác ra người dùng:
@@ -1295,7 +1361,7 @@ export async function POST(request) {
       // "Tạo lại đến khi ĐẦY ĐỦ": tự bổ sung các bữa còn thiếu (nhất là bữa Phụ)
       // bằng các lượt gọi nhỏ cho tới khi đủ 7 ngày × 4 bữa (hoặc model chịu thua).
       let filledFlat = toFlatMeals(newFlatPlan);
-      filledFlat = await fillMissingMeals(filledFlat, { profile, foodsDB, knowledgeBlock, traceId });
+      filledFlat = await fillMissingMeals(filledFlat, { profile, foodsDB, knowledgeBlock, traceId, deadline: aiDeadline });
       currentPlan = groupPlanByDay(filledFlat);
       const stillMissing = findMissingSlots(filledFlat).length;
       log.info(`${traceId} | plan hoàn tất: ${filledFlat.length}/${TOTAL_DAYS * MEALS_PER_DAY.length} bữa (còn thiếu ${stillMissing})`);
@@ -1334,10 +1400,10 @@ export async function POST(request) {
       // KHÔNG cần user bấm tạo lại. Chỉ chạy 1 lần cho mỗi plan thiếu (lần load
       // sau đã đủ nên không gọi lại). Đáp ứng: "load lại thì tạo lại đến khi đầy đủ".
       const flatNow = toFlatMeals(currentPlan);
-      const missingNow = findMissingSlots(flatNow);
+      const missingNow = readOnly ? [] : findMissingSlots(flatNow);
       if (missingNow.length > 0) {
         log.warn(`${traceId} | plan đã lưu thiếu ${missingNow.length} bữa → tự bù khi load`);
-        const filled = await fillMissingMeals(flatNow, { profile, foodsDB, traceId });
+        const filled = await fillMissingMeals(flatNow, { profile, foodsDB, traceId, deadline: startedAt + AI_BUDGET_MS });
         currentPlan = groupPlanByDay(filled);
         const { error: healErr } = await supabase
           .from("profiles")
@@ -1349,21 +1415,43 @@ export async function POST(request) {
         aiReply = left === 0
           ? "HLV AI đã bổ sung các bữa còn thiếu — thực đơn tuần của bạn giờ đã đầy đủ!"
           : "HLV AI đã bổ sung thêm các bữa còn thiếu cho thực đơn tuần của bạn.";
+      } else if (readOnly && (planIsStale || findMissingSlots(flatNow).length > 0)) {
+        // Chỉ-đọc: chưa gọi AI nên đừng báo "đang áp dụng tốt" khi thực đơn còn
+        // trống/cũ — client sẽ tự chạy lượt sinh trong nền ngay sau đó.
+        aiReply = currentPlan.length === 0
+          ? "HLV AI đang soạn thực đơn tuần cho bạn..."
+          : "HLV AI đang cập nhật lại thực đơn tuần cho bạn...";
       } else {
         aiReply = "Lộ trình tuần này của bạn vẫn đang được áp dụng rất tốt!";
       }
     }
+
+    // Ở chế độ chỉ-đọc ta KHÔNG gọi AI, nên phải báo cho client biết còn nợ việc gì
+    // để nó tự gọi lại 1 lượt sinh/bù trong nền (không chặn màn hình).
+    const missingAfter = findMissingSlots(toFlatMeals(currentPlan)).length;
+    const needsGeneration =
+      readOnly && !isDeadlinePassed && (planIsStale || missingAfter > 0);
 
     return res.status(200).json({
       success: true,
       reply: aiReply,
       newPlan: flattenPlan(currentPlan),
       isDeadlinePassed,
+      // client dùng 3 cờ này để quyết định có chạy nền hay không.
+      // planStale = trống/quá hạn tuần (BẮT BUỘC dựng lại) vs chỉ thiếu vài bữa
+      // (chỉ nên thử bù, vì model có thể không bao giờ bù đủ).
+      needsGeneration,
+      planStale: planIsStale,
+      missingMeals: missingAfter,
       diagnostics: DEBUG
         ? {
             traceId,
             ms: Date.now() - startedAt,
+            readOnly,
+            planIsStale,
             needsNewPlan,
+            needsGeneration,
+            missingMeals: missingAfter,
             foodsInserted,
             foodsDBSize: foodsDB.length,
           }

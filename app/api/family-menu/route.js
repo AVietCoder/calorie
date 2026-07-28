@@ -30,7 +30,6 @@
  *                'generate_plan' | 'regenerate_plan' | 'swap_dish', ... }
  */
 import { NextResponse } from 'next/server';
-import * as XLSX from 'xlsx';
 
 import { authenticateToken } from '../../../lib/auth-middleware.js';
 import { supabaseAdmin } from '../../../lib/supabase.js';
@@ -38,6 +37,7 @@ import { estimateFoodSmart } from '../../../lib/nutrition.js';
 import { corsJson, corsOptions } from '../../../lib/cors.js';
 import {
   getHouseholdForUser,
+  getJoinedHousehold,
   isHouseholdOwner,
   getMembers,
   canSwitchMode,
@@ -55,6 +55,10 @@ import {
   swapDish,
   buildShoppingList,
 } from '../../../lib/family-menu/plan-builder.js';
+import { importMenuWorkbook } from '../../../lib/excel/import/index.js';
+import { buildExportModel } from '../../../lib/family-menu/plan-export.js';
+import { exportPlanWorkbook, exportImportTemplate } from '../../../lib/excel/index.js';
+import { MIME_XLSX } from '../../../lib/excel/mime.js';
 
 export const maxDuration = 60;
 
@@ -68,102 +72,68 @@ const asList = (v) =>
 const ok = (data, status = 200) => corsJson(NextResponse, { success: true, data }, { status });
 const fail = (status, error) => corsJson(NextResponse, { success: false, error: String(error?.message || error) }, { status });
 
-/* ───────────────────────── Excel template ingestion ───────────────────────── */
+/* ───────────────────── Excel template ingestion (bộ nhập thông minh) ───────────────────── */
 
-async function parseExcelTemplate(buffer) {
-  const wb = XLSX.read(buffer, { type: 'buffer' });
-  const sheet = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+/**
+ * Đọc file Excel người dùng tải lên và trả về `days[]` sẵn sàng ghi DB.
+ *
+ * Toàn bộ việc nhận diện layout đã chuyển sang lib/excel/import/ (pipeline
+ * Đọc → Phân tích layout → Nhận diện bảng/ngày/bữa → Chuẩn hoá). Route chỉ còn
+ * lo phần nghiệp vụ: bù dinh dưỡng thiếu bằng engine ước tính sẵn có.
+ *
+ * Định dạng mẫu 16 cột cũ vẫn được nhận diện và xử lý y như trước.
+ */
+async function parseExcelTemplate(buffer, opts = {}) {
+  const { days, report } = await importMenuWorkbook(buffer, opts);
 
-  const dishKey = (r) => `${r.day_index}::${r.meal_type}::${String(r.dish_name).trim().toLowerCase()}`;
-  const dishesByKey = new Map();
-  const order = [];
-
-  for (const r of rows) {
-    const key = dishKey(r);
-    if (!dishesByKey.has(key)) {
-      dishesByKey.set(key, {
-        day_index: Number(r.day_index),
-        meal_type: String(r.meal_type).trim().toLowerCase(),
-        name: String(r.dish_name).trim(),
-        base_grams: numOrNull(r.base_grams),
-        calories: numOrNull(r.calories),
-        protein: numOrNull(r.protein),
-        fat: numOrNull(r.fat),
-        carbs: numOrNull(r.carbs),
-        fiber: numOrNull(r.fiber),
-        sugar: numOrNull(r.sugar),
-        sodium: numOrNull(r.sodium),
-        tags: asListLocal(r.dish_tags),
-        ingredients: [],
-      });
-      order.push(key);
-    }
-    const dish = dishesByKey.get(key);
-    if (r.ingredient_name) {
-      dish.ingredients.push({
-        name: String(r.ingredient_name).trim(),
-        grams: numOrNull(r.ingredient_grams),
-        unit: String(r.ingredient_unit || 'g').trim(),
-        tags: asListLocal(r.ingredient_tags),
-      });
-    }
-  }
-
-  for (const key of order) {
-    const dish = dishesByKey.get(key);
-    if (dish.calories == null || dish.protein == null) {
-      try {
-        const est = await estimateFoodSmart({ food: dish.name });
-        if (est) {
-          dish.calories = dish.calories ?? est.calories;
-          dish.protein = dish.protein ?? stripUnit(est.protein);
-          dish.fat = dish.fat ?? stripUnit(est.fat);
-          dish.carbs = dish.carbs ?? stripUnit(est.carbs);
-          dish.fiber = dish.fiber ?? stripUnit(est.fiber);
-          dish.sugar = dish.sugar ?? stripUnit(est.sugar);
-          dish.sodium = dish.sodium ?? stripUnit(est.sodium);
-          dish.source = est.source;
-          dish.confidence = est.confidence;
-        }
-      } catch {
-        /* best-effort — leave nulls, admin/owner can fix later */
+  // Món nào thiếu calories/protein thì nhờ engine dinh dưỡng ước tính — giữ
+  // nguyên hành vi cũ, chỉ khác là nay áp dụng cho mọi layout chứ không riêng
+  // file mẫu 16 cột.
+  const pending = [];
+  for (const day of days) {
+    for (const meal of day.meals) {
+      for (const dish of meal.dishes) {
+        if (dish.calories == null || dish.protein == null) pending.push(dish);
       }
     }
   }
 
-  const byDayMeal = new Map();
-  for (const key of order) {
-    const dish = dishesByKey.get(key);
-    const dmKey = `${dish.day_index}::${dish.meal_type}`;
-    if (!byDayMeal.has(dmKey)) byDayMeal.set(dmKey, { day_index: dish.day_index, meal_type: dish.meal_type, dishes: [] });
-    byDayMeal.get(dmKey).dishes.push(dish);
+  // Giới hạn số lần gọi engine để một file 120 món không làm request timeout.
+  const MAX_ESTIMATES = Number(process.env.EXCEL_IMPORT_MAX_ESTIMATES || 60);
+  let estimated = 0;
+  for (const dish of pending.slice(0, MAX_ESTIMATES)) {
+    try {
+      const est = await estimateFoodSmart({ food: dish.name });
+      if (!est) continue;
+      dish.calories = dish.calories ?? est.calories;
+      dish.protein = dish.protein ?? stripUnit(est.protein);
+      dish.fat = dish.fat ?? stripUnit(est.fat);
+      dish.carbs = dish.carbs ?? stripUnit(est.carbs);
+      dish.fiber = dish.fiber ?? stripUnit(est.fiber);
+      dish.sugar = dish.sugar ?? stripUnit(est.sugar);
+      dish.sodium = dish.sodium ?? stripUnit(est.sodium);
+      dish.source = est.source || 'excel_import';
+      dish.confidence = est.confidence || 'low';
+      estimated += 1;
+    } catch {
+      /* best-effort — để null, chủ hộ/admin sửa sau */
+    }
   }
 
-  const byDay = new Map();
-  for (const dm of byDayMeal.values()) {
-    if (!byDay.has(dm.day_index)) byDay.set(dm.day_index, { day_index: dm.day_index, meals: [] });
-    byDay.get(dm.day_index).meals.push(dm);
+  if (pending.length > MAX_ESTIMATES) {
+    report.warnings = [
+      ...(report.warnings || []),
+      `${pending.length - MAX_ESTIMATES} món chưa được ước tính dinh dưỡng (vượt giới hạn mỗi lần nhập) — có thể bổ sung sau.`,
+    ];
   }
 
-  return [...byDay.values()].sort((a, b) => a.day_index - b.day_index);
+  return { days, report: { ...report, estimatedDishes: estimated, pendingEstimates: pending.length } };
 }
 
-function numOrNull(v) {
-  if (v === '' || v == null) return null;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : null;
-}
 function stripUnit(v) {
   if (v == null) return null;
   const n = parseFloat(String(v).replace(/[^0-9.\-]/g, ''));
   return Number.isFinite(n) ? n : null;
-}
-function asListLocal(v) {
-  return String(v || '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
 }
 
 async function persistTemplateDays(templateId, days) {
@@ -239,6 +209,8 @@ export async function GET(request) {
           household: null,
           members: [],
           is_owner: false,
+          is_joined_member: false,
+          can_create_family: true,
           join_requests: [],
           my_pending_request: await getMyPendingRequest(user.id),
         });
@@ -253,9 +225,14 @@ export async function GET(request) {
 
       const members = await getMembers(household.id);
       return ok({
+        // join_code chỉ dành cho chủ hộ — thành viên không được thấy mã (Ảnh 3.1).
         household: isOwner ? household : { ...household, join_code: null, join_code_updated_at: null },
         members,
         is_owner: isOwner,
+        // Đang là thành viên gia đình của NGƯỜI KHÁC -> UI ẩn toàn bộ chức năng
+        // tạo gia đình / sinh mã, và hiện nút "Rời gia đình".
+        is_joined_member: !isOwner,
+        can_create_family: false,
         join_requests: isOwner ? await getPendingRequests(household.id) : [],
         my_pending_request: await getMyPendingRequest(user.id),
       });
@@ -308,6 +285,16 @@ export async function GET(request) {
         .order('created_at', { ascending: false });
       if (error) throw error;
       return ok(data || []);
+    }
+
+    // Xuất Excel: trả BINARY chứ không phải JSON, nên không đi qua ok()/fail().
+    if (resource === 'export') {
+      return exportPlanToExcel(url);
+    }
+
+    if (resource === 'import-template') {
+      const { buffer, filename } = await exportImportTemplate();
+      return xlsxResponse(buffer, filename);
     }
 
     if (resource === 'shopping-list') {
@@ -366,6 +353,8 @@ export async function POST(request) {
         return ok(await removeMember(user, body));
       case 'regenerate_join_code':
         return ok(await regenerateHouseholdJoinCode(user, body));
+      case 'leave_family':
+        return ok(await leaveFamily(user));
       case 'join_by_code':
         return ok(await joinByCode(user, body));
       case 'approve_join_request':
@@ -415,7 +404,29 @@ async function requireOwnedHousehold(user, householdId) {
   return data;
 }
 
+/**
+ * Ảnh 3.1 — người ĐANG là thành viên của gia đình người khác thì KHÔNG được tạo
+ * gia đình mới, cũng không được sinh mã tham gia. Phải "Rời gia đình" trước.
+ * Đây là chốt chặn phía BE; UI cũng ẩn nút tương ứng.
+ */
+async function requireNotJoinedElsewhere(user, actionLabel) {
+  const joined = await getJoinedHousehold(user.id);
+  if (joined) {
+    throw new Error(
+      `Bạn đang là thành viên của một gia đình khác nên không thể ${actionLabel}. Hãy rời gia đình đó trước.`
+    );
+  }
+}
+
 async function createHousehold(user, body) {
+  await requireNotJoinedElsewhere(user, 'tạo gia đình mới');
+  const { data: existing } = await supabaseAdmin
+    .from('households')
+    .select('id')
+    .eq('owner_id', user.id)
+    .maybeSingle();
+  if (existing) throw new Error('Bạn đã có một gia đình rồi.');
+
   const mode = body.mode === 'family' ? 'family' : 'chef';
   const { data, error } = await supabaseAdmin
     .from('households')
@@ -479,9 +490,76 @@ const MEMBER_FIELDS = [
   'goal', 'activity_level', 'disease', 'religion',
 ];
 
+// Các cột kiểu `numeric`/`integer` trong household_members. Form gửi lên chuỗi
+// RỖNG khi người dùng bỏ trống — `'' != null` nên bản cũ đẩy thẳng '' xuống
+// Postgres và nổ `invalid input syntax for type numeric: ""` (Ảnh 2).
+const MEMBER_NUMERIC_FIELDS = ['birth_year', 'height', 'weight', 'target_weight', 'activity_level'];
+
+/** '' | null | undefined -> null; còn lại -> số (ném lỗi nếu không phải số). */
+function numericOrNull(field, value) {
+  if (value === '' || value == null) return null;
+  const n = Number(value);
+  if (!Number.isFinite(n)) throw new Error(`Giá trị không hợp lệ ở trường "${field}".`);
+  return n;
+}
+
+/** Mục tiêu BẮT BUỘC phải có cân nặng mục tiêu. Giữ cân/tăng cơ thì không. */
+const GOALS_NEEDING_TARGET = new Set(['lose', 'gain']);
+const TARGET_WEIGHT_MIN = 25;
+const TARGET_WEIGHT_MAX = 300;
+
+/**
+ * Ảnh 2: chỉ bắt nhập target weight khi mục tiêu là giảm/tăng cân, và khi có thì
+ * phải hợp lý so với cân nặng hiện tại. Chạy ở BE để client nào cũng bị chặn.
+ */
+function validateTargetWeight(patch, existing = {}) {
+  // Dùng `in` chứ KHÔNG dùng `??`: form gửi target_weight = '' (nghĩa là XOÁ TRẮNG)
+  // sẽ thành null trong patch, mà `null ?? existing` lại rơi về giá trị CŨ —
+  // validation đậu nhưng cột vẫn bị ghi null. `in` phân biệt đúng
+  // "không gửi trường" với "gửi lên để xoá".
+  const pick = (field) => (field in patch ? patch[field] : existing[field] ?? null);
+  const num = (v) => {
+    if (v == null || v === '') return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  };
+
+  const goal = String(pick('goal') ?? '').trim().split(',')[0];
+  if (!GOALS_NEEDING_TARGET.has(goal)) return;
+
+  const target = num(pick('target_weight'));
+  if (target == null) {
+    throw new Error(
+      goal === 'lose'
+        ? 'Mục tiêu "Giảm cân" cần có cân nặng mục tiêu.'
+        : 'Mục tiêu "Tăng cân" cần có cân nặng mục tiêu.'
+    );
+  }
+  if (target < TARGET_WEIGHT_MIN || target > TARGET_WEIGHT_MAX) {
+    throw new Error(`Cân nặng mục tiêu phải trong khoảng ${TARGET_WEIGHT_MIN}–${TARGET_WEIGHT_MAX} kg.`);
+  }
+
+  const current = num(pick('weight'));
+  if (current == null || current <= 0) return; // chưa biết cân nặng hiện tại thì không so sánh được
+
+  if (goal === 'lose' && target >= current) {
+    throw new Error(`Mục tiêu "Giảm cân": cân nặng mục tiêu phải NHỎ HƠN cân nặng hiện tại (${current} kg).`);
+  }
+  if (goal === 'gain' && target <= current) {
+    throw new Error(`Mục tiêu "Tăng cân": cân nặng mục tiêu phải LỚN HƠN cân nặng hiện tại (${current} kg).`);
+  }
+  // Chênh lệch quá lớn gần như luôn là gõ nhầm (vd 55 -> 5.5 hoặc 550).
+  if (target < current * 0.5 || target > current * 1.5) {
+    throw new Error(`Cân nặng mục tiêu ${target} kg chênh quá xa so với ${current} kg hiện tại. Hãy kiểm tra lại.`);
+  }
+}
+
 function memberPatchFrom(body) {
   const patch = {};
-  for (const f of MEMBER_FIELDS) if (body[f] != null) patch[f] = body[f];
+  for (const f of MEMBER_FIELDS) {
+    if (body[f] == null) continue;
+    patch[f] = MEMBER_NUMERIC_FIELDS.includes(f) ? numericOrNull(f, body[f]) : body[f];
+  }
   if (body.allergies != null) patch.allergies = Array.isArray(body.allergies) ? body.allergies : asList(body.allergies);
   if (body.medications != null) patch.medications = Array.isArray(body.medications) ? body.medications : asList(body.medications);
   if (body.dislikes != null) patch.dislikes = Array.isArray(body.dislikes) ? body.dislikes : asList(body.dislikes);
@@ -493,6 +571,7 @@ async function addMember(user, body) {
   const household = await requireOwnedHousehold(user, body.household_id);
   const patch = memberPatchFrom(body);
   if (!patch.display_name) throw new Error('Thiếu tên thành viên.');
+  validateTargetWeight(patch);
   const { data, error } = await supabaseAdmin
     .from('household_members')
     .insert({ household_id: household.id, kind: 'dependent', ...patch })
@@ -508,6 +587,8 @@ async function updateMember(user, body) {
   if (mErr) throw mErr;
   await requireOwnedHousehold(user, member.household_id);
   const patch = memberPatchFrom(body);
+  // So với dòng ĐANG CÓ, vì form sửa có thể chỉ gửi lên một phần các trường.
+  validateTargetWeight(patch, member);
   patch.updated_at = new Date().toISOString();
   const { data, error } = await supabaseAdmin.from('household_members').update(patch).eq('id', body.member_id).select().single();
   if (error) throw error;
@@ -527,7 +608,10 @@ async function removeMember(user, body) {
 
 /* ─────────────── join code: request → owner approval → membership ─────────────── */
 
-const REQUEST_FIELDS = 'id, household_id, user_id, status, display_name, email, created_at';
+// Ảnh 1: KHÔNG trả `email` ra client nữa — Kitchen chỉ định danh bằng handle
+// (profiles.username), vốn đã được chốt vào `display_name` lúc gửi yêu cầu.
+// Cột `email` vẫn giữ trong DB (không đổi migration), chỉ là không select ra.
+const REQUEST_FIELDS = 'id, household_id, user_id, status, display_name, created_at';
 
 async function getPendingRequests(householdId) {
   const { data, error } = await supabaseAdmin
@@ -579,6 +663,9 @@ async function isLinkedMember(householdId, userId) {
 }
 
 async function regenerateHouseholdJoinCode(user, body) {
+  // requireOwnedHousehold đã chặn việc sinh mã cho household của người khác;
+  // dòng dưới chặn thêm ca "vừa sở hữu household riêng vừa là thành viên nơi khác".
+  await requireNotJoinedElsewhere(user, 'tạo mã tham gia');
   const household = await requireOwnedHousehold(user, body.household_id);
   // Overwriting the column IS the invalidation — there is only ever one active
   // code per household, so the previous one stops resolving immediately.
@@ -594,6 +681,18 @@ async function joinByCode(user, body) {
 
   if (household.owner_id === user.id) throw new Error('Đây là gia đình của bạn rồi.');
   if (await isLinkedMember(household.id, user.id)) throw new Error('Bạn đã là thành viên của gia đình này.');
+
+  // Một người chỉ thuộc MỘT gia đình. Chặn ở đây để không sinh ra trạng thái
+  // "vừa sở hữu household riêng vừa là thành viên nơi khác" như user trong Ảnh 3.
+  const joined = await getJoinedHousehold(user.id);
+  if (joined) throw new Error('Bạn đang ở trong một gia đình khác. Hãy rời gia đình đó trước khi tham gia gia đình mới.');
+
+  const { data: owned } = await supabaseAdmin
+    .from('households')
+    .select('id')
+    .eq('owner_id', user.id)
+    .maybeSingle();
+  if (owned) throw new Error('Bạn đang là chủ hộ của một gia đình. Hãy xoá gia đình của bạn trước khi tham gia gia đình khác.');
 
   const { data: existing } = await supabaseAdmin
     .from('household_join_requests')
@@ -612,6 +711,51 @@ async function joinByCode(user, body) {
     .single();
   if (error) throw error;
   return data;
+}
+
+/**
+ * Ảnh 3.1 — "Rời gia đình". Đây là lối thoát DUY NHẤT để một thành viên có thể
+ * quay lại tự tạo gia đình / sinh mã tham gia.
+ *
+ *  - Là thành viên gia đình người khác  -> xoá dòng household_members của mình.
+ *  - Là CHỦ HỘ và không còn ai khác     -> xoá luôn household (cascade theo FK).
+ *  - Là CHỦ HỘ mà vẫn còn thành viên    -> chặn, y hệt luật của canSwitchMode:
+ *    không tự ý cắt quyền truy cập của tài khoản thật mà họ không đồng ý.
+ */
+async function leaveFamily(user) {
+  const joined = await getJoinedHousehold(user.id);
+  if (joined) {
+    const { error } = await supabaseAdmin
+      .from('household_members')
+      .delete()
+      .eq('household_id', joined.id)
+      .eq('user_id', user.id)
+      .eq('kind', 'linked');
+    if (error) throw error;
+    return { left: true, household_id: joined.id, deleted_household: false };
+  }
+
+  const { data: owned } = await supabaseAdmin
+    .from('households')
+    .select('*')
+    .eq('owner_id', user.id)
+    .maybeSingle();
+  if (!owned) throw new Error('Bạn chưa thuộc gia đình nào.');
+
+  const { data: linked, error: lErr } = await supabaseAdmin
+    .from('household_members')
+    .select('id, user_id')
+    .eq('household_id', owned.id)
+    .eq('kind', 'linked');
+  if (lErr) throw lErr;
+  const others = (linked || []).filter((m) => m.user_id && m.user_id !== user.id);
+  if (others.length > 0) {
+    throw new Error('Vẫn còn thành viên khác trong gia đình của bạn. Hãy xoá họ khỏi gia đình trước khi rời đi.');
+  }
+
+  const { error } = await supabaseAdmin.from('households').delete().eq('id', owned.id);
+  if (error) throw error;
+  return { left: true, household_id: owned.id, deleted_household: true };
 }
 
 async function loadPendingRequestForOwner(user, requestId) {
@@ -666,7 +810,13 @@ async function uploadTemplateExcel(user, body, files) {
   const fileEntry = files?.get('file');
   if (!fileEntry) throw new Error('Thiếu file Excel.');
   const buffer = Buffer.from(await fileEntry.arrayBuffer());
-  const days = await parseExcelTemplate(buffer);
+
+  // Người dùng có thể tắt AI (nhanh hơn, rẻ hơn) khi biết file theo mẫu chuẩn.
+  const useAI = asText(body.use_ai) !== 'false';
+  const { days, report } = await parseExcelTemplate(buffer, {
+    useAI,
+    sheetName: asText(body.sheet_name) || undefined,
+  });
   if (!days.length) throw new Error('File Excel không có dữ liệu hợp lệ.');
 
   const visibility = asText(body.visibility) === 'private' ? 'private' : 'public';
@@ -693,7 +843,32 @@ async function uploadTemplateExcel(user, body, files) {
   if (error) throw error;
 
   await persistTemplateDays(template.id, days);
-  return template;
+  await logImport(user, template, fileEntry, report);
+
+  // Trả kèm report để UI hiển thị "đã nhận diện 7 ngày / 63 món bằng layout X"
+  // — người dùng thấy ngay hệ thống hiểu đúng hay sai thay vì phải mở lại.
+  return { ...template, import_report: report };
+}
+
+/** Ghi nhật ký nhập file. Lỗi ở đây KHÔNG được làm hỏng lần nhập đã thành công. */
+async function logImport(user, template, fileEntry, report) {
+  try {
+    await supabaseAdmin.from('menu_import_logs').insert({
+      template_id: template.id,
+      user_id: user.id,
+      filename: fileEntry?.name || null,
+      sheet_name: report.sheet || null,
+      strategy: report.strategy || null,
+      layout: report.layout || null,
+      confidence: report.confidence ?? null,
+      day_count: report.dayCount ?? null,
+      dish_count: report.dishCount ?? null,
+      warnings: report.warnings || [],
+      report,
+    });
+  } catch (err) {
+    console.warn(`⚠️ [family-menu] không ghi được menu_import_logs: ${err.message}`);
+  }
 }
 
 async function createTemplateManual(user, body) {
@@ -722,4 +897,52 @@ async function createTemplateManual(user, body) {
 
   if (Array.isArray(body.days)) await persistTemplateDays(template.id, body.days);
   return template;
+}
+
+/* ───────────────────────── Xuất Excel ───────────────────────── */
+
+/**
+ * GET /api/family-menu?resource=export&plan_id=…[&sheets=menu,shopping][&servings=6][&start_date=2026-07-27]
+ *
+ * `sheets` cho phép xuất một phần (ví dụ chỉ danh sách đi chợ để in mang đi).
+ * `servings` cho phép đổi số suất NGAY LÚC XUẤT mà không phải sinh lại kế
+ * hoạch — mọi định lượng và danh sách mua được nhân lại theo hệ số.
+ */
+async function exportPlanToExcel(url) {
+  const planId = url.searchParams.get('plan_id');
+  if (!planId) return fail(400, 'Thiếu plan_id');
+
+  const sheets = (url.searchParams.get('sheets') || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const servings = url.searchParams.get('servings');
+  const startDate = url.searchParams.get('start_date');
+
+  const model = await buildExportModel(planId, {
+    servings: servings ? Number(servings) : undefined,
+    startDate: startDate || undefined,
+  });
+
+  const { buffer, filename } = await exportPlanWorkbook(model, { sheets });
+  return xlsxResponse(buffer, filename);
+}
+
+/**
+ * Tên file có dấu tiếng Việt phải đi qua `filename*=UTF-8''…` (RFC 5987);
+ * `filename=` thuần ASCII giữ lại làm phương án dự phòng cho trình duyệt cũ.
+ */
+function xlsxResponse(buffer, filename) {
+  const asciiName = filename.replace(/[^\x20-\x7E]/g, '_');
+  return new NextResponse(buffer, {
+    status: 200,
+    headers: {
+      'Content-Type': MIME_XLSX,
+      'Content-Length': String(buffer.length),
+      'Content-Disposition': `attachment; filename="${asciiName}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
+      'Cache-Control': 'no-store',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Expose-Headers': 'Content-Disposition',
+    },
+  });
 }

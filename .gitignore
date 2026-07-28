@@ -6,3 +6,8 @@ dist/
 out/
 coverage/
 .env*.local
+
+# File mẫu Excel dùng để trích design system (tài liệu bên thứ ba, không commit)
+reference-menus/*.xlsx
+reference-menus/*.xlsm
+tmp-verify/

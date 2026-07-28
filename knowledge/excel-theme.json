@@ -1,0 +1,137 @@
+{
+  "_generatedBy": "scripts/extract-excel-templates.py",
+  "_corpusSize": 43,
+  "tokens": {
+    "title.fill": "FF2F6B4F",
+    "title.fontColor": "FFFFFFFF",
+    "title.size": 16.0,
+    "font.name": "Carlito",
+    "meta.fill": "FFE9F5EE",
+    "meta.fontColor": "FF2F6B4F",
+    "meta.size": 11.0,
+    "tableHeader.fill": "FF5D9277",
+    "tableHeader.fontColor": "FFFFFFFF",
+    "tableHeader.size": 11.0,
+    "rowLabel.fill": "FFDDECE3",
+    "rowLabel.fontColor": "FF2F6B4F",
+    "rowLabel.size": 11.0,
+    "note.fill": "FFFFF4DA",
+    "note.fontColor": "FF7A5814",
+    "note.size": 11.0,
+    "columnWidth": 13,
+    "sectionHeader.fill": "FF2F7666",
+    "sectionHeader.fontColor": "FFFFFFFF",
+    "sectionHeader.size": 11.0,
+    "dataRow.size": 11.0,
+    "numeric.fill": "FFF4FAF7"
+  },
+  "variants": {
+    "title.fill": [
+      "FF2F6B4F",
+      "FF245F52",
+      "FF1F6B5C",
+      "FF2E6F62",
+      "FF276B5B",
+      "FF274E13"
+    ],
+    "title.fontColor": [
+      "FFFFFFFF"
+    ],
+    "title.size": [
+      16.0
+    ],
+    "font.name": [
+      "Carlito"
+    ],
+    "meta.fill": [
+      "FFE9F5EE",
+      "FFE8F4F0",
+      "FFF7EFE4",
+      "FFEAF4EF",
+      "FFE8F3ED",
+      "FFE6F5F3"
+    ],
+    "meta.fontColor": [
+      "FF2F6B4F",
+      "FF24584D",
+      "FF6B4518",
+      "FF285E4F",
+      "FF145E57",
+      "FF2D6A4F"
+    ],
+    "meta.size": [
+      11.0
+    ],
+    "tableHeader.fill": [
+      "FF5D9277",
+      "FF4E9385",
+      "FF57917F",
+      "FFB27B3D",
+      "FF5A8F7B",
+      "FF48A69C"
+    ],
+    "tableHeader.fontColor": [
+      "FFFFFFFF"
+    ],
+    "tableHeader.size": [
+      11.0
+    ],
+    "rowLabel.fill": [
+      "FFDDECE3",
+      "FFDFF0EA",
+      "FFDCECE6",
+      "FFF4E8D8",
+      "FFDCEBE4",
+      "FFDDF0ED"
+    ],
+    "rowLabel.fontColor": [
+      "FF2F6B4F",
+      "FF24584E",
+      "FF24584D",
+      "FF6B4518",
+      "FF285E4F",
+      "FF145E57"
+    ],
+    "rowLabel.size": [
+      11.0
+    ],
+    "note.fill": [
+      "FFFFF4DA",
+      "FFFFF6DF",
+      "FFFFF7E6"
+    ],
+    "note.fontColor": [
+      "FF7A5814",
+      "FF7A5A16",
+      "FF765714",
+      "FF7C5A17"
+    ],
+    "note.size": [
+      11.0
+    ],
+    "columnWidth": [
+      13,
+      47,
+      39,
+      14,
+      42,
+      31
+    ],
+    "sectionHeader.fill": [
+      "FF2F7666",
+      "FFA15C38"
+    ],
+    "sectionHeader.fontColor": [
+      "FFFFFFFF"
+    ],
+    "sectionHeader.size": [
+      11.0
+    ],
+    "dataRow.size": [
+      11.0
+    ],
+    "numeric.fill": [
+      "FFF4FAF7"
+    ]
+  }
+}

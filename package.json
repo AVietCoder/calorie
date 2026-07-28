@@ -8,6 +8,7 @@
     "bcryptjs": "^3.0.3",
     "chart.js": "^4.5.1",
     "cloudinary": "^2.10.0",
+    "exceljs": "^3.4.0",
     "jsonwebtoken": "^9.0.3",
     "next": "^16.2.11",
     "openai": "^6.45.0",
@@ -25,7 +26,9 @@
     "verify:kb": "node scripts/verify-kb.mjs",
     "verify:family-menu-rules": "node scripts/verify-family-menu-rules.mjs",
     "test:nutrition": "node scripts/test-nutrition.mjs",
-    "seed:kb-base": "node scripts/seed-base-knowledge.mjs"
+    "seed:kb-base": "node scripts/seed-base-knowledge.mjs",
+    "verify:excel": "node scripts/verify-excel-export.mjs",
+    "build:excel-templates": "python3 scripts/extract-excel-templates.py --src ./reference-menus"
   },
   "keywords": [],
   "author": "",

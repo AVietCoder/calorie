@@ -16,13 +16,18 @@ const EMPTY_MEMBER_FORM = {
   target_weight: '', goal: 'maintain', activity_level: '1.2', disease: '', allergies: '', dislikes: '', likes: '',
 };
 
-/** Initials for the pending-request avatar — there is no avatar column on profiles. */
-function initialsOf(name, email) {
-  const src = String(name || email || '?').trim();
+/** Chữ cái đầu cho avatar — profiles không có cột ảnh đại diện nào. */
+function initialsOf(...candidates) {
+  const src = String(candidates.find((c) => String(c || '').trim()) || '?').trim();
   const words = src.split(/\s+/).filter(Boolean);
   if (words.length >= 2) return (words[0][0] + words[words.length - 1][0]).toUpperCase();
   return src.slice(0, 2).toUpperCase();
 }
+
+/** Mục tiêu bắt buộc phải có cân nặng mục tiêu (khớp với BE). */
+const GOALS_NEEDING_TARGET = new Set(['lose', 'gain']);
+const TARGET_WEIGHT_MIN = 25;
+const TARGET_WEIGHT_MAX = 300;
 
 /** Stable per-person hue so each requester's avatar keeps the same color. */
 function avatarHue(seed) {
@@ -36,6 +41,7 @@ export default function HouseholdPage() {
   const [household, setHousehold] = useState(null);
   const [members, setMembers] = useState([]);
   const [isOwner, setIsOwner] = useState(false);
+  const [isJoinedMember, setIsJoinedMember] = useState(false);
   const [joinRequests, setJoinRequests] = useState([]);
   const [myRequest, setMyRequest] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -69,6 +75,7 @@ export default function HouseholdPage() {
       setHousehold(data?.household || null);
       setMembers(data?.members || []);
       setIsOwner(!!data?.is_owner);
+      setIsJoinedMember(!!data?.is_joined_member);
       setJoinRequests(data?.join_requests || []);
       setMyRequest(data?.my_pending_request || null);
     } catch (e) {
@@ -139,6 +146,23 @@ export default function HouseholdPage() {
     }
   }
 
+  async function leaveFamily() {
+    const msg = isOwner
+      ? t('hh.confirm_delete_family', 'Xoá gia đình của bạn? Toàn bộ thành viên phụ thuộc và thực đơn của gia đình sẽ bị xoá theo. Không thể hoàn tác.')
+      : t('hh.confirm_leave', 'Rời khỏi gia đình này? Bạn sẽ mất quyền xem thực đơn chung của gia đình.');
+    if (!window.confirm(msg)) return;
+    try {
+      await post('/api/family-menu', { action: 'leave_family' });
+      showToast(
+        isOwner ? t('hh.toast_family_deleted', 'Đã xoá gia đình.') : t('hh.toast_left', 'Đã rời khỏi gia đình.'),
+        'success'
+      );
+      await loadHousehold();
+    } catch (e) {
+      showToast(e.message, 'error');
+    }
+  }
+
   async function decideRequest(requestId, accept) {
     try {
       await post('/api/family-menu', {
@@ -177,9 +201,55 @@ export default function HouseholdPage() {
   }
   function closeMemberModal() { setModalOpen(false); }
 
+  /**
+   * Ảnh 2: chỉ bắt nhập cân nặng mục tiêu khi mục tiêu là Giảm cân / Tăng cân,
+   * và khi có thì phải hợp lý so với cân nặng hiện tại. Trả chuỗi lỗi hoặc null.
+   */
+  function targetWeightError(form) {
+    const goal = String(form.goal || '').trim();
+    if (!GOALS_NEEDING_TARGET.has(goal)) return null;
+
+    const raw = String(form.target_weight ?? '').trim();
+    if (!raw) {
+      return goal === 'lose'
+        ? t('hh.err_target_required_lose', 'Mục tiêu "Giảm cân" cần có cân nặng mục tiêu.')
+        : t('hh.err_target_required_gain', 'Mục tiêu "Tăng cân" cần có cân nặng mục tiêu.');
+    }
+    const target = Number(raw);
+    if (!Number.isFinite(target)) return t('hh.err_target_number', 'Cân nặng mục tiêu phải là một con số.');
+    if (target < TARGET_WEIGHT_MIN || target > TARGET_WEIGHT_MAX) {
+      return tn('hh.err_target_range', { min: TARGET_WEIGHT_MIN, max: TARGET_WEIGHT_MAX },
+        `Cân nặng mục tiêu phải trong khoảng ${TARGET_WEIGHT_MIN}–${TARGET_WEIGHT_MAX} kg.`);
+    }
+
+    const current = Number(String(form.weight ?? '').trim());
+    if (!Number.isFinite(current) || current <= 0) return null; // chưa có cân nặng hiện tại
+
+    if (goal === 'lose' && target >= current) {
+      return tn('hh.err_target_lose', { current },
+        `Mục tiêu "Giảm cân": cân nặng mục tiêu phải NHỎ HƠN cân nặng hiện tại (${current} kg).`);
+    }
+    if (goal === 'gain' && target <= current) {
+      return tn('hh.err_target_gain', { current },
+        `Mục tiêu "Tăng cân": cân nặng mục tiêu phải LỚN HƠN cân nặng hiện tại (${current} kg).`);
+    }
+    if (target < current * 0.5 || target > current * 1.5) {
+      return tn('hh.err_target_far', { target, current },
+        `Cân nặng mục tiêu ${target} kg chênh quá xa so với ${current} kg hiện tại. Hãy kiểm tra lại.`);
+    }
+    return null;
+  }
+
   async function saveMember() {
     const payload = { ...memberForm, display_name: memberForm.display_name.trim(), relation: memberForm.relation.trim(), disease: memberForm.disease.trim() };
     if (!payload.display_name) { showToast(t('hh.toast_need_name', 'Nhập tên thành viên.'), 'error'); return; }
+
+    const twErr = targetWeightError(memberForm);
+    if (twErr) { showToast(twErr, 'error'); return; }
+    // Mục tiêu không cần cân nặng mục tiêu -> gửi rỗng để BE ghi NULL, tránh giữ
+    // lại số cũ vô nghĩa khi người dùng đổi từ "Giảm cân" sang "Giữ cân".
+    if (!GOALS_NEEDING_TARGET.has(String(memberForm.goal || '').trim())) payload.target_weight = '';
+
     try {
       if (editingId) await post('/api/family-menu', { action: 'update_member', member_id: editingId, ...payload });
       else await post('/api/family-menu', { action: 'add_member', household_id: household.id, ...payload });
@@ -293,7 +363,11 @@ export default function HouseholdPage() {
               <h3 style={{ marginBottom: 4 }}><i className="fa-solid fa-house-user" /> <span>{isFamily ? t('hh.mode_family', 'Chế độ gia đình') : t('hh.mode_chef', 'Chế độ đầu bếp')}</span></h3>
               <p style={{ color: 'var(--text-sub)', margin: 0 }}>{isFamily ? t('hh.mode_family_note', 'Các thành viên có thể tự đăng nhập tài khoản riêng.') : t('hh.mode_chef_note', 'Bạn quản lý hồ sơ dinh dưỡng cho các thành viên (không cần họ đăng nhập).')}</p>
             </div>
-            <ActionButton className="btn btn-secondary" onClick={switchMode} loadingText={t('common.processing', 'Đang xử lý...')}>{t('hh.switch_mode', 'Chuyển chế độ')}</ActionButton>
+            {isOwner ? (
+              <ActionButton className="btn btn-secondary" onClick={switchMode} loadingText={t('common.processing', 'Đang xử lý...')}>{t('hh.switch_mode', 'Chuyển chế độ')}</ActionButton>
+            ) : (
+              <span className="role-badge"><i className="fa-solid fa-user" /> {t('hh.role_member', 'Thành viên')}</span>
+            )}
           </div>
 
           {isFamily && isOwner && (
@@ -327,11 +401,11 @@ export default function HouseholdPage() {
                   {joinRequests.map((r) => (
                     <div className="request-card" key={r.id}>
                       <div className="req-avatar" style={{ '--req-hue': avatarHue(r.user_id) }} aria-hidden="true">
-                        {initialsOf(r.display_name, r.email)}
+                        {initialsOf(r.display_name)}
                       </div>
                       <div className="req-info">
+                        {/* Ảnh 1: chỉ handle, KHÔNG hiển thị email. */}
                         <strong>{r.display_name || t('hh.unknown_user', 'Người dùng')}</strong>
-                        {r.email && <span className="req-email">{r.email}</span>}
                         <span className="req-time">{requestedAt(r.created_at)}</span>
                       </div>
                       <div className="req-actions">
@@ -349,34 +423,58 @@ export default function HouseholdPage() {
             </div>
           )}
 
-          {isFamily && (
-            <div className="card">
-              <h3><i className="fa-solid fa-right-to-bracket" /> {t('hh.join_title', 'Tham gia gia đình khác')}</h3>
-              <p className="join-hint">{t('hh.join_desc', 'Nhập mã 6 chữ số do chủ hộ chia sẻ.')}</p>
-              {joinPanel}
-            </div>
-          )}
+          {/* Ảnh 3.1: mỗi người chỉ thuộc MỘT gia đình. Muốn tạo gia đình riêng
+              hoặc tham gia nơi khác thì phải rời gia đình hiện tại trước. */}
+          <div className="card">
+            <h3><i className="fa-solid fa-right-from-bracket" /> {isOwner ? t('hh.family_manage', 'Gia đình của bạn') : t('hh.membership', 'Tư cách thành viên')}</h3>
+            <p className="join-hint">
+              {isOwner
+                ? t('hh.leave_desc_owner', 'Bạn là chủ hộ. Muốn tham gia gia đình của người khác, bạn cần xoá gia đình này trước (chỉ được xoá khi không còn thành viên nào khác).')
+                : t('hh.leave_desc_member', 'Bạn đang là thành viên của gia đình này nên không thể tạo gia đình riêng hay sinh mã tham gia. Hãy rời gia đình nếu muốn tự tạo gia đình của mình.')}
+            </p>
+            <ActionButton className="btn btn-danger-soft" onClick={leaveFamily} loadingText={t('common.processing', 'Đang xử lý...')}>
+              <i className="fa-solid fa-right-from-bracket" />{' '}
+              {isOwner ? t('hh.delete_family_btn', 'Xoá gia đình của tôi') : t('hh.leave_btn', 'Rời gia đình')}
+            </ActionButton>
+          </div>
 
           <div className="section-title">
             <h2>{t('hh.members', 'Thành viên')}</h2>
-            <button className="btn btn-primary" onClick={() => openMemberModal(null)}><i className="fa-solid fa-plus" /> {t('hh.add_member', 'Thêm thành viên')}</button>
+            {/* add_member yêu cầu chủ hộ ở BE — thành viên không thấy nút này. */}
+            {isOwner && (
+              <button className="btn btn-primary" onClick={() => openMemberModal(null)}><i className="fa-solid fa-plus" /> {t('hh.add_member', 'Thêm thành viên')}</button>
+            )}
           </div>
           <div className="member-grid">
             {members.map((m) => {
-              const isOwner = m.kind === 'linked' && m.user_id === household.owner_id;
+              const isHead = m.kind === 'linked' && m.user_id === household.owner_id;
+              // Ảnh 3.3: hiện handle (profiles.username) + tên hiển thị, KHÔNG email.
+              const handle = m.handle || null;
+              const showName = m.display_name && m.display_name !== handle ? m.display_name : null;
               return (
                 <div className="member-card" key={m.id}>
                   <div className="m-head">
-                    <h4>{m.display_name}</h4>
-                    <span className="m-tag">{m.kind === 'linked' ? t('hh.tag_linked', 'Liên kết') : t('hh.tag_dependent', 'Phụ thuộc')}{isOwner ? ` · ${t('hh.owner', 'Chủ hộ')}` : ''}</span>
+                    <div className="m-ident">
+                      <div className="m-avatar" style={{ '--req-hue': avatarHue(m.user_id || m.id) }} aria-hidden="true">
+                        {initialsOf(handle, m.display_name)}
+                      </div>
+                      <div className="m-names">
+                        <h4>{handle ? `@${handle}` : m.display_name || t('hh.unknown_user', 'Người dùng')}</h4>
+                        {showName && <span className="m-display-name">{showName}</span>}
+                      </div>
+                    </div>
+                    <span className="m-tag">{m.kind === 'linked' ? t('hh.tag_linked', 'Liên kết') : t('hh.tag_dependent', 'Phụ thuộc')}{isHead ? ` · ${t('hh.owner', 'Chủ hộ')}` : ''}</span>
                   </div>
                   <p>{m.relation ? `${m.relation} · ` : ''}{goalLabel(m.goal)}</p>
                   <p>{m.height || '?'}cm · {m.weight || '?'}kg{m.disease ? ` · ${m.disease}` : ''}</p>
                   <div className="m-chips">{(m.allergies || []).map((a, i) => <span className="m-chip" key={i}>{a}</span>)}</div>
-                  <div className="m-actions">
-                    <button onClick={() => openMemberModal(m.id)}><i className="fa-solid fa-pen" /> {t('hh.edit', 'Sửa')}</button>
-                    {!isOwner && <ActionButton onClick={() => removeMember(m.id)} loadingText={t('common.deleting', 'Đang xóa...')}><i className="fa-solid fa-trash" /> {t('common.delete', 'Xóa')}</ActionButton>}
-                  </div>
+                  {/* Chỉ chủ hộ mới có thao tác quản lý (khớp với quyền ở BE). */}
+                  {isOwner && (
+                    <div className="m-actions">
+                      <button onClick={() => openMemberModal(m.id)}><i className="fa-solid fa-pen" /> {t('hh.edit', 'Sửa')}</button>
+                      {!isHead && <ActionButton onClick={() => removeMember(m.id)} loadingText={t('common.deleting', 'Đang xóa...')}><i className="fa-solid fa-trash" /> {t('common.delete', 'Xóa')}</ActionButton>}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -403,7 +501,19 @@ export default function HouseholdPage() {
             </label>
             <label>{t('hh.f_height', 'Chiều cao (cm)')} <input type="number" value={memberForm.height} onChange={(e) => setMemberForm((f) => ({ ...f, height: e.target.value }))} /></label>
             <label>{t('hh.f_weight', 'Cân nặng (kg)')} <input type="number" value={memberForm.weight} onChange={(e) => setMemberForm((f) => ({ ...f, weight: e.target.value }))} /></label>
-            <label>{t('hh.f_target_weight', 'Cân nặng mục tiêu (kg)')} <input type="number" value={memberForm.target_weight} onChange={(e) => setMemberForm((f) => ({ ...f, target_weight: e.target.value }))} /></label>
+            {/* Ảnh 2: chỉ bắt buộc khi mục tiêu là Giảm cân / Tăng cân. */}
+            <label>
+              {t('hh.f_target_weight', 'Cân nặng mục tiêu (kg)')}
+              {GOALS_NEEDING_TARGET.has(memberForm.goal)
+                ? <span className="req-star" aria-hidden="true"> *</span>
+                : <span className="opt-hint"> ({t('hh.optional', 'không bắt buộc')})</span>}
+              <input
+                type="number"
+                value={memberForm.target_weight}
+                onChange={(e) => setMemberForm((f) => ({ ...f, target_weight: e.target.value }))}
+                placeholder={GOALS_NEEDING_TARGET.has(memberForm.goal) ? '' : t('hh.f_target_weight_ph', 'Không cần cho mục tiêu này')}
+              />
+            </label>
             <label>{t('hh.f_goal', 'Mục tiêu')}
               <select value={memberForm.goal} onChange={(e) => setMemberForm((f) => ({ ...f, goal: e.target.value }))}>
                 <option value="maintain">{t('hh.goal_maintain', 'Giữ cân')}</option><option value="lose">{t('hh.goal_lose', 'Giảm cân')}</option><option value="gain">{t('hh.goal_gain', 'Tăng cân')}</option><option value="muscle">{t('hh.goal_muscle', 'Tăng cơ')}</option>

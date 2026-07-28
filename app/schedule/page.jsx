@@ -19,6 +19,8 @@ const MEAL_ROWS = [
   { id: 'snack', label: 'Phụ', key: 'sch.snack' },
 ];
 const MEAL_LABEL_TO_ID = { Sáng: 'morning', Trưa: 'lunch', Tối: 'evening', Phụ: 'snack' };
+/** Đã thử bù bữa thiếu trong phiên này chưa (chống gọi AI lại ở mọi lần mở trang). */
+const HEAL_TRIED_KEY = 'calorie_sched_heal_tried';
 
 function parseNum(val) {
   if (val == null || val === '' || val === 'N/A') return null;
@@ -249,6 +251,7 @@ export default function SchedulePage() {
   const [dailyTarget, setDailyTarget] = useState({ calories: 0, macros: { protein: 0, fat: 0, carbs: 0 } });
   const [aiReplyHtml, setAiReplyHtml] = useState('');
   const [deadlinePassed, setDeadlinePassed] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [modalItem, setModalItem] = useState(null);
   const [intakeVersion, setIntakeVersion] = useState(0);
   const [extraForm, setExtraForm] = useState({ name: '', kcal: '', p: '', f: '', c: '' });
@@ -315,7 +318,20 @@ export default function SchedulePage() {
           } else if (result.newPlan && result.newPlan.length > 0) {
             setTempPlan(result.newPlan);
             setModifiedMap(new Map());
-            showToast(t('toast.menu_updated', 'Đã cập nhật thực đơn mới từ AI!'), 'success');
+          }
+          // Lượt load ở trên là CHỈ ĐỌC (isQueryOnly) nên trả về tức thì. Nếu thực
+          // đơn còn trống/cũ/thiếu bữa thì mới chạy 1 lượt sinh trong NỀN — màn hình
+          // đã hiện xong, người dùng không phải chờ AI.
+          if (!result.isDeadlinePassed && result.needsGeneration) {
+            // Trống/quá hạn tuần → luôn dựng lại. Chỉ THIẾU vài bữa → model có thể
+            // không bao giờ bù đủ, nên chỉ thử 1 lần mỗi phiên để không bắn request
+            // sinh plan ở MỌI lần mở trang.
+            const onlyPatching = !result.planStale;
+            const triedThisSession = window.sessionStorage.getItem(HEAL_TRIED_KEY) === '1';
+            if (!onlyPatching || !triedThisSession) {
+              if (onlyPatching) window.sessionStorage.setItem(HEAL_TRIED_KEY, '1');
+              generatePlanInBackground(token);
+            }
           }
         } else {
           console.error('Coach API error:', result);
@@ -330,6 +346,34 @@ export default function SchedulePage() {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /** Gọi HLV AI dựng/bù thực đơn — chạy SAU khi trang đã render, không chặn UI. */
+  async function generatePlanInBackground(token) {
+    setGenerating(true);
+    try {
+      const res = await fetch('/api/coach-dynamic', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({}), // không isQueryOnly → cho phép gọi AI
+      });
+      const result = await res.json();
+      if (!result.success) {
+        showToast(result.error || t('toast.coach_gen_err', 'Chưa tạo được thực đơn, bạn thử lại sau nhé!'), 'error');
+        return;
+      }
+      if (result.newPlan && result.newPlan.length > 0) {
+        setTempPlan(result.newPlan);
+        setModifiedMap(new Map());
+        setAiReplyHtml(result.reply || '');
+        showToast(t('toast.menu_updated', 'Đã cập nhật thực đơn mới từ AI!'), 'success');
+      }
+    } catch (err) {
+      console.error('Lỗi tạo thực đơn nền:', err);
+      showToast(t('toast.coach_net_err', 'Lỗi kết nối HLV AI'), 'error');
+    } finally {
+      setGenerating(false);
+    }
+  }
 
   useEffect(() => {
     function onVisible() { if (!document.hidden) refreshIfDirty(); }
@@ -765,6 +809,13 @@ export default function SchedulePage() {
           <h3><i className="fa-solid fa-calendar-week" /> <span>{t('sch.week_title', 'Lộ trình thực đơn 7 ngày')}</span></h3>
           <div id="menu-content-area" style={{ position: 'relative' }}>
             {aiReplyHtml && <div id="ai-response-text"><div className="ai-reply-text"><i className="fa-solid fa-quote-left" /> {aiReplyHtml}</div></div>}
+
+            {generating && (
+              <div className="plan-generating" role="status" aria-live="polite">
+                <span className="btn-spinner" aria-hidden="true" />
+                <span>{t('sch.generating', 'HLV AI đang soạn thực đơn tuần — bạn cứ dùng trang bình thường, bảng sẽ tự cập nhật khi xong.')}</span>
+              </div>
+            )}
 
             <div className={`timetable-grid${deadlinePassed ? ' blur-content' : ''}`}>
               <div className="time-header">{t('sch.meal', 'Bữa')}</div>

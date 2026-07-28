@@ -1,0 +1,7332 @@
+{
+  "_generatedBy": "scripts/extract-excel-templates.py",
+  "_corpusSize": 43,
+  "_note": "Design system suy ra từ corpus file mẫu — KHÔNG hard-code theo một file. lib/excel/theme.js đọc `canonical` làm theme mặc định.",
+  "canonical": {
+    "title.fill": "FF2F6B4F",
+    "title.fontColor": "FFFFFFFF",
+    "title.size": 16.0,
+    "font.name": "Carlito",
+    "meta.fill": "FFE9F5EE",
+    "meta.fontColor": "FF2F6B4F",
+    "meta.size": 11.0,
+    "tableHeader.fill": "FF5D9277",
+    "tableHeader.fontColor": "FFFFFFFF",
+    "tableHeader.size": 11.0,
+    "rowLabel.fill": "FFDDECE3",
+    "rowLabel.fontColor": "FF2F6B4F",
+    "rowLabel.size": 11.0,
+    "note.fill": "FFFFF4DA",
+    "note.fontColor": "FF7A5814",
+    "note.size": 11.0,
+    "columnWidth": 13,
+    "sectionHeader.fill": "FF2F7666",
+    "sectionHeader.fontColor": "FFFFFFFF",
+    "sectionHeader.size": 11.0,
+    "dataRow.size": 11.0,
+    "numeric.fill": "FFF4FAF7"
+  },
+  "variants": {
+    "title.fill": [
+      [
+        "FF2F6B4F",
+        23
+      ],
+      [
+        "FF245F52",
+        6
+      ],
+      [
+        "FF1F6B5C",
+        3
+      ],
+      [
+        "FF2E6F62",
+        2
+      ],
+      [
+        "FF276B5B",
+        2
+      ],
+      [
+        "FF274E13",
+        1
+      ]
+    ],
+    "title.fontColor": [
+      [
+        "FFFFFFFF",
+        43
+      ]
+    ],
+    "title.size": [
+      [
+        16.0,
+        43
+      ]
+    ],
+    "font.name": [
+      [
+        "Carlito",
+        263
+      ]
+    ],
+    "meta.fill": [
+      [
+        "FFE9F5EE",
+        23
+      ],
+      [
+        "FFE8F4F0",
+        13
+      ],
+      [
+        "FFF7EFE4",
+        1
+      ],
+      [
+        "FFEAF4EF",
+        1
+      ],
+      [
+        "FFE8F3ED",
+        1
+      ],
+      [
+        "FFE6F5F3",
+        1
+      ]
+    ],
+    "meta.fontColor": [
+      [
+        "FF2F6B4F",
+        23
+      ],
+      [
+        "FF24584D",
+        13
+      ],
+      [
+        "FF6B4518",
+        1
+      ],
+      [
+        "FF285E4F",
+        1
+      ],
+      [
+        "FF145E57",
+        1
+      ],
+      [
+        "FF2D6A4F",
+        1
+      ]
+    ],
+    "meta.size": [
+      [
+        11.0,
+        43
+      ]
+    ],
+    "tableHeader.fill": [
+      [
+        "FF5D9277",
+        23
+      ],
+      [
+        "FF4E9385",
+        9
+      ],
+      [
+        "FF57917F",
+        5
+      ],
+      [
+        "FFB27B3D",
+        1
+      ],
+      [
+        "FF5A8F7B",
+        1
+      ],
+      [
+        "FF48A69C",
+        1
+      ]
+    ],
+    "tableHeader.fontColor": [
+      [
+        "FFFFFFFF",
+        43
+      ]
+    ],
+    "tableHeader.size": [
+      [
+        11.0,
+        43
+      ]
+    ],
+    "rowLabel.fill": [
+      [
+        "FFDDECE3",
+        23
+      ],
+      [
+        "FFDFF0EA",
+        9
+      ],
+      [
+        "FFDCECE6",
+        5
+      ],
+      [
+        "FFF4E8D8",
+        1
+      ],
+      [
+        "FFDCEBE4",
+        1
+      ],
+      [
+        "FFDDF0ED",
+        1
+      ]
+    ],
+    "rowLabel.fontColor": [
+      [
+        "FF2F6B4F",
+        23
+      ],
+      [
+        "FF24584E",
+        9
+      ],
+      [
+        "FF24584D",
+        5
+      ],
+      [
+        "FF6B4518",
+        1
+      ],
+      [
+        "FF285E4F",
+        1
+      ],
+      [
+        "FF145E57",
+        1
+      ]
+    ],
+    "rowLabel.size": [
+      [
+        11.0,
+        43
+      ]
+    ],
+    "note.fill": [
+      [
+        "FFFFF4DA",
+        34
+      ],
+      [
+        "FFFFF6DF",
+        8
+      ],
+      [
+        "FFFFF7E6",
+        1
+      ]
+    ],
+    "note.fontColor": [
+      [
+        "FF7A5814",
+        33
+      ],
+      [
+        "FF7A5A16",
+        8
+      ],
+      [
+        "FF765714",
+        1
+      ],
+      [
+        "FF7C5A17",
+        1
+      ]
+    ],
+    "note.size": [
+      [
+        11.0,
+        43
+      ]
+    ],
+    "columnWidth": [
+      [
+        13,
+        26
+      ],
+      [
+        47,
+        18
+      ],
+      [
+        39,
+        16
+      ],
+      [
+        14,
+        15
+      ],
+      [
+        42,
+        13
+      ],
+      [
+        31,
+        11
+      ]
+    ],
+    "sectionHeader.fill": [
+      [
+        "FF2F7666",
+        23
+      ],
+      [
+        "FFA15C38",
+        1
+      ]
+    ],
+    "sectionHeader.fontColor": [
+      [
+        "FFFFFFFF",
+        24
+      ]
+    ],
+    "sectionHeader.size": [
+      [
+        11.0,
+        24
+      ]
+    ],
+    "dataRow.size": [
+      [
+        11.0,
+        24
+      ]
+    ],
+    "numeric.fill": [
+      [
+        "FFF4FAF7",
+        5
+      ]
+    ]
+  },
+  "grammar": [
+    {
+      "sequence": [
+        "title",
+        "meta",
+        "tableHeader",
+        "rowLabel",
+        "note"
+      ],
+      "count": 19
+    },
+    {
+      "sequence": [
+        "title",
+        "meta",
+        "tableHeader",
+        "rowLabel",
+        "sectionHeader",
+        "rowLabel",
+        "dataRow",
+        "note"
+      ],
+      "count": 18
+    },
+    {
+      "sequence": [
+        "title",
+        "meta",
+        "tableHeader",
+        "rowLabel",
+        "sectionHeader",
+        "rowLabel",
+        "dataRow",
+        "sectionHeader",
+        "rowLabel",
+        "dataRow",
+        "note"
+      ],
+      "count": 6
+    }
+  ],
+  "profiles": [
+    {
+      "sheetName": "20 thực đơn",
+      "rows": 27,
+      "cols": 6,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 20
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 8.0,
+        "B": 25.0,
+        "C": 39.0,
+        "D": 34.0,
+        "E": 31.0,
+        "F": 24.0
+      },
+      "rowHeights": {
+        "68.0": 21,
+        "32.0": 3
+      },
+      "merges": [
+        "A1:F1",
+        "A27:F27"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "20_thuc_don_bua_chinh_gan_nhiem_mo_trung_tam_y_te_quan_12.xlsx"
+    },
+    {
+      "sheetName": "20 thực đơn",
+      "rows": 27,
+      "cols": 6,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 20
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 8.0,
+        "B": 25.0,
+        "C": 39.0,
+        "D": 34.0,
+        "E": 31.0,
+        "F": 24.0
+      },
+      "rowHeights": {
+        "68.0": 21,
+        "30.0": 2,
+        "32.0": 1
+      },
+      "merges": [
+        "A1:F1",
+        "A27:F27"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "20_thuc_don_bua_chinh_nguoi_gan_nhiem_mo_vnexpress.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 26,
+      "cols": 5,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 3
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 8
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": "FFF4FAF7",
+      "columnWidths": {
+        "A": 14.0,
+        "B": 46.0,
+        "C": 30.0,
+        "D": 49.0,
+        "E": 50.0
+      },
+      "rowHeights": {
+        "44.0": 8,
+        "112.0": 7,
+        "31.0": 3,
+        "34.0": 1,
+        "76.0": 1
+      },
+      "merges": [
+        "A15:E15",
+        "A1:E1",
+        "A26:E26"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[CAO HUYẾT ÁP] H&H Nutritrion.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 32,
+      "cols": 5,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 5
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 14.0,
+        "B": 42.0,
+        "C": 47.0,
+        "D": 47.0,
+        "E": 34.0
+      },
+      "rowHeights": {
+        "92.0": 7,
+        "42.0": 7,
+        "38.0": 5,
+        "31.0": 2,
+        "34.0": 1,
+        "68.0": 1
+      },
+      "merges": [
+        "A14:E14",
+        "A1:E1",
+        "A32:E32",
+        "A24:E24"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[CAO HUYẾT ÁP] Hệ thống dưỡng lão Bình Mỹ.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 23,
+      "cols": 4,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 6
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 14.0,
+        "B": 44.0,
+        "C": 52.0,
+        "D": 52.0
+      },
+      "rowHeights": {
+        "126.0": 7,
+        "42.0": 6,
+        "30.0": 2,
+        "32.0": 1,
+        "76.0": 1
+      },
+      "merges": [
+        "A1:D1",
+        "A23:D23",
+        "A14:D14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[CAO HUYẾT ÁP] Long Châu.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 25,
+      "cols": 5,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 8
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 13.0,
+        "B": 38.0,
+        "C": 49.0,
+        "D": 31.0,
+        "E": 49.0
+      },
+      "rowHeights": {
+        "42.0": 8,
+        "106.0": 7,
+        "31.0": 2,
+        "32.0": 1,
+        "76.0": 1
+      },
+      "merges": [
+        "A1:E1",
+        "A25:E25",
+        "A14:E14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[CAO HUYẾT ÁP] Nutrihome.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 26,
+      "cols": 6,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 9
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 14.0,
+        "B": 39.0,
+        "C": 28.0,
+        "D": 44.0,
+        "E": 31.0,
+        "F": 47.0
+      },
+      "rowHeights": {
+        "42.0": 9,
+        "104.0": 7,
+        "32.0": 3,
+        "76.0": 1
+      },
+      "merges": [
+        "A26:F26",
+        "A14:F14",
+        "A1:F1"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[CAO HUYẾT ÁP] Vinmec.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 13,
+      "cols": 5,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 1
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF274E13",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFF7EFE4",
+          "fontColor": "FF6B4518",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FFB27B3D",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFF4E8D8",
+          "fontColor": "FF6B4518",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 13.0,
+        "B": 39.0,
+        "C": 42.0,
+        "D": 40.0,
+        "E": 26.0,
+        "F": 8.63
+      },
+      "rowHeights": {
+        "15.75": 980,
+        "69.75": 7,
+        "31.5": 2,
+        "66.0": 1
+      },
+      "merges": [
+        "A1:E1",
+        "A13:E13"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": "landscape",
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GAN NHIỄM MỠ] Báo Lao Động.xlsm"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 14,
+      "cols": 4,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 13.0,
+        "B": 39.0,
+        "C": 47.0,
+        "D": 45.0
+      },
+      "rowHeights": {
+        "86.0": 7,
+        "30.0": 2,
+        "32.0": 1,
+        "66.0": 1
+      },
+      "merges": [
+        "A1:D1",
+        "A14:D14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GAN NHIỄM MỠ] Gia Định.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 14,
+      "cols": 4,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 13.0,
+        "B": 39.0,
+        "C": 48.0,
+        "D": 47.0
+      },
+      "rowHeights": {
+        "92.0": 7,
+        "30.0": 2,
+        "32.0": 1,
+        "64.0": 1
+      },
+      "merges": [
+        "A1:D1",
+        "A14:D14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GAN NHIỄM MỠ] H&H Nutritrion.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 14,
+      "cols": 4,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 13.0,
+        "B": 39.0,
+        "C": 47.0,
+        "D": 45.0
+      },
+      "rowHeights": {
+        "86.0": 7,
+        "28.0": 2,
+        "32.0": 1,
+        "66.0": 1
+      },
+      "merges": [
+        "A1:D1",
+        "A14:D14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GAN NHIỄM MỠ] Long Châu.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 14,
+      "cols": 4,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 13.0,
+        "B": 39.0,
+        "C": 43.0,
+        "D": 42.0
+      },
+      "rowHeights": {
+        "78.0": 7,
+        "28.0": 2,
+        "32.0": 1,
+        "64.0": 1
+      },
+      "merges": [
+        "A1:D1",
+        "A14:D14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GAN NHIỄM MỠ] Nutricare.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 26,
+      "cols": 4,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 9
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 15.0,
+        "B": 41.0,
+        "C": 47.0,
+        "D": 43.0
+      },
+      "rowHeights": {
+        "38.0": 9,
+        "82.0": 7,
+        "30.0": 2,
+        "32.0": 1,
+        "60.0": 1
+      },
+      "merges": [
+        "A1:D1",
+        "A26:D26",
+        "A14:D14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GAN NHIỄM MỠ] TRADIMEC.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 14,
+      "cols": 4,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF1F6B5C",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE8F4F0",
+          "fontColor": "FF24584D",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF4E9385",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDFF0EA",
+          "fontColor": "FF24584E",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF6DF",
+          "fontColor": "FF7A5A16",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 13.0,
+        "B": 39.0,
+        "C": 47.0,
+        "D": 45.0
+      },
+      "rowHeights": {
+        "86.0": 7,
+        "28.0": 2,
+        "32.0": 1,
+        "52.0": 1
+      },
+      "merges": [
+        "A1:D1",
+        "A14:D14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GAN NHIỄM MỠ] Tâm Anh.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 14,
+      "cols": 4,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF285E4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFEAF4EF",
+          "fontColor": "FF285E4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5A8F7B",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDCEBE4",
+          "fontColor": "FF285E4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF765714",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 13.0,
+        "B": 36.0,
+        "C": 43.0,
+        "D": 40.0
+      },
+      "rowHeights": {
+        "78.0": 7,
+        "28.0": 2,
+        "32.0": 1,
+        "66.0": 1
+      },
+      "merges": [
+        "A1:D1",
+        "A14:D14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GAN NHIỄM MỠ] VOV.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 23,
+      "cols": 4,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 6
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 14.0,
+        "B": 42.0,
+        "C": 47.0,
+        "D": 45.0
+      },
+      "rowHeights": {
+        "92.0": 7,
+        "42.0": 6,
+        "30.0": 2,
+        "32.0": 1,
+        "68.0": 1
+      },
+      "merges": [
+        "A1:D1",
+        "A23:D23",
+        "A14:D14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GOUT] Bookingcare.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 23,
+      "cols": 4,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 6
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 14.0,
+        "B": 40.0,
+        "C": 47.0,
+        "D": 47.0
+      },
+      "rowHeights": {
+        "92.0": 7,
+        "42.0": 6,
+        "30.0": 2,
+        "32.0": 1,
+        "72.0": 1
+      },
+      "merges": [
+        "A1:D1",
+        "A23:D23",
+        "A14:D14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GOUT] Lao Động.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 25,
+      "cols": 4,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 8
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 14.0,
+        "B": 40.0,
+        "C": 47.0,
+        "D": 47.0
+      },
+      "rowHeights": {
+        "42.0": 8,
+        "92.0": 7,
+        "30.0": 2,
+        "32.0": 1,
+        "72.0": 1
+      },
+      "merges": [
+        "A1:D1",
+        "A25:D25",
+        "A14:D14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GOUT] Long Chau_.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 22,
+      "cols": 4,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 5
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 14.0,
+        "B": 39.0,
+        "C": 47.0,
+        "D": 45.0
+      },
+      "rowHeights": {
+        "92.0": 7,
+        "42.0": 5,
+        "28.0": 2,
+        "32.0": 1,
+        "66.0": 1
+      },
+      "merges": [
+        "A22:D22",
+        "A1:D1",
+        "A14:D14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GOUT] Long Châu.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 32,
+      "cols": 4,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 5
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF245F52",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE8F4F0",
+          "fontColor": "FF24584D",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF4E9385",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDFF0EA",
+          "fontColor": "FF24584E",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 15.0,
+        "B": 41.0,
+        "C": 47.0,
+        "D": 47.0
+      },
+      "rowHeights": {
+        "42.0": 12,
+        "92.0": 7,
+        "30.0": 2,
+        "32.0": 1,
+        "76.0": 1
+      },
+      "merges": [
+        "A1:D1",
+        "A32:D32",
+        "A24:D24",
+        "A14:D14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GOUT] Mediplus.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 26,
+      "cols": 5,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 9
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF245F52",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE8F4F0",
+          "fontColor": "FF24584D",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF4E9385",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDFF0EA",
+          "fontColor": "FF24584E",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": "FFF4FAF7",
+      "columnWidths": {
+        "A": 14.0,
+        "B": 40.0,
+        "C": 51.0,
+        "D": 49.0,
+        "E": 28.0
+      },
+      "rowHeights": {
+        "42.0": 9,
+        "118.0": 7,
+        "31.0": 2,
+        "32.0": 1,
+        "78.0": 1
+      },
+      "merges": [
+        "A1:E1",
+        "A26:E26",
+        "A14:E14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GOUT] Nerci.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 22,
+      "cols": 5,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 5
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 14.0,
+        "B": 34.0,
+        "C": 40.0,
+        "D": 35.0,
+        "E": 25.0
+      },
+      "rowHeights": {
+        "70.0": 7,
+        "42.0": 5,
+        "30.0": 2,
+        "32.0": 1,
+        "68.0": 1
+      },
+      "merges": [
+        "A22:E22",
+        "A1:E1",
+        "A14:E14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GOUT] Tiêm Chủng Long Châu.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 14,
+      "cols": 9,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF1F6B5C",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE8F4F0",
+          "fontColor": "FF24584D",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF4E9385",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "rowLabel": {
+          "fill": "FFDFF0EA",
+          "fontColor": "FF24584E",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF6DF",
+          "fontColor": "FF7A5A16",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 13.0,
+        "B": 31.0,
+        "C": 28.0,
+        "D": 42.0,
+        "E": 42.0,
+        "F": 13.0,
+        "G": 13.0,
+        "H": 13.0,
+        "I": 13.0
+      },
+      "rowHeights": {
+        "88.0": 7,
+        "32.0": 3,
+        "38.0": 1,
+        "60.0": 1
+      },
+      "merges": [
+        "A1:I1",
+        "A14:I14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GOUT] Tâm Anh.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 23,
+      "cols": 4,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 6
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 14.0,
+        "B": 40.0,
+        "C": 47.0,
+        "D": 45.0
+      },
+      "rowHeights": {
+        "84.0": 7,
+        "42.0": 6,
+        "30.0": 2,
+        "32.0": 1,
+        "70.0": 1
+      },
+      "merges": [
+        "A1:D1",
+        "A23:D23",
+        "A14:D14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GOUT] Tâm Đức.xlsx"
+    },
+    {
+      "sheetName": "Bữa sáng 7 ngày",
+      "rows": 25,
+      "cols": 5,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 8
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 14.0,
+        "B": 34.0,
+        "C": 43.0,
+        "D": 49.0,
+        "E": 34.0
+      },
+      "rowHeights": {
+        "40.0": 8,
+        "96.0": 7,
+        "30.0": 2,
+        "32.0": 1,
+        "72.0": 1
+      },
+      "merges": [
+        "A1:E1",
+        "A25:E25",
+        "A14:E14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GOUT] Vinmec.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn mẫu",
+      "rows": 29,
+      "cols": 4,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 4
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 8
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 4
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FFA15C38",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 20.0,
+        "B": 40.0,
+        "C": 42.0,
+        "D": 42.0
+      },
+      "rowHeights": {
+        "42.0": 12,
+        "72.0": 4,
+        "30.0": 2,
+        "32.0": 1,
+        "66.0": 1
+      },
+      "merges": [
+        "A22:D22",
+        "A1:D1",
+        "A29:D29",
+        "A11:D11"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GOUT] Vạn Phước Cửu Long.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 23,
+      "cols": 5,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 6
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": "FFF4FAF7",
+      "columnWidths": {
+        "A": 14.0,
+        "B": 38.0,
+        "C": 50.0,
+        "D": 49.0,
+        "E": 21.0
+      },
+      "rowHeights": {
+        "118.0": 7,
+        "42.0": 6,
+        "30.0": 2,
+        "32.0": 1,
+        "72.0": 1
+      },
+      "merges": [
+        "A1:E1",
+        "A23:E23",
+        "A14:E14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[GOUT] mamacare.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 32,
+      "cols": 6,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 5
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF245F52",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE8F4F0",
+          "fontColor": "FF24584D",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF4E9385",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "rowLabel": {
+          "fill": "FFDFF0EA",
+          "fontColor": "FF24584E",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": "FFF4FAF7",
+      "columnWidths": {
+        "A": 14.0,
+        "B": 39.0,
+        "C": 46.0,
+        "D": 31.0,
+        "E": 48.0,
+        "F": 28.0
+      },
+      "rowHeights": {
+        "88.0": 7,
+        "42.0": 7,
+        "39.0": 5,
+        "31.0": 2,
+        "34.0": 1,
+        "78.0": 1
+      },
+      "merges": [
+        "A24:F24",
+        "A14:F14",
+        "A1:F1",
+        "A32:F32"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[MỠ MÁU CAO] Long Châu.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 25,
+      "cols": 10,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 8
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF245F52",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE8F4F0",
+          "fontColor": "FF24584D",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF4E9385",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "rowLabel": {
+          "fill": "FFDFF0EA",
+          "fontColor": "FF24584E",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": "FFF4FAF7",
+      "columnWidths": {
+        "A": 13.0,
+        "B": 38.0,
+        "C": 31.0,
+        "D": 50.0,
+        "E": 26.0,
+        "F": 48.0,
+        "G": 18.0,
+        "H": 12.0,
+        "I": 17.0,
+        "J": 12.0
+      },
+      "rowHeights": {
+        "43.0": 8,
+        "112.0": 7,
+        "31.0": 2,
+        "34.0": 1,
+        "76.0": 1
+      },
+      "merges": [
+        "A1:J1",
+        "A25:J25",
+        "A14:J14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[MỠ MÁU CAO] Nutrihome.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 33,
+      "cols": 4,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 8
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 5
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF245F52",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE8F4F0",
+          "fontColor": "FF24584D",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF4E9385",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDFF0EA",
+          "fontColor": "FF24584E",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 14.0,
+        "B": 45.0,
+        "C": 52.0,
+        "D": 52.0
+      },
+      "rowHeights": {
+        "43.0": 8,
+        "96.0": 7,
+        "39.0": 5,
+        "30.0": 2,
+        "34.0": 1,
+        "76.0": 1
+      },
+      "merges": [
+        "A1:D1",
+        "A14:D14",
+        "A25:D25",
+        "A33:D33"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[MỠ MÁU CAO] Pharmacity.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 32,
+      "cols": 6,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 8
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 4
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF245F52",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE8F4F0",
+          "fontColor": "FF24584D",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF4E9385",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDFF0EA",
+          "fontColor": "FF24584E",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 13.0,
+        "B": 39.0,
+        "C": 29.0,
+        "D": 49.0,
+        "E": 31.0,
+        "F": 47.0
+      },
+      "rowHeights": {
+        "44.0": 8,
+        "100.0": 7,
+        "38.0": 4,
+        "32.0": 2,
+        "34.0": 1,
+        "76.0": 1
+      },
+      "merges": [
+        "A14:F14",
+        "A25:F25",
+        "A1:F1",
+        "A32:F32"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[MỠ MÁU CAO] Tâm Anh.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 13,
+      "cols": 5,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 1
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2E6F62",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE8F4F0",
+          "fontColor": "FF24584D",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF57917F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDCECE6",
+          "fontColor": "FF24584D",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 13.0,
+        "B": 31.0,
+        "C": 45.0,
+        "D": 24.0,
+        "E": 43.0
+      },
+      "rowHeights": {
+        "64.0": 7,
+        "32.0": 1,
+        "30.0": 1,
+        "58.0": 1
+      },
+      "merges": [
+        "A1:E1",
+        "A13:E13"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[TIỂU ĐƯỜNG] Bệnh viện 22-12.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 13,
+      "cols": 5,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 1
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE8F3ED",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF6DF",
+          "fontColor": "FF7A5A16",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 13.0,
+        "B": 32.0,
+        "C": 36.0,
+        "D": 36.0,
+        "E": 26.0
+      },
+      "rowHeights": {
+        "54.0": 7,
+        "30.0": 1,
+        "58.0": 1
+      },
+      "merges": [
+        "A1:E1",
+        "A13:E13"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[TIỂU ĐƯỜNG] Kim Đức.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 13,
+      "cols": 5,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 1
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF167D73",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE6F5F3",
+          "fontColor": "FF145E57",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF48A69C",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDF0ED",
+          "fontColor": "FF145E57",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF6DF",
+          "fontColor": "FF7A5A16",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 13.0,
+        "B": 31.0,
+        "C": 45.0,
+        "D": 25.0,
+        "E": 43.0
+      },
+      "rowHeights": {
+        "66.0": 7,
+        "30.0": 1,
+        "52.0": 1
+      },
+      "merges": [
+        "A1:E1",
+        "A13:E13"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[TIỂU ĐƯỜNG] Long Châu.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 13,
+      "cols": 9,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 1
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2D6A4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2D6A4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5A9674",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDDEDE4",
+          "fontColor": "FF2D6A4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF6DF",
+          "fontColor": "FF7A5A16",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": "center",
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 11.0,
+        "B": 10.0,
+        "C": 38.0,
+        "D": 10.0,
+        "E": 40.0,
+        "F": 10.0,
+        "G": 27.0,
+        "H": 10.0,
+        "I": 40.0
+      },
+      "rowHeights": {
+        "82.0": 7,
+        "30.0": 1,
+        "32.0": 1,
+        "52.0": 1
+      },
+      "merges": [
+        "A1:I1",
+        "A13:I13"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[TIỂU ĐƯỜNG] MSC Clinic.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 13,
+      "cols": 5,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 1
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF1F5F8B",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFEAF3F8",
+          "fontColor": "FF1F5F8B",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF4B8DB8",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFE5F0F7",
+          "fontColor": "FF1F5F8B",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF6DF",
+          "fontColor": "FF7A5A16",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 13.0,
+        "B": 39.0,
+        "C": 42.0,
+        "D": 25.0,
+        "E": 42.0
+      },
+      "rowHeights": {
+        "86.0": 7,
+        "30.0": 1,
+        "52.0": 1
+      },
+      "merges": [
+        "A1:E1",
+        "A13:E13"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[TIỂU ĐƯỜNG] Medlatec.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 13,
+      "cols": 10,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 1
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2F6B4F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE9F5EE",
+          "fontColor": "FF2F6B4F",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF5D9277",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "rowLabel": {
+          "fill": "FFDDECE3",
+          "fontColor": "FF2F6B4F",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF6DF",
+          "fontColor": "FF7A5A16",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 12.0,
+        "B": 39.0,
+        "C": 42.0,
+        "D": 28.0,
+        "E": 42.0,
+        "F": 30.0,
+        "G": 13.0,
+        "H": 13.0,
+        "I": 13.0,
+        "J": 13.0
+      },
+      "rowHeights": {
+        "88.0": 7,
+        "30.0": 1,
+        "34.0": 1,
+        "36.0": 1,
+        "52.0": 1
+      },
+      "merges": [
+        "A1:J1",
+        "A13:J13"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[TIỂU ĐƯỜNG] Nutrihome.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 14,
+      "cols": 9,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF256B5B",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE8F4F0",
+          "fontColor": "FF24584D",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF57917F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "rowLabel": {
+          "fill": "FFDCECE6",
+          "fontColor": "FF24584D",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 13.0,
+        "B": 36.0,
+        "C": 46.0,
+        "D": 44.0,
+        "E": 15.0,
+        "F": 15.0,
+        "G": 15.0,
+        "H": 15.0,
+        "I": 15.0
+      },
+      "rowHeights": {
+        "112.0": 7,
+        "30.0": 2,
+        "32.0": 1,
+        "36.0": 1,
+        "64.0": 1
+      },
+      "merges": [
+        "A1:I1",
+        "A14:I14"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[TIỂU ĐƯỜNG] Trạm Y tế Phường 8.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn mẫu",
+      "rows": 16,
+      "cols": 5,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 4
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF276B5B",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE8F4F0",
+          "fontColor": "FF24584D",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF57917F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDCECE6",
+          "fontColor": "FF24584D",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 17.0,
+        "B": 38.0,
+        "C": 32.0,
+        "D": 18.0,
+        "E": 34.0
+      },
+      "rowHeights": {
+        "100.0": 4,
+        "30.0": 2,
+        "56.0": 2,
+        "32.0": 1,
+        "62.0": 1
+      },
+      "merges": [
+        "A11:E11",
+        "A16:E16",
+        "A1:E1"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[TIỂU ĐƯỜNG] Trạm y tế phường Sơn Kỳ.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 1 ngày",
+      "rows": 17,
+      "cols": 5,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 6
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 1
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF276B5B",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE8F4F0",
+          "fontColor": "FF24584D",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF57917F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDCECE6",
+          "fontColor": "FF24584D",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 12.0,
+        "B": 34.0,
+        "C": 30.0,
+        "D": 18.0,
+        "E": 39.0
+      },
+      "rowHeights": {
+        "82.0": 6,
+        "30.0": 2,
+        "32.0": 1,
+        "60.0": 1
+      },
+      "merges": [
+        "A1:E1",
+        "A17:E17",
+        "A13:E13"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[TIỂU ĐƯỜNG] Trạm y tế phường Tân Sơn Nhì.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 13,
+      "cols": 6,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 1
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF1F6B5C",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFEAF5F1",
+          "fontColor": "FF24584E",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF4E9385",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDFF0EA",
+          "fontColor": "FF24584E",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF6DF",
+          "fontColor": "FF7A5A16",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 13.0,
+        "B": 31.0,
+        "C": 29.0,
+        "D": 38.0,
+        "E": 41.0,
+        "F": 30.0
+      },
+      "rowHeights": {
+        "76.0": 7,
+        "30.0": 1,
+        "48.0": 1
+      },
+      "merges": [
+        "A13:F13",
+        "A1:F1"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[TIỂU ĐƯỜNG] Tâm Anh.xlsx"
+    },
+    {
+      "sheetName": "Thực đơn 7 ngày",
+      "rows": 13,
+      "cols": 5,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 1
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 7
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF3D7353",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFF0FDF4",
+          "fontColor": "FF3D7353",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF7BA68C",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFE7F4EA",
+          "fontColor": "FF2F5B42",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF7E6",
+          "fontColor": "FF7C5A17",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 13.0,
+        "B": 27.0,
+        "C": 48.0,
+        "D": 24.0,
+        "E": 45.0
+      },
+      "rowHeights": {
+        "62.0": 7,
+        "30.0": 1,
+        "52.0": 1
+      },
+      "merges": [
+        "A1:E1",
+        "A13:E13"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[TIỂU ĐƯỜNG] Vinmec.xlsx"
+    },
+    {
+      "sheetName": "Các thực đơn mẫu",
+      "rows": 22,
+      "cols": 5,
+      "grammar": [
+        {
+          "role": "title",
+          "count": 1
+        },
+        {
+          "role": "meta",
+          "count": 2
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "tableHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 9
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "sectionHeader",
+          "count": 1
+        },
+        {
+          "role": "rowLabel",
+          "count": 1
+        },
+        {
+          "role": "dataRow",
+          "count": 3
+        },
+        {
+          "role": "spacer",
+          "count": 1
+        },
+        {
+          "role": "note",
+          "count": 1
+        }
+      ],
+      "roleStyles": {
+        "title": {
+          "fill": "FF2E6F62",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 16.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "meta": {
+          "fill": "FFE8F4F0",
+          "fontColor": "FF24584D",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        },
+        "tableHeader": {
+          "fill": "FF57917F",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": false
+        },
+        "rowLabel": {
+          "fill": "FFDCECE6",
+          "fontColor": "FF24584D",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": "center",
+          "wrap": true
+        },
+        "sectionHeader": {
+          "fill": "FF2F7666",
+          "fontColor": "FFFFFFFF",
+          "bold": true,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": "center",
+          "vertical": null,
+          "wrap": false
+        },
+        "dataRow": {
+          "fill": null,
+          "fontColor": null,
+          "bold": false,
+          "italic": false,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": null,
+          "wrap": true
+        },
+        "note": {
+          "fill": "FFFFF4DA",
+          "fontColor": "FF7A5814",
+          "bold": false,
+          "italic": true,
+          "size": 11.0,
+          "name": "Carlito",
+          "horizontal": null,
+          "vertical": "center",
+          "wrap": true
+        }
+      },
+      "bodyStyle": {
+        "fill": null,
+        "fontColor": null,
+        "bold": false,
+        "italic": false,
+        "size": 11.0,
+        "name": "Carlito",
+        "horizontal": null,
+        "vertical": "top",
+        "wrap": true
+      },
+      "numericFill": null,
+      "columnWidths": {
+        "A": 15.0,
+        "B": 15.0,
+        "C": 39.0,
+        "D": 35.0,
+        "E": 42.0
+      },
+      "rowHeights": {
+        "92.0": 9,
+        "54.0": 3,
+        "34.0": 2,
+        "32.0": 1,
+        "68.0": 1
+      },
+      "merges": [
+        "A16:E16",
+        "A22:E22",
+        "A1:E1"
+      ],
+      "freezePanes": null,
+      "pageSetup": {
+        "orientation": null,
+        "paperSize": null,
+        "fitToWidth": null,
+        "printArea": null,
+        "margins": {
+          "left": 0.7,
+          "right": 0.7,
+          "top": 0.75,
+          "bottom": 0.75
+        }
+      },
+      "hasBorders": false,
+      "images": 0,
+      "file": "[TIỂU ĐƯỜNG] Đức Giang.xlsx"
+    }
+  ]
+}

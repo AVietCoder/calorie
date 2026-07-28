@@ -10,16 +10,12 @@ import Header from './Header';
 // `.app-shell`/`.content`. This prevents a page stylesheet (e.g. chat's 2-col
 // grid, setup's flex) from leaking onto every other page once its CSS chunk is
 // loaded — the root cause of the production-only Household/Diet layout break.
-export default function PageShell({ children, variant, showSideNav = true }) {
-  const shellClass = [
-    'app-shell',
-    variant ? `app-shell--${variant}` : '',
-    showSideNav ? '' : 'app-shell--no-nav',
-  ].filter(Boolean).join(' ');
+export default function PageShell({ children, variant }) {
+  const shellClass = variant ? `app-shell app-shell--${variant}` : 'app-shell';
   const contentClass = variant ? `content content--${variant}` : 'content';
   return (
     <div className={shellClass}>
-      {showSideNav && <SideNav />}
+      <SideNav />
       <div className="main-wrapper">
         <Header />
         <main className={contentClass} id="main-content">

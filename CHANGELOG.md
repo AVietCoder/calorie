@@ -1,5 +1,71 @@
 # CHANGELOG — AI Calorie System (handover continuation)
 
+## [2.1.0] — Phân hệ Excel: xuất thực đơn & nhập file thông minh
+
+### Thêm mới
+
+**Xuất Excel (chưa từng có trước đây)**
+- Workbook 4 sheet: `THỰC ĐƠN` · `DINH DƯỠNG` · `ĐI CHỢ` · `TỔNG HỢP`
+- Sheet thực đơn tái tạo đúng design system trích từ 43 file mẫu tham chiếu
+- Cấu hình in A4: fit 1 trang ngang, lặp hàng tiêu đề, footer "Trang x / y"
+  (43/43 file mẫu đều KHÔNG có phần này — đây là chỗ bản sinh tốt hơn mẫu)
+- `GET /api/family-menu?resource=export&plan_id=…[&sheets=…][&servings=…]`
+
+**Template Engine**
+- `lib/excel/` tách 5 tầng: Data → Template → Style → Renderer → Excel
+- Thêm loại báo cáo mới = viết một hàm `(model) => SheetSpec` + đăng ký trong
+  `templates/index.js`; không đụng renderer, API hay UI
+
+**Template Knowledge Base**
+- `scripts/extract-excel-templates.py` mine corpus file mẫu → `knowledge/excel-theme.json`
+  + `knowledge/excel-template-profiles.json`
+- Theme nạp từ artifact, KHÔNG hard-code theo file mẫu nào
+
+**Bộ nhập thông minh**
+- Pipeline: Đọc lưới → Phân tích layout → Nhận diện bảng/ngày/bữa → Chuẩn hoá → DB
+- 5 chiến lược layout: `pivot`, `record`, `single-meal`, `menu-catalog`, `meal-rows`
+- **43/43 file mẫu đọc được bằng heuristic thuần, chưa cần gọi AI**
+- AI (`ai-structure.js`) là lớp dự phòng, CHỈ trả bản đồ toạ độ — không bao giờ
+  sinh tên món, nên không thể có món "ma"
+- Báo cáo nhận diện hiển thị ngay trên UI sau khi tải file lên
+
+**Danh sách đi chợ dùng được thật**
+- Ingredient Dictionary (`knowledge/ingredient-catalog.json`): "ba rọi" = "thịt ba chỉ"
+- Quy đổi đơn vị hiển thị: 1.200 g → 1,2 kg
+- Làm tròn theo cách mua thật: 750 g rau muống → 3 bó; 2.400 ml sữa → 14 hộp
+- Phân nhóm: Rau · Trái cây · Thịt · Hải sản · Trứng & sữa · Tinh bột · Đồ khô · Gia vị
+- Đơn giá + thành tiền + tổng chi phí; thiếu giá in "-", không chặn export
+- Cột "Có thể thay bằng" gợi ý nguyên liệu tương đương
+- Ô tick "đã mua" để in ra mang đi chợ
+- Đổi số suất → tính lại ngay, không phải sinh lại kế hoạch
+
+**Chuỗi giá nguyên liệu**
+- Admin (hộ → khu vực → toàn hệ thống) → bảng tham khảo theo vùng → bảng mặc định
+- `migrations/excel_export_and_pricing.sql` (tuỳ chọn — thiếu vẫn chạy được)
+
+### Sửa lỗi
+
+- **`\b` trong regex không hoạt động sau ký tự tiếng Việt.** `\b` của JavaScript
+  chỉ hiểu `[A-Za-z0-9_]` nên "Thứ Tư" / "Thứ Năm" / "Thứ Bảy" đều trượt, khiến
+  file dùng "Thứ Hai…Chủ Nhật" chỉ đọc được 6/7 ngày. Thay bằng lookahead Unicode.
+- Hàng lạ trong cột nhãn ngày trước đây đều bị gán `day_index = 1`, đè lên ngày 1.
+- `findHeaderRow` bị dải section merge đánh lừa (một giá trị trải 5 ô ăn điểm 5 lần).
+- Footer Excel: `&9` đứng trước chữ số bị đọc thành cỡ chữ 927.
+
+### Thay đổi
+
+- File mẫu nhập liệu nay do server dựng (có style + sheet HƯỚNG DẪN); bỏ code
+  dựng bằng SheetJS ở client — SheetJS bản cộng đồng không ghi được style
+- `buildShoppingList()` dùng model mới; các trường cũ giữ nguyên ngữ nghĩa
+- Thêm `exceljs` (ghi style). Giữ `xlsx` cho chiều đọc vì ExcelJS không đọc được
+  file do openpyxl/LibreOffice sinh (thiếu `docProps/app.xml`)
+
+### Tương thích ngược
+
+Mẫu 16 cột cũ, API cũ, bảng DB cũ đều không đổi. Migration hoàn toàn additive.
+Chưa chạy migration / chưa build theme artifact / LLM chết — mọi thứ vẫn chạy.
+
+
 ## 2026-07-04 — Knowledge Base refactor: remove ALL embeddings
 
 Removed every embedding dependency from the project (BGE-M3, OpenAI/Lovable

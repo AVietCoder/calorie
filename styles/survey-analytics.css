@@ -35,7 +35,7 @@
   align-items: center;
   gap: 7px;
   color: #65a27e;
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 850;
   letter-spacing: 1.35px;
   text-transform: uppercase;
@@ -56,7 +56,7 @@
   max-width: 720px;
   margin: 0;
   color: rgba(255, 255, 255, 0.72);
-  font-size: 12.5px;
+  font-size: 15.5px;
   line-height: 1.65;
 }
 
@@ -208,7 +208,7 @@
 .survey-chart-card p {
   margin: 3px 0 0;
   color: #8e9993;
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .survey-chart {
@@ -418,7 +418,7 @@
   color: #a3782b;
   background: #faf0dc;
   border-radius: 9px;
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 700;
 }
 
@@ -450,7 +450,7 @@
 .survey-empty p {
   max-width: 520px;
   margin: 0 0 18px;
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1.6;
 }
 

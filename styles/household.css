@@ -253,3 +253,54 @@
   gap: 10px;
   margin-top: 20px;
 }
+
+/* ── Ảnh 3.3: nhận diện thành viên (avatar + handle + tên hiển thị) ───────── */
+
+.member-card .m-ident { display: flex; align-items: center; gap: 11px; min-width: 0; }
+
+.member-card .m-avatar {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: hsl(var(--req-hue, 140) 55% 28%);
+  background: hsl(var(--req-hue, 140) 62% 90%);
+}
+
+.member-card .m-names { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.member-card .m-names h4 { overflow-wrap: anywhere; }
+.member-card .m-display-name { font-size: 12px; color: var(--text-sub); overflow-wrap: anywhere; }
+
+/* Huy hiệu vai trò khi người dùng KHÔNG phải chủ hộ (thay nút Chuyển chế độ). */
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--sage-50);
+  color: var(--dark-green);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Rời gia đình / xoá gia đình — hành động không thể hoàn tác. */
+.btn-danger-soft {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--danger);
+  background: transparent;
+  color: var(--danger);
+}
+.btn-danger-soft:hover:not(:disabled) { background: rgba(231, 76, 60, 0.08); }
+
+/* Đánh dấu trường bắt buộc / không bắt buộc trong form thành viên. */
+.form-grid .req-star { color: var(--danger); font-weight: 700; }
+.form-grid .opt-hint { color: var(--text-sub); font-weight: 400; opacity: .8; }

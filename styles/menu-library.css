@@ -72,3 +72,39 @@
   font-family: inherit;
   font-size: 14px;
 }
+
+/* ─────────────── Báo cáo nhận diện file nhập ─────────────── */
+
+.import-report {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: #f0f7f3;
+  border: 1px solid #d9e9e0;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.import-report h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #2f6b4f;
+}
+
+.import-report ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-sub);
+}
+
+.import-report li { margin: 3px 0; }
+.import-report strong { color: #24584d; }
+
+.import-warnings {
+  margin-top: 10px !important;
+  padding-top: 10px;
+  border-top: 1px dashed #d9e9e0;
+  list-style: none;
+  padding-left: 0 !important;
+}
+
+.import-warnings li { color: #7a5814; }

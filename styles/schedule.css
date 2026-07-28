@@ -1668,3 +1668,20 @@
   color:var(--danger); font-size:12.5px; font-weight:600; }
 
 /* ── Yêu cầu #3: tải ảnh món ăn ngoài thực đơn ─────────────────────────────── */
+
+/* Banner "đang sinh thực đơn trong nền" — trang vẫn dùng được bình thường. */
+.plan-generating
+{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    border-radius: 12px;
+    border-left: 3px solid var(--primary);
+    background: var(--sage-50);
+    color: var(--text-sub);
+    font-size: 13px;
+    line-height: 1.55;
+}
+.plan-generating .btn-spinner { flex: 0 0 auto; }

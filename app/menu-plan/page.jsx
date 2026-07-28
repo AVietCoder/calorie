@@ -32,9 +32,12 @@ function MenuPlanInner() {
   const [activeDish, setActiveDish] = useState(null);
   const [tab, setTab] = useState('grid');
   const [shoppingItems, setShoppingItems] = useState(null); // null = not loaded
+  const [shoppingGroups, setShoppingGroups] = useState(null);
+  const [shoppingTotals, setShoppingTotals] = useState(null);
   const [shoppingError, setShoppingError] = useState(null);
+  const [servings, setServings] = useState(null); // null = theo số thành viên
 
-  const { get, post } = useApi();
+  const { get, post, download } = useApi();
   const showToast = useToast();
   const { t } = useTranslation();
   const searchParams = useSearchParams();
@@ -109,14 +112,45 @@ function MenuPlanInner() {
     }
   }
 
-  async function loadShoppingList() {
+  async function loadShoppingList(nextServings = servings) {
     setShoppingItems(null);
     setShoppingError(null);
     try {
-      const list = await get('/api/family-menu', { resource: 'shopping-list', plan_id: plan.id });
+      const list = await get('/api/family-menu', {
+        resource: 'shopping-list',
+        plan_id: plan.id,
+        ...(nextServings ? { servings: nextServings } : {}),
+      });
       setShoppingItems(list?.items || list?.shopping_list_items || []);
+      setShoppingGroups(list?.groups || null);
+      setShoppingTotals(list?.totals || null);
     } catch (e) {
       setShoppingError(e.message);
+    }
+  }
+
+  /** Đổi số suất → danh sách mua được tính lại ngay, không phải sinh lại kế hoạch. */
+  async function changeServings(next) {
+    const n = Math.max(1, Number(next) || 1);
+    setServings(n);
+    if (tab === 'shopping') await loadShoppingList(n);
+  }
+
+  async function exportExcel(sheets) {
+    try {
+      const name = await download(
+        '/api/family-menu',
+        {
+          resource: 'export',
+          plan_id: plan.id,
+          ...(sheets ? { sheets } : {}),
+          ...(servings ? { servings } : {}),
+        },
+        'thuc-don.xlsx'
+      );
+      showToast(t('mp.toast_exported', `Đã tải ${name}`), 'success');
+    } catch (e) {
+      showToast(e.message, 'error');
     }
   }
 
@@ -154,7 +188,28 @@ function MenuPlanInner() {
               <button className={`tab-btn${tab === 'grid' ? ' active' : ''}`} onClick={() => switchTab('grid')}>{t('mp.tab_menu', 'Thực đơn')}</button>
               <button className={`tab-btn${tab === 'shopping' ? ' active' : ''}`} onClick={() => switchTab('shopping')}>{t('mp.tab_shopping', 'Danh sách mua sắm')}</button>
             </div>
-            <ActionButton className="btn btn-secondary" onClick={regenerateWeek} loadingText={t('common.creating', 'Đang tạo...')}><i className="fa-solid fa-rotate" /> {t('mp.regen_week', 'Làm lại cả tuần')}</ActionButton>
+            <div className="plan-actions">
+              <label className="servings-control">
+                <span>{t('mp.servings', 'Số suất')}</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="50"
+                  value={servings ?? ''}
+                  placeholder={t('mp.servings_auto', 'Tự động')}
+                  onChange={(e) => changeServings(e.target.value)}
+                />
+              </label>
+              <ActionButton className="btn btn-primary" onClick={() => exportExcel()} loadingText={t('common.exporting', 'Đang xuất...')}>
+                <i className="fa-solid fa-file-excel" /> {t('mp.export_all', 'Xuất Excel (4 sheet)')}
+              </ActionButton>
+              <ActionButton className="btn btn-secondary" onClick={() => exportExcel('shopping')} loadingText={t('common.exporting', 'Đang xuất...')}>
+                <i className="fa-solid fa-cart-shopping" /> {t('mp.export_shopping', 'Chỉ danh sách đi chợ')}
+              </ActionButton>
+              <ActionButton className="btn btn-secondary" onClick={regenerateWeek} loadingText={t('common.creating', 'Đang tạo...')}>
+                <i className="fa-solid fa-rotate" /> {t('mp.regen_week', 'Làm lại cả tuần')}
+              </ActionButton>
+            </div>
           </div>
 
           {tab === 'grid' && (
@@ -197,12 +252,44 @@ function MenuPlanInner() {
               ) : shoppingItems.length === 0 ? (
                 <p style={{ color: 'var(--text-sub)' }}>{t('mp.no_ingredients', 'Chưa có nguyên liệu.')}</p>
               ) : (
-                <table>
-                  <thead><tr><th>{t('mp.ingredient', 'Nguyên liệu')}</th><th>{t('mp.quantity', 'Số lượng')}</th></tr></thead>
-                  <tbody>
-                    {shoppingItems.map((it, i) => <tr key={i}><td>{it.name}</td><td>{it.total_qty ?? ''} {it.unit || 'g'}</td></tr>)}
-                  </tbody>
-                </table>
+                <>
+                  {shoppingTotals && (
+                    <p className="shopping-summary">
+                      {shoppingTotals.itemCount} {t('mp.items', 'nguyên liệu')} · {t('mp.est_cost', 'Chi phí dự kiến')}:{' '}
+                      <strong>{formatMoney(shoppingTotals.estimatedCost)} đ</strong>
+                      {shoppingTotals.missingPriceCount > 0 && (
+                        <span className="shopping-warn">
+                          {' '}({t('mp.missing_price', 'chưa có giá')}: {shoppingTotals.missingPriceCount})
+                        </span>
+                      )}
+                    </p>
+                  )}
+                  {(shoppingGroups || [{ key: 'all', label: '', items: shoppingItems }]).map((g) => (
+                    <div key={g.key} className="shopping-group">
+                      {g.label && <h4 className="shopping-group-title">{g.label}</h4>}
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>{t('mp.ingredient', 'Nguyên liệu')}</th>
+                            <th>{t('mp.quantity', 'Số lượng')}</th>
+                            <th>{t('mp.unit_price', 'Đơn giá')}</th>
+                            <th>{t('mp.line_total', 'Thành tiền')}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {g.items.map((it, i) => (
+                            <tr key={i} title={it.substitutes?.length ? `${t('mp.substitutes', 'Có thể thay bằng')}: ${it.substitutes.join(', ')}` : undefined}>
+                              <td>{it.name}</td>
+                              <td>{formatQty(it.qty ?? it.total_qty)} {it.unit || 'g'}</td>
+                              <td>{it.unit_price == null ? '-' : formatMoney(it.unit_price)}</td>
+                              <td>{it.line_total == null ? '-' : formatMoney(it.line_total)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ))}
+                </>
               )}
             </div>
           )}
@@ -230,4 +317,16 @@ function MenuPlanInner() {
       </div>
     </PageShell>
   );
+}
+
+/** Định dạng tiền/số kiểu Việt Nam; null → '-' để không bao giờ hiện NaN. */
+function formatMoney(v) {
+  if (v == null || Number.isNaN(Number(v))) return '-';
+  return Math.round(Number(v)).toLocaleString('vi-VN');
+}
+
+function formatQty(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return '';
+  return n.toLocaleString('vi-VN', { maximumFractionDigits: 2 });
 }
