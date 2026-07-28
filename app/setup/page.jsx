@@ -5,6 +5,7 @@ import PageShell from '../../components/PageShell';
 import { useApi } from '../../lib-client/useApi';
 import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
+import { isValidBirthYear, isValidHeight, isValidWeight } from '../../lib/body-metrics';
 import '../../styles/setup.css';
 
 const STEP_IDS = ['step1', 'step2', 'step3', 'step4'];
@@ -131,14 +132,10 @@ function SetupInner() {
     const id = STEP_IDS[step];
 
     if (id === 'step1') {
-      const birthYear = Number(form.birth_year);
-      const height = Number(form.height);
-      const weight = Number(form.weight);
-      const currentYear = new Date().getFullYear();
-      if (!birthYear) return err('Vui lòng nhập năm sinh.');
-      if (birthYear < 1900 || birthYear > currentYear) return err('Năm sinh không hợp lệ.');
-      if (!height || height < 80 || height > 250) return err('Chiều cao phải nằm trong khoảng 80 - 250 cm.');
-      if (!weight || weight < 20 || weight > 300) return err('Cân nặng phải nằm trong khoảng 20 - 300 kg.');
+      if (!form.birth_year) return err('Vui lòng nhập năm sinh.');
+      if (!isValidBirthYear(form.birth_year)) return err('Năm sinh không hợp lệ.');
+      if (!form.height || !isValidHeight(form.height)) return err('Chiều cao phải nằm trong khoảng 80 - 250 cm.');
+      if (!form.weight || !isValidWeight(form.weight)) return err('Cân nặng phải nằm trong khoảng 20 - 300 kg.');
     }
 
     if (id === 'step2') {
@@ -148,8 +145,7 @@ function SetupInner() {
         if (form.disease_select === 'Khác' && !form.customDisease.trim()) return err('Vui lòng nhập tên bệnh.');
         if (!finalDisease.trim()) return err('Vui lòng nhập bệnh / tình trạng sức khỏe.');
       }
-      const targetWeight = Number(form.target_weight);
-      if (!targetWeight || targetWeight < 20 || targetWeight > 300) return err('Cân nặng mục tiêu phải nằm trong khoảng 20 - 300 kg.');
+      if (!form.target_weight || !isValidWeight(form.target_weight)) return err('Cân nặng mục tiêu phải nằm trong khoảng 20 - 300 kg.');
       if (!form.deadline) return err('Vui lòng chọn deadline.');
       const deadlineDate = new Date(form.deadline);
       deadlineDate.setHours(23, 59, 59, 999);

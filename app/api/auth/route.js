@@ -3,6 +3,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '../../../lib/supabase.js';
 import { CORS_HEADERS, corsJson, corsOptions } from '../../../lib/cors.js';
+import { isValidBirthYear, isValidHeight, isValidWeight } from '../../../lib/body-metrics.js';
 
 export const maxDuration = 10;
 
@@ -15,6 +16,18 @@ export async function POST(request) {
   const { action, email, password, username, birthYear, weight, height } = body;
 
   if (action === 'register') {
+    // Chặn TRƯỚC KHI tạo tài khoản Supabase Auth — sai thì báo lỗi ngay, tránh
+    // tạo user "mồ côi" (có auth nhưng insert profile phía dưới không chạy tới).
+    if (!isValidBirthYear(birthYear)) {
+      return corsJson(NextResponse, { error: 'Năm sinh không hợp lệ.' }, { status: 400 });
+    }
+    if (!isValidHeight(height)) {
+      return corsJson(NextResponse, { error: 'Chiều cao phải nằm trong khoảng 80 - 250 cm.' }, { status: 400 });
+    }
+    if (!isValidWeight(weight)) {
+      return corsJson(NextResponse, { error: 'Cân nặng phải nằm trong khoảng 20 - 300 kg.' }, { status: 400 });
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,

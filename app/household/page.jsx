@@ -7,6 +7,7 @@ import ActionButton from '../../components/ActionButton';
 import { useApi } from '../../lib-client/useApi';
 import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
+import { isValidBirthYear, isValidHeight, isValidWeight } from '../../lib/body-metrics';
 import '../../styles/household.css';
 
 const GOAL_LABEL = { maintain: 'Giữ cân', lose: 'Giảm cân', gain: 'Tăng cân', muscle: 'Tăng cơ' };
@@ -202,6 +203,24 @@ export default function HouseholdPage() {
   function closeMemberModal() { setModalOpen(false); }
 
   /**
+   * Cảnh báo nếu năm sinh/chiều cao/cân nặng không hợp lý cho một con người.
+   * allowChild=true (thành viên hộ gia đình có thể là trẻ em/em bé, kind='dependent'),
+   * nên ngưỡng dưới của chiều cao/cân nặng nới hơn so với hồ sơ chính chủ (signup/setup).
+   */
+  function bodyMetricsError(form) {
+    if (form.birth_year && !isValidBirthYear(form.birth_year)) {
+      return t('hh.err_birth_year', 'Năm sinh không hợp lệ.');
+    }
+    if (form.height && !isValidHeight(form.height, { allowChild: true })) {
+      return t('hh.err_height', 'Chiều cao không hợp lệ (phải trong khoảng 40 - 250 cm).');
+    }
+    if (form.weight && !isValidWeight(form.weight, { allowChild: true })) {
+      return t('hh.err_weight', 'Cân nặng không hợp lệ (phải trong khoảng 2 - 300 kg).');
+    }
+    return null;
+  }
+
+  /**
    * Ảnh 2: chỉ bắt nhập cân nặng mục tiêu khi mục tiêu là Giảm cân / Tăng cân,
    * và khi có thì phải hợp lý so với cân nặng hiện tại. Trả chuỗi lỗi hoặc null.
    */
@@ -244,6 +263,8 @@ export default function HouseholdPage() {
     const payload = { ...memberForm, display_name: memberForm.display_name.trim(), relation: memberForm.relation.trim(), disease: memberForm.disease.trim() };
     if (!payload.display_name) { showToast(t('hh.toast_need_name', 'Nhập tên thành viên.'), 'error'); return; }
 
+    const bmErr = bodyMetricsError(memberForm);
+    if (bmErr) { showToast(bmErr, 'error'); return; }
     const twErr = targetWeightError(memberForm);
     if (twErr) { showToast(twErr, 'error'); return; }
     // Mục tiêu không cần cân nặng mục tiêu -> gửi rỗng để BE ghi NULL, tránh giữ

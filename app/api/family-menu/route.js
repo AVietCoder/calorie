@@ -35,6 +35,7 @@ import { authenticateToken } from '../../../lib/auth-middleware.js';
 import { supabaseAdmin } from '../../../lib/supabase.js';
 import { estimateFoodSmart } from '../../../lib/nutrition.js';
 import { corsJson, corsOptions } from '../../../lib/cors.js';
+import { isValidBirthYear, isValidHeight, isValidWeight } from '../../../lib/body-metrics.js';
 import {
   getHouseholdForUser,
   getJoinedHousehold,
@@ -554,6 +555,29 @@ function validateTargetWeight(patch, existing = {}) {
   }
 }
 
+/**
+ * Cảnh báo nếu năm sinh/chiều cao/cân nặng không hợp lý cho một con người.
+ * allowChild=true vì thành viên hộ gia đình có thể là trẻ em/em bé (kind='dependent'),
+ * khác với hồ sơ chính chủ (signup/setup) luôn là người tự đăng ký.
+ * Dùng `in` (không phải `??`) với lý do y hệt validateTargetWeight ở trên.
+ */
+function validateBodyMetrics(patch, existing = {}) {
+  const pick = (field) => (field in patch ? patch[field] : existing[field] ?? null);
+
+  const birthYear = pick('birth_year');
+  if (birthYear != null && !isValidBirthYear(birthYear)) {
+    throw new Error('Năm sinh không hợp lệ.');
+  }
+  const height = pick('height');
+  if (height != null && !isValidHeight(height, { allowChild: true })) {
+    throw new Error('Chiều cao không hợp lệ (phải trong khoảng 40 - 250 cm).');
+  }
+  const weight = pick('weight');
+  if (weight != null && !isValidWeight(weight, { allowChild: true })) {
+    throw new Error('Cân nặng không hợp lệ (phải trong khoảng 2 - 300 kg).');
+  }
+}
+
 function memberPatchFrom(body) {
   const patch = {};
   for (const f of MEMBER_FIELDS) {
@@ -571,6 +595,7 @@ async function addMember(user, body) {
   const household = await requireOwnedHousehold(user, body.household_id);
   const patch = memberPatchFrom(body);
   if (!patch.display_name) throw new Error('Thiếu tên thành viên.');
+  validateBodyMetrics(patch);
   validateTargetWeight(patch);
   const { data, error } = await supabaseAdmin
     .from('household_members')
@@ -588,6 +613,7 @@ async function updateMember(user, body) {
   await requireOwnedHousehold(user, member.household_id);
   const patch = memberPatchFrom(body);
   // So với dòng ĐANG CÓ, vì form sửa có thể chỉ gửi lên một phần các trường.
+  validateBodyMetrics(patch, member);
   validateTargetWeight(patch, member);
   patch.updated_at = new Date().toISOString();
   const { data, error } = await supabaseAdmin.from('household_members').update(patch).eq('id', body.member_id).select().single();

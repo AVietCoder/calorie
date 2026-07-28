@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
 import LangSwitch from '../../components/LangSwitch';
+import { isValidBirthYear, isValidHeight, isValidWeight } from '../../lib/body-metrics';
 import '../../styles/style.css';
 import '../../styles/signup.css';
 
@@ -18,10 +19,28 @@ export default function SignUpPage() {
 
   const setField = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
+  /** Cảnh báo nếu năm sinh/chiều cao/cân nặng không hợp lý cho một con người. */
+  function validateBodyMetrics() {
+    if (!isValidBirthYear(form.birthYear)) {
+      showToast('Năm sinh không hợp lệ.', 'error');
+      return false;
+    }
+    if (!isValidHeight(form.height)) {
+      showToast('Chiều cao phải nằm trong khoảng 80 - 250 cm.', 'error');
+      return false;
+    }
+    if (!isValidWeight(form.weight)) {
+      showToast('Cân nặng phải nằm trong khoảng 20 - 300 kg.', 'error');
+      return false;
+    }
+    return true;
+  }
+
   async function onSubmit(e) {
     e.preventDefault();
     // Chống double-submit (click nhanh 2 lần / giữ Enter) — ref đồng bộ.
     if (submitting.current) return;
+    if (!validateBodyMetrics()) return;
     submitting.current = true;
     setLoading(true);
     try {

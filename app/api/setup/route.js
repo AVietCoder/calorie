@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase } from '../../../lib/supabase.js';
 import { authenticateToken } from '../../../lib/auth-middleware.js';
 import { corsJson, corsOptions } from '../../../lib/cors.js';
+import { isValidBirthYear, isValidHeight, isValidWeight } from '../../../lib/body-metrics.js';
 
 export const maxDuration = 10;
 
@@ -24,6 +25,21 @@ export async function POST(request) {
       if (newDeadline <= now) {
         return corsJson(NextResponse, { success: false, message: 'Deadline phải là ngày trong tương lai.' }, { status: 400 });
       }
+    }
+
+    // Chặn số liệu cơ thể phi thực tế — client (setup.jsx / ProfileScreen mobile)
+    // đã validate, đây là lớp phòng thủ thứ 2 vì endpoint này nhận JSON tự do.
+    if (!isValidBirthYear(formData.birth_year)) {
+      return corsJson(NextResponse, { success: false, message: 'Năm sinh không hợp lệ.' }, { status: 400 });
+    }
+    if (!isValidHeight(formData.height)) {
+      return corsJson(NextResponse, { success: false, message: 'Chiều cao phải nằm trong khoảng 80 - 250 cm.' }, { status: 400 });
+    }
+    if (!isValidWeight(formData.weight)) {
+      return corsJson(NextResponse, { success: false, message: 'Cân nặng phải nằm trong khoảng 20 - 300 kg.' }, { status: 400 });
+    }
+    if (!isValidWeight(formData.target_weight)) {
+      return corsJson(NextResponse, { success: false, message: 'Cân nặng mục tiêu phải nằm trong khoảng 20 - 300 kg.' }, { status: 400 });
     }
 
     const updateData = {
