@@ -1,6 +1,15 @@
-/* menu-plan.css — Lưới thực đơn 7 ngày, modal chi tiết món + audit, danh sách mua sắm. */
+/**
+ * menu-plan.css — Thực đơn tuần + Danh sách đi chợ.
+ *
+ * Dùng đúng bộ token của trang Kế hoạch (both.css): --primary/--primary-deep,
+ * --sage-50, --radius*, --shadow*. KHÔNG import schedule.css — .meal-modal* và
+ * .macro-* chỉ tồn tại ở đó, nên modal/thanh macro ở đây có tiền tố .mp- riêng.
+ * (.schedule-hero thì nằm sẵn trong both.css nên dùng chung được.)
+ */
 
-.plan-toolbar {
+/* ── thanh công cụ ───────────────────────────────────────────────────────── */
+
+.mp-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -8,140 +17,335 @@
   flex-wrap: wrap;
   margin-bottom: 20px;
 }
-.tabs { display: flex; gap: 8px; }
-.tab-btn {
-  padding: 10px 18px;
+
+.mp-tabs { display: flex; gap: 8px; }
+
+.mp-tab {
+  padding: 9px 18px;
   border-radius: 999px;
   border: 1px solid var(--accent-gray);
   background: var(--surface);
   color: var(--text-sub);
-  cursor: pointer;
   font-family: inherit;
   font-size: 14px;
   font-weight: 600;
+  cursor: pointer;
+  transition: all .18s ease;
 }
-.tab-btn.active { background: var(--gradient-primary); color: #fff; border-color: transparent; }
+.mp-tab:hover { border-color: var(--primary); color: var(--primary-deep); }
+.mp-tab.active {
+  background: var(--gradient-primary);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 6px 16px -8px rgba(88, 166, 119, .7);
+}
 
-.plan-grid {
-  display: grid;
-  grid-template-columns: 90px repeat(7, minmax(150px, 1fr));
-  gap: 10px;
-  overflow-x: auto;
-}
-.plan-cell-head {
-  font-weight: 700;
-  font-size: 13px;
-  color: var(--text-sub);
-  text-align: center;
-  padding: 8px 0;
-}
-.plan-meal-label {
+.mp-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.mp-actions .btn { display: inline-flex; align-items: center; gap: 8px; }
+
+.mp-servings {
   display: flex;
   align-items: center;
-  font-weight: 700;
+  gap: 8px;
   font-size: 13px;
-  color: var(--dark-green);
-  text-transform: uppercase;
+  color: var(--text-sub);
 }
-.plan-dish-card {
+.mp-servings input {
+  width: 78px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent-gray);
   background: var(--surface);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius);
-  padding: 12px;
-  cursor: pointer;
-  min-height: 74px;
-  transition: box-shadow .15s ease;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 14px;
+  text-align: center;
 }
-.plan-dish-card:hover { box-shadow: var(--shadow); border-color: var(--primary); }
-.plan-dish-card .d-name { font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 4px; }
-.plan-dish-card .d-cal { font-size: 12px; color: var(--text-sub); }
-.plan-dish-card.has-audit { border-left: 3px solid var(--warn); }
+.mp-servings input:focus { outline: none; border-color: var(--primary); }
 
-.dish-modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  z-index: 100;
+/* ── băng thực đơn mẫu ───────────────────────────────────────────────────── */
+
+.mp-sample-banner {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 20px;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  border-radius: var(--radius);
+  border-left: 3px solid var(--warn);
+  background: rgba(243, 156, 18, .08);
+  color: var(--text-main);
+  font-size: 14px;
+  line-height: 1.55;
 }
-.dish-modal-overlay.open { display: flex; }
-.dish-modal { max-width: 480px; width: 100%; }
-.audit-chip {
+.mp-sample-banner i { color: var(--warn); font-size: 18px; }
+.mp-sample-banner .mp-sample-cta { margin-left: auto; white-space: nowrap; }
+
+.mp-sample-picker { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.mp-sample-chip {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-gray);
+  background: var(--surface);
+  color: var(--text-sub);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all .18s ease;
+}
+.mp-sample-chip:hover { border-color: var(--primary); }
+.mp-sample-chip.active { background: var(--sage-50); border-color: var(--primary); color: var(--primary-deep); font-weight: 600; }
+
+/* ── lưới thẻ ngày ───────────────────────────────────────────────────────── */
+
+.mp-days {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.mp-day-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-soft);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.mp-day-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  border-color: var(--primary);
+}
+
+.mp-day-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.mp-day-name { font-size: 16px; font-weight: 800; color: var(--primary-deep); letter-spacing: -.2px; }
+.mp-day-kcal { font-size: 15px; font-weight: 800; color: var(--primary); white-space: nowrap; }
+.mp-day-kcal small { font-size: 11px; font-weight: 600; color: var(--text-sub); margin-left: 3px; }
+
+/* thanh macro — 3 đoạn theo % năng lượng (P×4, F×9, C×4) */
+.mp-macro-track {
+  display: flex;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.mp-macro-seg { transition: width .5s cubic-bezier(.4, 0, .2, 1); }
+.mp-macro-seg.p { background: #5b9cf6; }
+.mp-macro-seg.f { background: #f5a623; }
+.mp-macro-seg.c { background: #7dc976; }
+
+.mp-macro-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--text-sub); }
+.mp-macro-legend b { color: var(--text-main); font-weight: 700; }
+.mp-macro-legend i {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+.mp-macro-legend .dot-p { background: #5b9cf6; }
+.mp-macro-legend .dot-f { background: #f5a623; }
+.mp-macro-legend .dot-c { background: #7dc976; }
+
+.mp-day-dishes { display: flex; flex-direction: column; gap: 5px; }
+.mp-dish-chip {
+  font-size: 13px;
+  color: var(--text-main);
+  line-height: 1.45;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mp-dish-chip::before { content: '·'; color: var(--primary); font-weight: 800; margin-right: 7px; }
+.mp-more { font-size: 12px; font-weight: 600; color: var(--primary); margin-top: 2px; }
+
+.mp-empty { color: var(--text-sub); font-size: 14px; }
+
+/* Vỏ modal (.mp-modal*) nằm ở styles/modal.css — /menu-library dùng chung. */
+
+.mp-meal-block { display: flex; flex-direction: column; gap: 8px; }
+.mp-meal-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+}
+.mp-meal-head b { color: var(--primary); font-size: 12px; letter-spacing: 0; }
+
+.mp-dish-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-soft);
+  background: var(--surface-2);
+}
+.mp-dish-row.has-audit { border-left: 3px solid var(--warn); }
+.mp-dish-name { font-size: 14px; font-weight: 700; color: var(--text-main); }
+.mp-dish-meta { font-size: 12px; color: var(--text-sub); }
+.mp-dish-micro { font-size: 11px; color: var(--text-dim); }
+.mp-dish-actions { display: flex; gap: 8px; margin-top: 6px; }
+.mp-dish-actions button {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent-gray);
+  background: var(--surface);
+  color: var(--text-sub);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.mp-dish-actions button:hover { border-color: var(--primary); color: var(--primary-deep); }
+
+.mp-audit-note {
+  font-size: 11px;
+  color: #9a6400;
+  background: rgba(243, 156, 18, .1);
+  padding: 5px 9px;
+  border-radius: var(--radius-sm);
+  margin-top: 4px;
+}
+
+/* ── danh sách đi chợ ────────────────────────────────────────────────────── */
+
+.mp-shop-summary {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  border-radius: var(--radius);
+  border-left: 3px solid var(--primary);
+  background: var(--sage-50);
+  font-size: 13px;
+  color: var(--text-sub);
+}
+.mp-shop-summary b { color: var(--primary-deep); font-weight: 800; }
+.mp-shop-summary .warn { color: #9a6400; }
+
+.mp-shop-text {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  background: rgba(243,156,18,0.1);
-  color: #9a6400;
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  border-radius: var(--radius);
+  border: 1px dashed var(--accent-gray);
+  background: var(--surface-2);
   font-size: 13px;
-  margin: 10px 0;
+  color: var(--text-sub);
+  line-height: 1.6;
 }
-.dish-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.mp-shop-text p { margin: 0; flex: 1; word-break: break-word; }
 
-#shopping-list-body table { width: 100%; border-collapse: collapse; }
-#shopping-list-body th, #shopping-list-body td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border-soft); font-size: 14px; }
-
-/* ─────────────── Xuất Excel & danh sách đi chợ nâng cấp ─────────────── */
-
-.plan-actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
+.mp-shop-group { margin-bottom: 22px; }
+.mp-shop-group h4 {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--primary-deep);
+  margin: 0 0 8px;
 }
 
-.servings-control {
-  display: flex;
+/* Bảng THẬT SỰ có viền — bản cũ trỏ vào #shopping-list-body (selector chết). */
+.mp-shop-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.mp-shop-table th {
+  text-align: left;
+  padding: 9px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  border-bottom: 1px solid var(--accent-gray);
+}
+.mp-shop-table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-main);
+  vertical-align: top;
+}
+.mp-shop-table tr:last-child td { border-bottom: none; }
+.mp-shop-table th:nth-child(n+2),
+.mp-shop-table td:nth-child(n+2) { text-align: right; white-space: nowrap; }
+.mp-shop-table th:first-child,
+.mp-shop-table td:first-child { text-align: left; white-space: normal; }
+.mp-shop-alias { display: block; font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+.mp-est-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(243, 156, 18, .12);
+  color: #9a6400;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ── gợi ý nơi mua ───────────────────────────────────────────────────────── */
+
+.mp-nearby { margin-top: 8px; }
+.mp-nearby h4 { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: var(--text-main); margin: 0 0 4px; }
+.mp-nearby h4 i { color: var(--primary); }
+.mp-nearby p { font-size: 13px; color: var(--text-sub); margin: 0 0 12px; }
+.mp-nearby-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.mp-nearby-btn {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
-  color: var(--text-sub);
-}
-
-.servings-control input {
-  width: 76px;
-  padding: 8px 10px;
-  border: 1px solid var(--border, #d9e5df);
-  border-radius: 8px;
-  font: inherit;
-}
-
-.shopping-summary {
-  margin: 0 0 16px;
-  padding: 12px 14px;
-  background: #f0f7f3;
-  border-left: 3px solid #2f6b4f;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-.shopping-summary strong { color: #2f6b4f; }
-.shopping-warn { color: #7a5814; }
-
-.shopping-group { margin-bottom: 22px; }
-
-.shopping-group-title {
-  margin: 0 0 8px;
-  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent-gray);
+  background: var(--surface);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 13.5px;
   font-weight: 600;
-  color: #2f6b4f;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: all .18s ease;
 }
-
-.shopping-group table { width: 100%; }
-.shopping-group td:nth-child(2),
-.shopping-group td:nth-child(3),
-.shopping-group td:nth-child(4),
-.shopping-group th:nth-child(2),
-.shopping-group th:nth-child(3),
-.shopping-group th:nth-child(4) { text-align: right; white-space: nowrap; }
+.mp-nearby-btn:hover { border-color: var(--primary); color: var(--primary-deep); transform: translateY(-1px); }
+.mp-nearby-btn i { color: var(--primary); }
 
 @media (max-width: 640px) {
-  .plan-actions { width: 100%; }
-  .plan-actions .btn { flex: 1 1 auto; }
+  .mp-toolbar { align-items: stretch; }
+  .mp-actions { justify-content: space-between; }
+  .mp-days { grid-template-columns: 1fr; }
+  .mp-shop-table { font-size: 12.5px; }
+  .mp-shop-table th, .mp-shop-table td { padding: 8px 7px; }
 }
+
+/* Chi phí dự kiến — hiện ở thẻ ngày, đầu modal và từng bữa. */
+.mp-day-cost {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold, #B8975A);
+}
+.mp-day-cost i { font-size: 12px; }
+.mp-day-cost small { font-weight: 500; color: var(--text-sub); }
+.mp-meal-cost { color: var(--gold, #B8975A); font-weight: 700; }
+
+/* Cột tick "đã mua" — chỉ hiện khi ShoppingPanel nhận prop checkable. */
+.mp-shop-table th.mp-shop-tick,
+.mp-shop-table td.mp-shop-tick { width: 34px; text-align: center; padding-right: 0; }
+.mp-shop-table td.mp-shop-tick input { width: 15px; height: 15px; accent-color: var(--primary); cursor: pointer; }
+.mp-shop-table tr.is-bought td { opacity: .45; text-decoration: line-through; }
+.mp-shop-table tr.is-bought td.mp-shop-tick { opacity: 1; text-decoration: none; }

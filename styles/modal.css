@@ -1,0 +1,70 @@
+/**
+ * modal.css — vỏ modal dùng chung cho /menu-plan và /menu-library.
+ *
+ * Tách ra khỏi menu-plan.css khi TemplateEditor (thư viện thực đơn) cần đúng
+ * vỏ này: hai trang nạp hai file CSS khác nhau, để nguyên chỗ cũ thì trang
+ * thư viện không có style, còn chép sang là hai bản phải sửa song song.
+ *
+ * Giữ tiền tố .mp- theo đúng tên cũ để không phải sửa markup đang chạy.
+ * KHÔNG gộp vào both.css: .meal-modal* của /schedule là bộ khác, gộp chung
+ * sẽ kéo cả trang Kế hoạch vào vùng ảnh hưởng.
+ */
+
+.mp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, .45);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
+}
+.mp-modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+.mp-modal {
+  width: 100%;
+  max-width: 620px;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-radius: 24px;
+  box-shadow: 0 32px 64px rgba(0, 0, 0, .18);
+  transform: translateY(24px) scale(.97);
+  transition: transform .28s cubic-bezier(.34, 1.56, .64, 1);
+}
+.mp-modal-overlay.open .mp-modal { transform: translateY(0) scale(1); }
+
+.mp-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 24px 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.mp-modal-header h3 { font-size: 19px; font-weight: 800; color: var(--primary-deep); margin: 0; }
+.mp-modal-kcal { margin-left: auto; font-size: 15px; font-weight: 800; color: var(--primary); }
+.mp-modal-close {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface-2);
+  color: var(--text-sub);
+  font-size: 16px;
+  cursor: pointer;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+.mp-modal-header .mp-modal-kcal + .mp-modal-close { margin-left: 0; }
+.mp-modal-close:hover { background: var(--sage-50); color: var(--primary-deep); }
+
+.mp-modal-body { padding: 18px 24px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
+
+@media (max-width: 640px) {
+  .mp-modal { max-height: 92vh; }
+}

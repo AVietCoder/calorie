@@ -11,3 +11,6 @@ coverage/
 reference-menus/*.xlsx
 reference-menus/*.xlsm
 tmp-verify/
+
+# Thư mục .xlsx do scripts/verify-excel-export.mjs sinh ra khi kiểm chứng
+tmp-excel-verify/

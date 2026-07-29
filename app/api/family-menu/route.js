@@ -32,6 +32,10 @@
 import { NextResponse } from 'next/server';
 
 import { authenticateToken } from '../../../lib/auth-middleware.js';
+import { isAdminUser } from '../../../lib/admin-auth.js';
+import { uploadImage, cloudinaryConfigured } from '../../../lib/cloudinary.js';
+import { categoryFromName } from '../../../lib/family-menu/menu-categories.js';
+import { canEditTemplate, templateEditDenial, DENY_MESSAGES } from '../../../lib/family-menu/menu-permissions.js';
 import { supabaseAdmin } from '../../../lib/supabase.js';
 import { estimateFoodSmart } from '../../../lib/nutrition.js';
 import { corsJson, corsOptions } from '../../../lib/cors.js';
@@ -40,6 +44,7 @@ import {
   getHouseholdForUser,
   getJoinedHousehold,
   isHouseholdOwner,
+  isHouseholdMember,
   getMembers,
   canSwitchMode,
   generateUniqueJoinCode,
@@ -55,10 +60,15 @@ import {
   regeneratePlan,
   swapDish,
   buildShoppingList,
+  buildTemplateShoppingList,
+  buildDailyChecklists,
+  planIdForPlanDish,
 } from '../../../lib/family-menu/plan-builder.js';
+import { listSampleMenus, sampleMenuAsPlan, sampleIngredientRows } from '../../../lib/family-menu/sample-menus.js';
+import { computeShoppingModel, formatShoppingText } from '../../../lib/family-menu/shopping.js';
 import { importMenuWorkbook } from '../../../lib/excel/import/index.js';
 import { buildExportModel } from '../../../lib/family-menu/plan-export.js';
-import { exportPlanWorkbook, exportImportTemplate } from '../../../lib/excel/index.js';
+import { exportPlanWorkbook, exportImportTemplate, SHEET_TEMPLATES } from '../../../lib/excel/index.js';
 import { MIME_XLSX } from '../../../lib/excel/mime.js';
 
 export const maxDuration = 60;
@@ -73,6 +83,18 @@ const asList = (v) =>
 const ok = (data, status = 200) => corsJson(NextResponse, { success: true, data }, { status });
 const fail = (status, error) => corsJson(NextResponse, { success: false, error: String(error?.message || error) }, { status });
 
+/**
+ * Lỗi ĐÃ PHÂN LOẠI (sai tham số, không đủ quyền, không tìm thấy).
+ *
+ * Không có nó thì mọi thứ ném ra đều thành 500, kể cả khi người dùng chỉ nhập
+ * sai — che mất lỗi thật trong log. Bug thật vẫn là 500 kèm stack như cũ.
+ */
+class HttpError extends Error {
+  constructor(status, message) { super(message); this.status = status; }
+}
+const httpError = (status, message) => new HttpError(status, message);
+const statusOf = (err) => (err instanceof HttpError ? err.status : 500);
+
 /* ───────────────────── Excel template ingestion (bộ nhập thông minh) ───────────────────── */
 
 /**
@@ -86,14 +108,23 @@ const fail = (status, error) => corsJson(NextResponse, { success: false, error: 
  */
 async function parseExcelTemplate(buffer, opts = {}) {
   const { days, report } = await importMenuWorkbook(buffer, opts);
+  const { estimated, pending, warning } = await estimateMissingNutrition(days, 'excel_import');
+  if (warning) report.warnings = [...(report.warnings || []), warning];
+  return { days, report: { ...report, estimatedDishes: estimated, pendingEstimates: pending } };
+}
 
-  // Món nào thiếu calories/protein thì nhờ engine dinh dưỡng ước tính — giữ
-  // nguyên hành vi cũ, chỉ khác là nay áp dụng cho mọi layout chứ không riêng
-  // file mẫu 16 cột.
+/**
+ * Bù calories/protein… cho món chưa có số, bằng engine ước tính sẵn có.
+ *
+ * Dùng chung cho CẢ hai đường tạo thực đơn (Excel và nhập tay) — nếu không,
+ * thực đơn gõ tay sẽ hiện 0 kcal ở mọi nơi trong khi thực đơn nhập từ Excel
+ * thì có số.
+ */
+async function estimateMissingNutrition(days, source) {
   const pending = [];
-  for (const day of days) {
-    for (const meal of day.meals) {
-      for (const dish of meal.dishes) {
+  for (const day of days || []) {
+    for (const meal of day.meals || []) {
+      for (const dish of meal.dishes || []) {
         if (dish.calories == null || dish.protein == null) pending.push(dish);
       }
     }
@@ -113,7 +144,7 @@ async function parseExcelTemplate(buffer, opts = {}) {
       dish.fiber = dish.fiber ?? stripUnit(est.fiber);
       dish.sugar = dish.sugar ?? stripUnit(est.sugar);
       dish.sodium = dish.sodium ?? stripUnit(est.sodium);
-      dish.source = est.source || 'excel_import';
+      dish.source = est.source || source;
       dish.confidence = est.confidence || 'low';
       estimated += 1;
     } catch {
@@ -121,14 +152,13 @@ async function parseExcelTemplate(buffer, opts = {}) {
     }
   }
 
-  if (pending.length > MAX_ESTIMATES) {
-    report.warnings = [
-      ...(report.warnings || []),
-      `${pending.length - MAX_ESTIMATES} món chưa được ước tính dinh dưỡng (vượt giới hạn mỗi lần nhập) — có thể bổ sung sau.`,
-    ];
-  }
-
-  return { days, report: { ...report, estimatedDishes: estimated, pendingEstimates: pending.length } };
+  return {
+    estimated,
+    pending: pending.length,
+    warning: pending.length > MAX_ESTIMATES
+      ? `${pending.length - MAX_ESTIMATES} món chưa được ước tính dinh dưỡng (vượt giới hạn mỗi lần nhập) — có thể bổ sung sau.`
+      : null,
+  };
 }
 
 function stripUnit(v) {
@@ -171,6 +201,7 @@ async function persistTemplateDays(templateId, days) {
             tags: dish.tags,
             source: dish.source || 'manual',
             confidence: dish.confidence || 'medium',
+            ...(dish.source_text ? { source_text: dish.source_text } : {}),
           })
           .select()
           .single();
@@ -179,7 +210,14 @@ async function persistTemplateDays(templateId, days) {
         if (dish.ingredients?.length) {
           const { error: ingErr } = await supabaseAdmin
             .from('menu_template_dish_ingredients')
-            .insert(dish.ingredients.map((i) => ({ dish_id: dishRow.id, ...i })));
+            .insert(dish.ingredients.map((i) => ({
+              dish_id: dishRow.id,
+              name: i.name,
+              // Không ép mặc định 'g'/0: nguồn không khai thì để null.
+              grams: i.grams ?? null,
+              unit: i.unit ?? null,
+              tags: i.tags || [],
+            })));
           if (ingErr) throw ingErr;
         }
       }
@@ -245,13 +283,50 @@ export async function GET(request) {
       return ok(await getPendingRequests(householdId));
     }
 
+    // Thông báo "để dành" (được duyệt / bị gỡ khỏi gia đình) — client gọi 1 lần
+    // mỗi phiên đăng nhập ở mọi trang, xem components/FamilyNotices.jsx.
+    if (resource === 'notifications') {
+      return ok(await getUnreadNotifications(user.id));
+    }
+
     if (resource === 'templates') {
       const household = await getHouseholdForUser(user.id);
       if (!household) return fail(400, 'Chưa có household — tạo household trước.');
       const members = await getMembers(household.id);
-      const tag = url.searchParams.get('tag') || undefined;
-      const ranked = await recommendTemplates(household, members, { filters: { tag } });
-      return ok(ranked);
+      // Thư viện phải hiện ĐỦ mọi thực đơn: limit mặc định 10 của
+      // recommendTemplates từng cắt mất 33/43 bản, và vì gần như mọi điểm số
+      // đều bằng 0 nên 10 bản lọt lại là ngẫu nhiên — cả nhóm gout, tiểu
+      // đường, mỡ máu biến mất khỏi bộ lọc danh mục.
+      const ranked = await recommendTemplates(household, members, {
+        limit: Infinity,
+        filters: { tag: url.searchParams.get('tag') || undefined },
+      });
+
+      // Kèm sẵn: đang dùng thực đơn nào, và quyền sửa từng thực đơn — để thư
+      // viện đánh dấu "Đang sử dụng" và ẩn nút Sửa mà không phải gọi thêm API.
+      const { data: activePlan } = await supabaseAdmin
+        .from('weekly_menu_plans')
+        .select('id, source_template_id')
+        .eq('household_id', household.id)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const admin = await isAdminUser(user);
+      const items = (ranked || []).map((r) => ({
+        ...r,
+        in_use: !!activePlan && r.template.id === activePlan.source_template_id,
+        can_edit: canEditTemplate(r.template, { userId: user.id, isAdmin: admin }),
+      }));
+
+      return ok({
+        items,
+        active_plan_id: activePlan?.id || null,
+        active_template_id: activePlan?.source_template_id || null,
+        is_admin: admin,
+        household_id: household.id,
+      });
     }
 
     if (resource === 'template') {
@@ -261,9 +336,24 @@ export async function GET(request) {
       return ok(template);
     }
 
+    // Đi chợ cho một thực đơn trong thư viện, CHƯA cần áp dụng — để cân nhắc
+    // trước khi thay kế hoạch đang chạy. Chỉ đọc, không ghi shopping_lists.
+    if (resource === 'template-shopping-list') {
+      const id = url.searchParams.get('id');
+      if (!id) return fail(400, 'Thiếu id');
+      const household = await getHouseholdForUser(user.id);
+      const members = household ? await getMembers(household.id) : [];
+      return ok(await buildTemplateShoppingList(id, {
+        household,
+        baseServings: Math.max(1, members.length || 1),
+        servings: parseServings(url),
+      }));
+    }
+
     if (resource === 'plan') {
       const householdId = url.searchParams.get('household_id');
       if (!householdId) return fail(400, 'Thiếu household_id');
+      await requireHouseholdAccess(user, householdId);
       const { data: plan, error } = await supabaseAdmin
         .from('weekly_menu_plans')
         .select('*, plan_days(*, plan_meals(*, plan_dishes(*, plan_dish_ingredients(*))))')
@@ -279,6 +369,7 @@ export async function GET(request) {
     if (resource === 'plan-audit') {
       const planId = url.searchParams.get('plan_id');
       if (!planId) return fail(400, 'Thiếu plan_id');
+      await requirePlanAccess(user, planId);
       const { data, error } = await supabaseAdmin
         .from('menu_adjustment_audit')
         .select('*')
@@ -290,7 +381,7 @@ export async function GET(request) {
 
     // Xuất Excel: trả BINARY chứ không phải JSON, nên không đi qua ok()/fail().
     if (resource === 'export') {
-      return exportPlanToExcel(url);
+      return exportPlanToExcel(url, user);
     }
 
     if (resource === 'import-template') {
@@ -298,23 +389,51 @@ export async function GET(request) {
       return xlsxResponse(buffer, filename);
     }
 
+    /* Thực đơn MẪU — chỉ đọc, không đụng DB. Dùng khi hộ chưa có kế hoạch nào,
+       để màn hình không trống trơn. Áp cho cả chế độ Gia đình lẫn Đầu bếp. */
+    if (resource === 'sample-menus') {
+      return ok(listSampleMenus({ tag: url.searchParams.get('tag') || undefined }));
+    }
+
+    if (resource === 'sample-menu') {
+      const id = url.searchParams.get('id');
+      const plan = sampleMenuAsPlan(id);
+      if (!plan) throw httpError(404, 'Không tìm thấy thực đơn mẫu.');
+      return ok(plan);
+    }
+
+    if (resource === 'sample-shopping-list') {
+      const id = url.searchParams.get('id');
+      const rows = sampleIngredientRows(id);
+      if (!rows.length) throw httpError(404, 'Không tìm thấy thực đơn mẫu.');
+      const servings = parseServings(url) || 1;
+      const model = await computeShoppingModel(rows, { servings, baseServings: 1 });
+      return ok({
+        is_sample: true,
+        servings,
+        ...model,
+        days: await buildDailyChecklists(rows, (r) => r.dayIndex, { servings, baseServings: 1 }),
+        text: formatShoppingText(model),
+      });
+    }
+
     if (resource === 'shopping-list') {
       const planId = url.searchParams.get('plan_id');
       if (!planId) return fail(400, 'Thiếu plan_id');
-      const { data: existing } = await supabaseAdmin
-        .from('shopping_lists')
-        .select('*, shopping_list_items(*)')
-        .eq('plan_id', planId)
-        .maybeSingle();
-      if (existing) return ok(existing);
-      const built = await buildShoppingList(planId);
-      return ok(built);
+      await requirePlanAccess(user, planId);
+
+      // KHÔNG cache lại dòng shopping_lists nữa. Bản cache trả về
+      // { shopping_list_items[] } với cột total_qty/est_cost, khác hẳn shape khi
+      // dựng mới ({ items, groups, totals }) — nên từ lần load thứ hai trở đi
+      // UI mất phần gom nhóm và tổng chi phí. Dựng lại tốn 1 query + bảng giá
+      // đã cache 60s, đổi lại response chỉ còn MỘT shape duy nhất.
+      return ok(await buildShoppingList(planId, { servings: parseServings(url) }));
     }
 
     return fail(400, `resource không hợp lệ: ${resource}`);
   } catch (err) {
     console.error('[family-menu] GET error:', err);
-    return fail(500, err);
+    return fail(statusOf(err), err);
   }
 }
 
@@ -356,6 +475,8 @@ export async function POST(request) {
         return ok(await regenerateHouseholdJoinCode(user, body));
       case 'leave_family':
         return ok(await leaveFamily(user));
+      case 'mark_notifications_read':
+        return ok(await markNotificationsRead(user, body));
       case 'join_by_code':
         return ok(await joinByCode(user, body));
       case 'approve_join_request':
@@ -366,6 +487,10 @@ export async function POST(request) {
         return ok(await uploadTemplateExcel(user, body, files));
       case 'create_template_manual':
         return ok(await createTemplateManual(user, body));
+      case 'update_template':
+        return ok(await updateTemplate(user, body, files));
+      case 'delete_template':
+        return ok(await deleteTemplate(user, body));
       case 'generate_plan':
         return ok(
           await generatePlan({
@@ -374,6 +499,8 @@ export async function POST(request) {
           })
         );
       case 'regenerate_plan':
+        // Không có dòng này thì BẤT KỲ ai biết plan_id đều xoá được cả tuần của hộ khác.
+        await requirePlanAccess(user, body.plan_id, { owner: true });
         return ok(
           await regeneratePlan({
             planId: body.plan_id,
@@ -383,23 +510,90 @@ export async function POST(request) {
             planDishId: body.plan_dish_id,
           })
         );
-      case 'swap_dish':
+      case 'swap_dish': {
+        // Kiểm tra quyền TRƯỚC khi ghi: tra plan_id từ plan_dish_id rồi mới đổi.
+        const swapPlanId = await planIdForPlanDish(body.plan_dish_id);
+        if (!swapPlanId) throw httpError(404, 'Không tìm thấy món trong kế hoạch.');
+        await requirePlanAccess(user, swapPlanId, { owner: true });
         return ok(await swapDish({ planDishId: body.plan_dish_id, replacementDishId: body.replacement_dish_id }));
+      }
       default:
         return fail(400, `action không hợp lệ: ${action}`);
     }
   } catch (err) {
     console.error('[family-menu] POST error:', err);
-    return fail(500, err);
+    return fail(statusOf(err), err);
   }
+}
+
+/* ───────────────────────── tham số & phân quyền ───────────────────────── */
+
+/** `?servings=` — bỏ trống = tự động theo số thành viên. Sai → 400, không phải 500. */
+function parseServings(url) {
+  const raw = url.searchParams.get('servings');
+  if (raw == null || raw === '') return undefined;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 1 || n > 50) {
+    throw httpError(400, 'servings phải là số từ 1 đến 50.');
+  }
+  return n;
+}
+
+/** Đọc được kế hoạch: chủ hộ HOẶC thành viên đã liên kết (thực đơn là của chung). */
+async function requireHouseholdAccess(user, householdId) {
+  if (!householdId) throw httpError(400, 'Thiếu household_id');
+  if (await isHouseholdMember(user.id, householdId)) return;
+  throw httpError(403, 'Bạn không có quyền xem thực đơn của gia đình này.');
+}
+
+/**
+ * Kiểm tra quyền theo plan_id.
+ * @param {object} opts
+ * @param {boolean} [opts.owner]  true = chỉ chủ hộ (mọi thao tác GHI)
+ */
+async function requirePlanAccess(user, planId, { owner = false } = {}) {
+  const { data: plan } = await supabaseAdmin
+    .from('weekly_menu_plans')
+    .select('id, household_id')
+    .eq('id', planId)
+    .maybeSingle();
+  if (!plan) throw httpError(404, 'Không tìm thấy kế hoạch thực đơn.');
+  if (owner) await requireOwnedHousehold(user, plan.household_id);
+  else await requireHouseholdAccess(user, plan.household_id);
+  return plan;
+}
+
+/**
+ * Ảnh 3 — quyền SỬA/XOÁ một thực đơn trong thư viện.
+ *
+ *   admin            → mọi thực đơn, kể cả thực đơn hệ thống
+ *   người dùng thường → chỉ thực đơn DO CHÍNH MÌNH tạo và KHÔNG phải hệ thống
+ *
+ * Cùng một công thức với `can_edit` mà `?resource=templates` trả về, nên nút
+ * trên UI và chốt chặn ở BE không thể lệch nhau.
+ */
+async function requireTemplateEditAccess(user, templateId) {
+  if (!templateId) throw httpError(400, 'Thiếu template_id');
+  const { data: template, error } = await supabaseAdmin
+    .from('menu_templates')
+    .select('*')
+    .eq('id', templateId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!template) throw httpError(404, 'Không tìm thấy thực đơn.');
+
+  const isAdmin = await isAdminUser(user);
+  const denial = templateEditDenial(template, { userId: user.id, isAdmin });
+  if (denial) throw httpError(403, DENY_MESSAGES[denial]);
+  return { template, isAdmin };
 }
 
 /* ───────────────────────── action implementations ───────────────────────── */
 
 async function requireOwnedHousehold(user, householdId) {
-  if (!householdId) throw new Error('Thiếu household_id');
+  if (!householdId) throw httpError(400, 'Thiếu household_id');
   const owner = await isHouseholdOwner(user.id, householdId);
-  if (!owner) throw new Error('Chỉ chủ hộ mới có quyền thực hiện hành động này.');
+  if (!owner) throw httpError(403, 'Chỉ chủ hộ mới có quyền thực hiện hành động này.');
   const { data, error } = await supabaseAdmin.from('households').select('*').eq('id', householdId).single();
   if (error) throw error;
   return data;
@@ -629,7 +823,83 @@ async function removeMember(user, body) {
   if (member.user_id === household.owner_id) throw new Error('Không thể xóa chủ hộ.');
   const { error } = await supabaseAdmin.from('household_members').delete().eq('id', body.member_id);
   if (error) throw error;
+
+  // Thành viên có tài khoản thật -> để dành thông báo cho lần đăng nhập sau.
+  // Thành viên 'dependent' không có tài khoản nên không cần báo.
+  if (member.kind === 'linked' && member.user_id) {
+    await notifyUsers([member.user_id], { type: 'removed_from_family', household });
+  }
   return { removed: true };
+}
+
+/* ─────────────── thông báo để dành cho thành viên gia đình ─────────────── */
+
+/** Handle (@username) của chủ hộ — dùng để hiển thị "gia đình của @ai". */
+async function ownerHandleOf(household) {
+  if (!household?.owner_id) return null;
+  const { data } = await supabaseAdmin
+    .from('profiles')
+    .select('username')
+    .eq('id', household.owner_id)
+    .maybeSingle();
+  return asText(data?.username) || null;
+}
+
+/**
+ * Ghi thông báo cho những người dùng KHÔNG online lúc sự kiện xảy ra
+ * (được duyệt vào gia đình / bị gỡ khỏi gia đình). Xem migrations/family_notifications.sql.
+ *
+ * Best-effort: thông báo hỏng thì KHÔNG được làm hỏng hành động chính (duyệt/xoá
+ * đã thành công rồi) — nuốt lỗi và ghi log.
+ */
+async function notifyUsers(userIds, { type, household, ownerHandle }) {
+  const ids = [...new Set((userIds || []).filter(Boolean))];
+  if (!ids.length) return 0;
+  try {
+    const handle = ownerHandle !== undefined ? ownerHandle : await ownerHandleOf(household);
+    const rows = ids.map((uid) => ({
+      user_id: uid,
+      type,
+      owner_handle: handle,
+      household_id: household?.id || null,
+    }));
+    const { error } = await supabaseAdmin.from('household_notifications').insert(rows);
+    if (error) throw error;
+    return rows.length;
+  } catch (err) {
+    console.error('[family-menu] notifyUsers failed:', err?.message || err);
+    return 0;
+  }
+}
+
+async function getUnreadNotifications(userId) {
+  const { data, error } = await supabaseAdmin
+    .from('household_notifications')
+    .select('id, type, owner_handle, created_at')
+    .eq('user_id', userId)
+    .is('read_at', null)
+    .order('created_at', { ascending: false })
+    .limit(20);
+  // Bảng chưa được tạo (chưa chạy migration) thì coi như không có thông báo,
+  // KHÔNG làm hỏng cả trang Kitchen.
+  if (error) {
+    console.error('[family-menu] getUnreadNotifications failed:', error.message);
+    return [];
+  }
+  return data || [];
+}
+
+async function markNotificationsRead(user, body) {
+  const ids = Array.isArray(body.notification_ids) ? body.notification_ids.filter(Boolean) : [];
+  let q = supabaseAdmin
+    .from('household_notifications')
+    .update({ read_at: new Date().toISOString() })
+    .eq('user_id', user.id)          // chỉ được đánh dấu thông báo CỦA MÌNH
+    .is('read_at', null);
+  if (ids.length) q = q.in('id', ids);
+  const { error } = await q;
+  if (error) throw error;
+  return { marked: true };
 }
 
 /* ─────────────── join code: request → owner approval → membership ─────────────── */
@@ -768,20 +1038,30 @@ async function leaveFamily(user) {
     .maybeSingle();
   if (!owned) throw new Error('Bạn chưa thuộc gia đình nào.');
 
-  const { data: linked, error: lErr } = await supabaseAdmin
+  // Đếm TRƯỚC khi xoá để báo lại cho người dùng đã gỡ bao nhiêu người.
+  const { data: members, error: mErr } = await supabaseAdmin
     .from('household_members')
-    .select('id, user_id')
-    .eq('household_id', owned.id)
-    .eq('kind', 'linked');
-  if (lErr) throw lErr;
-  const others = (linked || []).filter((m) => m.user_id && m.user_id !== user.id);
-  if (others.length > 0) {
-    throw new Error('Vẫn còn thành viên khác trong gia đình của bạn. Hãy xoá họ khỏi gia đình trước khi rời đi.');
-  }
+    .select('id, user_id, kind')
+    .eq('household_id', owned.id);
+  if (mErr) throw mErr;
+  const others = (members || []).filter((m) => m.user_id !== user.id);
+  const removedMembers = others.length;
 
+  // Ghi thông báo TRƯỚC khi xoá: sau lệnh delete thì không còn tra ra được
+  // handle chủ hộ lẫn danh sách thành viên nữa.
+  await notifyUsers(
+    others.filter((m) => m.kind === 'linked' && m.user_id).map((m) => m.user_id),
+    { type: 'removed_from_family', household: owned, ownerHandle: await ownerHandleOf(owned) }
+  );
+
+  // Xoá household là ĐỦ: mọi bảng con đều `on delete cascade` (household_members,
+  // household_join_requests, weekly_menu_plans/plan_*, shopping_lists...), nên
+  // toàn bộ thành viên — kể cả tài khoản thật đã tham gia — bị gỡ tự động.
+  // Không bắt chủ hộ xoá tay từng người nữa.
+  // household_notifications dùng `on delete set null` nên thông báo vừa ghi SỐNG SÓT.
   const { error } = await supabaseAdmin.from('households').delete().eq('id', owned.id);
   if (error) throw error;
-  return { left: true, household_id: owned.id, deleted_household: true };
+  return { left: true, household_id: owned.id, deleted_household: true, removed_members: removedMembers };
 }
 
 async function loadPendingRequestForOwner(user, requestId) {
@@ -820,6 +1100,9 @@ async function approveJoinRequest(user, body) {
 
   // A household that gains a real linked account is a family by definition.
   await supabaseAdmin.from('households').update({ mode: 'family' }).eq('id', household.id).eq('mode', 'chef');
+
+  // Người xin vào thường không online lúc được duyệt -> để dành thông báo.
+  await notifyUsers([req.user_id], { type: 'join_approved', household });
 
   return { approved: true, request_id: req.id, user_id: req.user_id };
 }
@@ -863,6 +1146,7 @@ async function uploadTemplateExcel(user, body, files) {
       owner_household_id: ownerHouseholdId,
       source: 'excel_upload',
       created_by: user.id,
+      ...(await templateMetaFromBody(user, body)),
     })
     .select()
     .single();
@@ -916,13 +1200,160 @@ async function createTemplateManual(user, body) {
       owner_household_id: ownerHouseholdId,
       source: 'admin_form',
       created_by: user.id,
+      ...(await templateMetaFromBody(user, body)),
     })
     .select()
     .single();
   if (error) throw error;
 
-  if (Array.isArray(body.days)) await persistTemplateDays(template.id, body.days);
+  if (Array.isArray(body.days) && body.days.length) {
+    // Món gõ tay chỉ có tên ⇒ bù dinh dưỡng như đường Excel, để thực đơn tự
+    // nhập không hiện 0 kcal khắp nơi.
+    const { estimated, pending } = await estimateMissingNutrition(body.days, 'manual_form');
+    await persistTemplateDays(template.id, body.days);
+    return { ...template, import_report: { dayCount: body.days.length, dishCount: countDishes(body.days), estimatedDishes: estimated, pendingEstimates: pending, strategy: 'manual', layout: 'manual' } };
+  }
   return template;
+}
+
+const countDishes = (days) =>
+  (days || []).reduce((s, d) => s + (d.meals || []).reduce((n, m) => n + (m.dishes?.length || 0), 0), 0);
+
+/* ───────────────────── Sửa / xoá thực đơn (Ảnh 3) ───────────────────── */
+
+/**
+ * Phần meta chung cho cả hai đường TẠO thực đơn (Excel và nhập tay).
+ * `category` bỏ trống thì suy từ tiêu đề — thư viện lọc theo danh mục nên
+ * không được để thực đơn mới rơi hết vào "Khác".
+ */
+async function templateMetaFromBody(user, body) {
+  const title = asText(body.title);
+  const meta = {
+    description: asText(body.description).trim() || null,
+    category: asText(body.category).trim() || categoryFromName(title),
+    image_url: asText(body.image_url).trim() || null,
+  };
+  // Chỉ admin mới đánh dấu được thực đơn hệ thống.
+  if ((asText(body.is_system) === 'true' || body.is_system === true) && (await isAdminUser(user))) {
+    meta.is_system = true;
+  }
+  return meta;
+}
+
+const MENU_COVER_FOLDER = process.env.CLOUDINARY_MENU_FOLDER || 'calorie-menu-covers';
+const COVER_MIME = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const COVER_MAX_BYTES = 5 * 1024 * 1024;
+
+/** Chỉ những cột người dùng được sửa. Không nhận nguyên `body` để không ai
+ *  đẩy được `created_by`/`is_system` qua đường vòng. */
+const TEMPLATE_TEXT_FIELDS = ['title', 'description', 'category'];
+const TEMPLATE_LIST_FIELDS = ['tags', 'disease_target'];
+
+/**
+ * POST { action:'update_template', template_id, … }
+ *
+ * Nhận cả JSON lẫn multipart — multipart để kèm ảnh bìa (`file`). Chỉ ghi
+ * những trường CÓ MẶT trong body, nên sửa mỗi tiêu đề không xoá mất mô tả.
+ */
+async function updateTemplate(user, body, files) {
+  const { template, isAdmin } = await requireTemplateEditAccess(user, asText(body.template_id));
+
+  const patch = { updated_at: new Date().toISOString() };
+
+  for (const f of TEMPLATE_TEXT_FIELDS) {
+    if (!(f in body)) continue;
+    const v = asText(body[f]).trim();
+    if (f === 'title' && !v) throw httpError(400, 'Tiêu đề không được để trống.');
+    patch[f] = v || null;
+  }
+  for (const f of TEMPLATE_LIST_FIELDS) {
+    if (!(f in body)) continue;
+    patch[f] = Array.isArray(body[f]) ? body[f] : asList(body[f]);
+  }
+  if ('visibility' in body) {
+    patch.visibility = asText(body.visibility) === 'private' ? 'private' : 'public';
+    // private mà không gắn hộ nào thì thành "mồ côi" — không ai thấy được nữa,
+    // kể cả người tạo (xem ghi chú ở migrations/menu_template_meta.sql).
+    if (patch.visibility === 'private') {
+      const household = await requireOwnedHousehold(user, asText(body.household_id) || template.owner_household_id);
+      patch.owner_household_id = household.id;
+    } else {
+      patch.owner_household_id = null;
+    }
+  }
+  // Cờ hệ thống là đặc quyền của admin — người thường gửi lên cũng bị bỏ qua.
+  if (isAdmin && 'is_system' in body) {
+    patch.is_system = asText(body.is_system) === 'true' || body.is_system === true;
+  }
+
+  const fileEntry = files?.get('file');
+  if (fileEntry && typeof fileEntry !== 'string') {
+    patch.image_url = await uploadCoverImage(fileEntry);
+  } else if ('image_url' in body) {
+    patch.image_url = asText(body.image_url).trim() || null;   // '' = gỡ ảnh
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('menu_templates')
+    .update(patch)
+    .eq('id', template.id)
+    .select()
+    .single();
+  if (error) throw error;
+
+  if (Array.isArray(body.days)) await persistTemplateDays(template.id, body.days);
+  return data;
+}
+
+/**
+ * Ảnh bìa → Cloudinary. Khác `uploadImage` cho nhật ký ảnh ở chỗ đây là hành
+ * động CÓ CHỦ Ý: hỏng thì phải báo lỗi, không được im lặng trả null rồi để
+ * người dùng bấm lưu mà chẳng thấy gì đổi.
+ */
+async function uploadCoverImage(fileEntry) {
+  const type = fileEntry.type || '';
+  if (!COVER_MIME.has(type)) {
+    throw httpError(400, 'Ảnh bìa phải là JPEG, PNG hoặc WebP.');
+  }
+  if (fileEntry.size > COVER_MAX_BYTES) {
+    throw httpError(400, `Ảnh bìa tối đa ${COVER_MAX_BYTES / 1024 / 1024} MB.`);
+  }
+  if (!cloudinaryConfigured()) {
+    throw httpError(503, 'Máy chủ chưa cấu hình Cloudinary nên chưa tải ảnh lên được.');
+  }
+  const buffer = Buffer.from(await fileEntry.arrayBuffer());
+  const up = await uploadImage(buffer, fileEntry.name || 'menu-cover.jpg', {
+    folder: MENU_COVER_FOLDER,
+    mime: type,
+  });
+  if (!up?.url) throw httpError(502, 'Tải ảnh lên Cloudinary thất bại.');
+  return up.url;
+}
+
+/**
+ * POST { action:'delete_template', template_id }
+ *
+ * Kế hoạch đã sinh từ thực đơn này KHÔNG mất theo: khoá ngoại
+ * `weekly_menu_plans.source_template_id` khai `on delete set null`
+ * (migrations/family_menu_planner.sql:177), nên bữa ăn của gia đình vẫn còn
+ * nguyên, chỉ rụng đường dẫn ngược về thư viện. Ngày/bữa/món của chính
+ * template thì `on delete cascade` dọn giúp.
+ *
+ * Đếm trước khi xoá chỉ để BÁO lại cho người dùng bao nhiêu kế hoạch bị ảnh
+ * hưởng — không phải để dọn dẹp.
+ */
+async function deleteTemplate(user, body) {
+  const { template } = await requireTemplateEditAccess(user, asText(body.template_id));
+
+  const { count } = await supabaseAdmin
+    .from('weekly_menu_plans')
+    .select('id', { count: 'exact', head: true })
+    .eq('source_template_id', template.id);
+
+  const { error } = await supabaseAdmin.from('menu_templates').delete().eq('id', template.id);
+  if (error) throw error;
+
+  return { id: template.id, deleted: true, detached_plans: count || 0 };
 }
 
 /* ───────────────────────── Xuất Excel ───────────────────────── */
@@ -934,19 +1365,26 @@ async function createTemplateManual(user, body) {
  * `servings` cho phép đổi số suất NGAY LÚC XUẤT mà không phải sinh lại kế
  * hoạch — mọi định lượng và danh sách mua được nhân lại theo hệ số.
  */
-async function exportPlanToExcel(url) {
+async function exportPlanToExcel(url, user) {
   const planId = url.searchParams.get('plan_id');
   if (!planId) return fail(400, 'Thiếu plan_id');
+  await requirePlanAccess(user, planId);
 
   const sheets = (url.searchParams.get('sheets') || '')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
-  const servings = url.searchParams.get('servings');
-  const startDate = url.searchParams.get('start_date');
 
+  // Tên sheet lạ là lỗi NHẬP, không phải lỗi máy chủ — trước đây nó lọt xuống
+  // rồi bị selectSheets loại sạch và ném "chưa có dữ liệu" thành 500.
+  const unknown = sheets.filter((s) => !(s in SHEET_TEMPLATES));
+  if (unknown.length) {
+    return fail(400, `sheets không hợp lệ: ${unknown.join(', ')}. Hợp lệ: ${Object.keys(SHEET_TEMPLATES).join(', ')}.`);
+  }
+
+  const startDate = url.searchParams.get('start_date');
   const model = await buildExportModel(planId, {
-    servings: servings ? Number(servings) : undefined,
+    servings: parseServings(url),
     startDate: startDate || undefined,
   });
 

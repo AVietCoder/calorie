@@ -1,0 +1,5866 @@
+{
+  "_generatedBy": "scripts/build-sample-menus.mjs",
+  "_generatedAt": "2026-07-29T05:33:51.909Z",
+  "_sourceCount": 44,
+  "_note": "Sinh tự động từ reference-menus/. KHÔNG sửa tay — chạy lại npm run build:sample-menus.",
+  "menus": [
+    {
+      "id": "tieu-duong-tram-y-te-phuong-8",
+      "title": "Thực đơn tiểu đường — Trạm Y tế Phường 8",
+      "tags": [
+        "tiểu đường"
+      ],
+      "disease_target": [
+        "tiểu đường"
+      ],
+      "source": "Trạm Y tế Phường 8",
+      "dayCount": 7,
+      "confidence": 0.95,
+      "days": [
+        {
+          "day_index": 1,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Phở thịt bò",
+                  "ingredients": [
+                    {
+                      "name": "Phở thịt bò",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                },
+                {
+                  "name": "Bánh phở",
+                  "base_grams": 180,
+                  "ingredients": [
+                    {
+                      "name": "Bánh phở",
+                      "grams": 180,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt bò",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Thịt bò",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Giá đỗ",
+                  "base_grams": 10,
+                  "ingredients": [
+                    {
+                      "name": "Giá đỗ",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Hành lá",
+                  "base_grams": 3,
+                  "ingredients": [
+                    {
+                      "name": "Hành lá",
+                      "grams": 3,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Nước béo",
+                  "base_grams": 5,
+                  "ingredients": [
+                    {
+                      "name": "Nước béo",
+                      "grams": 5,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Gạo tẻ máy",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Gạo tẻ máy",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Trứng đúc đậu rán",
+                  "ingredients": [
+                    {
+                      "name": "Trứng gà",
+                      "grams": 1,
+                      "unit": "quả"
+                    },
+                    {
+                      "name": "Đậu (100 g)",
+                      "grams": 0.25,
+                      "unit": "bìa"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt lợn băm",
+                  "base_grams": 40,
+                  "ingredients": [
+                    {
+                      "name": "Thịt lợn băm",
+                      "grams": 40,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bắp cải xào",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Bắp cải xào",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh cải cúc",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Canh cải cúc",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Dầu thực vật",
+                  "base_grams": 16,
+                  "ingredients": [
+                    {
+                      "name": "Dầu thực vật",
+                      "grams": 16,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Gạo tẻ máy",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Gạo tẻ máy",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt gà rang",
+                  "base_grams": 80,
+                  "ingredients": [
+                    {
+                      "name": "Thịt gà rang",
+                      "grams": 80,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt lợn thăn sốt xì dầu",
+                  "base_grams": 45,
+                  "ingredients": [
+                    {
+                      "name": "Thịt lợn thăn sốt xì dầu",
+                      "grams": 45,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Rau cải chíp luộc",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Rau cải chíp luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh bắp cải",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Canh bắp cải",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 2,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Bún thịt lợn",
+                  "ingredients": [
+                    {
+                      "name": "Bún thịt lợn",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                },
+                {
+                  "name": "Bún",
+                  "base_grams": 220,
+                  "ingredients": [
+                    {
+                      "name": "Bún",
+                      "grams": 220,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt lợn",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Thịt lợn",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Giá đỗ",
+                  "base_grams": 10,
+                  "ingredients": [
+                    {
+                      "name": "Giá đỗ",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Hành lá",
+                  "base_grams": 3,
+                  "ingredients": [
+                    {
+                      "name": "Hành lá",
+                      "grams": 3,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Nước béo",
+                  "base_grams": 5,
+                  "ingredients": [
+                    {
+                      "name": "Nước béo",
+                      "grams": 5,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Gạo tẻ máy",
+                  "base_grams": 85,
+                  "ingredients": [
+                    {
+                      "name": "Gạo tẻ máy",
+                      "grams": 85,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt lợn thăn sốt xì dầu",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Thịt lợn thăn sốt xì dầu",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu nhồi thịt",
+                  "base_grams": 10,
+                  "ingredients": [
+                    {
+                      "name": "Đậu (100 g)",
+                      "grams": 1,
+                      "unit": "bìa"
+                    },
+                    {
+                      "name": "Thịt",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Su hào luộc",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Su hào luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh bí",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Canh bí",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Dầu thực vật",
+                  "base_grams": 6,
+                  "ingredients": [
+                    {
+                      "name": "Dầu thực vật",
+                      "grams": 6,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Gạo tẻ máy",
+                  "base_grams": 85,
+                  "ingredients": [
+                    {
+                      "name": "Gạo tẻ máy",
+                      "grams": 85,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Mọc thịt sốt",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Mọc thịt sốt",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt lợn rim",
+                  "base_grams": 60,
+                  "ingredients": [
+                    {
+                      "name": "Thịt lợn rim",
+                      "grams": 60,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cải xanh xào",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Cải xanh xào",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh rau cải",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Canh rau cải",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Dầu thực vật",
+                  "base_grams": 13,
+                  "ingredients": [
+                    {
+                      "name": "Dầu thực vật",
+                      "grams": 13,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 3,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Phở thịt gà",
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Phở thịt gà",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                },
+                {
+                  "name": "Bánh phở",
+                  "base_grams": 180,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Bánh phở",
+                      "grams": 180,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt gà",
+                  "base_grams": 30,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Thịt gà",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Giá đỗ",
+                  "base_grams": 10,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Giá đỗ",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Hành lá",
+                  "base_grams": 3,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Hành lá",
+                      "grams": 3,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Nước béo",
+                  "base_grams": 5,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Nước béo",
+                      "grams": 5,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Gạo tẻ máy",
+                  "base_grams": 85,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Gạo tẻ máy",
+                      "grams": 85,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt kho trứng",
+                  "base_grams": 60,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Thịt lợn",
+                      "grams": 60,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Trứng gà",
+                      "grams": 1,
+                      "unit": "quả"
+                    }
+                  ]
+                },
+                {
+                  "name": "Su su xào",
+                  "base_grams": 200,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Su su xào",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh cải cúc",
+                  "base_grams": 30,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Canh cải cúc",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Dầu thực vật",
+                  "base_grams": 10,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Dầu thực vật",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Gạo tẻ máy",
+                  "base_grams": 85,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Gạo tẻ máy",
+                      "grams": 85,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá trắm kho",
+                  "base_grams": 100,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Cá trắm kho",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu phụ rán",
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "(100 g)",
+                      "grams": 0.5,
+                      "unit": "bìa"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cải chíp luộc",
+                  "base_grams": 200,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Cải chíp luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh mồng tơi",
+                  "base_grams": 30,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Canh mồng tơi",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Dầu thực vật",
+                  "base_grams": 4,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Dầu thực vật",
+                      "grams": 4,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 4,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Phở thịt bò",
+                  "ingredients": [
+                    {
+                      "name": "Phở thịt bò",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                },
+                {
+                  "name": "Bánh phở",
+                  "base_grams": 180,
+                  "ingredients": [
+                    {
+                      "name": "Bánh phở",
+                      "grams": 180,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt bò",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Thịt bò",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Giá đỗ",
+                  "base_grams": 10,
+                  "ingredients": [
+                    {
+                      "name": "Giá đỗ",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Hành lá",
+                  "base_grams": 3,
+                  "ingredients": [
+                    {
+                      "name": "Hành lá",
+                      "grams": 3,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Nước béo",
+                  "base_grams": 5,
+                  "ingredients": [
+                    {
+                      "name": "Nước béo",
+                      "grams": 5,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Gạo tẻ máy",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Gạo tẻ máy",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Trứng đúc đậu rán",
+                  "ingredients": [
+                    {
+                      "name": "Trứng gà",
+                      "grams": 1,
+                      "unit": "quả"
+                    },
+                    {
+                      "name": "Đậu (100 g)",
+                      "grams": 0.25,
+                      "unit": "bìa"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt lợn băm",
+                  "base_grams": 40,
+                  "ingredients": [
+                    {
+                      "name": "Thịt lợn băm",
+                      "grams": 40,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bắp cải xào",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Bắp cải xào",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh cải cúc",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Canh cải cúc",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Dầu thực vật",
+                  "base_grams": 16,
+                  "ingredients": [
+                    {
+                      "name": "Dầu thực vật",
+                      "grams": 16,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Gạo tẻ máy",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Gạo tẻ máy",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt gà rang",
+                  "base_grams": 80,
+                  "ingredients": [
+                    {
+                      "name": "Thịt gà rang",
+                      "grams": 80,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt lợn thăn sốt xì dầu",
+                  "base_grams": 45,
+                  "ingredients": [
+                    {
+                      "name": "Thịt lợn thăn sốt xì dầu",
+                      "grams": 45,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Rau cải chíp luộc",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Rau cải chíp luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh bắp cải",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Canh bắp cải",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 5,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Bún thịt lợn",
+                  "ingredients": [
+                    {
+                      "name": "Bún thịt lợn",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                },
+                {
+                  "name": "Bún",
+                  "base_grams": 220,
+                  "ingredients": [
+                    {
+                      "name": "Bún",
+                      "grams": 220,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt lợn",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Thịt lợn",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Giá đỗ",
+                  "base_grams": 10,
+                  "ingredients": [
+                    {
+                      "name": "Giá đỗ",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Hành lá",
+                  "base_grams": 3,
+                  "ingredients": [
+                    {
+                      "name": "Hành lá",
+                      "grams": 3,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Nước béo",
+                  "base_grams": 5,
+                  "ingredients": [
+                    {
+                      "name": "Nước béo",
+                      "grams": 5,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Gạo tẻ máy",
+                  "base_grams": 85,
+                  "ingredients": [
+                    {
+                      "name": "Gạo tẻ máy",
+                      "grams": 85,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt lợn thăn sốt xì dầu",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Thịt lợn thăn sốt xì dầu",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu nhồi thịt",
+                  "base_grams": 10,
+                  "ingredients": [
+                    {
+                      "name": "Đậu (100 g)",
+                      "grams": 1,
+                      "unit": "bìa"
+                    },
+                    {
+                      "name": "Thịt",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Su hào luộc",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Su hào luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh bí",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Canh bí",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Dầu thực vật",
+                  "base_grams": 6,
+                  "ingredients": [
+                    {
+                      "name": "Dầu thực vật",
+                      "grams": 6,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Gạo tẻ máy",
+                  "base_grams": 85,
+                  "ingredients": [
+                    {
+                      "name": "Gạo tẻ máy",
+                      "grams": 85,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Mọc thịt sốt",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Mọc thịt sốt",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt lợn rim",
+                  "base_grams": 60,
+                  "ingredients": [
+                    {
+                      "name": "Thịt lợn rim",
+                      "grams": 60,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cải xanh xào",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Cải xanh xào",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh rau cải",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Canh rau cải",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Dầu thực vật",
+                  "base_grams": 13,
+                  "ingredients": [
+                    {
+                      "name": "Dầu thực vật",
+                      "grams": 13,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 6,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Phở thịt gà",
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Phở thịt gà",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                },
+                {
+                  "name": "Bánh phở",
+                  "base_grams": 180,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Bánh phở",
+                      "grams": 180,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt gà",
+                  "base_grams": 30,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Thịt gà",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Giá đỗ",
+                  "base_grams": 10,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Giá đỗ",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Hành lá",
+                  "base_grams": 3,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Hành lá",
+                      "grams": 3,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Nước béo",
+                  "base_grams": 5,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Nước béo",
+                      "grams": 5,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Gạo tẻ máy",
+                  "base_grams": 85,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Gạo tẻ máy",
+                      "grams": 85,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt kho trứng",
+                  "base_grams": 60,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Thịt lợn",
+                      "grams": 60,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Trứng gà",
+                      "grams": 1,
+                      "unit": "quả"
+                    }
+                  ]
+                },
+                {
+                  "name": "Su su xào",
+                  "base_grams": 200,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Su su xào",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh cải cúc",
+                  "base_grams": 30,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Canh cải cúc",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Dầu thực vật",
+                  "base_grams": 10,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Dầu thực vật",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Gạo tẻ máy",
+                  "base_grams": 85,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Gạo tẻ máy",
+                      "grams": 85,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá trắm kho",
+                  "base_grams": 100,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Cá trắm kho",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu phụ rán",
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "(100 g)",
+                      "grams": 0.5,
+                      "unit": "bìa"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cải chíp luộc",
+                  "base_grams": 200,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Cải chíp luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh mồng tơi",
+                  "base_grams": 30,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Canh mồng tơi",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Dầu thực vật",
+                  "base_grams": 4,
+                  "calories": 1447,
+                  "carbs": 202,
+                  "ingredients": [
+                    {
+                      "name": "Dầu thực vật",
+                      "grams": 4,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 7,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Bún thịt lợn",
+                  "ingredients": [
+                    {
+                      "name": "Bún thịt lợn",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                },
+                {
+                  "name": "Bún",
+                  "base_grams": 220,
+                  "ingredients": [
+                    {
+                      "name": "Bún",
+                      "grams": 220,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt lợn",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Thịt lợn",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Giá đỗ",
+                  "base_grams": 10,
+                  "ingredients": [
+                    {
+                      "name": "Giá đỗ",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Hành lá",
+                  "base_grams": 3,
+                  "ingredients": [
+                    {
+                      "name": "Hành lá",
+                      "grams": 3,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Nước béo",
+                  "base_grams": 5,
+                  "ingredients": [
+                    {
+                      "name": "Nước béo",
+                      "grams": 5,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Gạo tẻ máy",
+                  "base_grams": 85,
+                  "ingredients": [
+                    {
+                      "name": "Gạo tẻ máy",
+                      "grams": 85,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt lợn thăn sốt xì dầu",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Thịt lợn thăn sốt xì dầu",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu nhồi thịt",
+                  "base_grams": 10,
+                  "ingredients": [
+                    {
+                      "name": "Đậu (100 g)",
+                      "grams": 1,
+                      "unit": "bìa"
+                    },
+                    {
+                      "name": "Thịt",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Su hào luộc",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Su hào luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh bí",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Canh bí",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Dầu thực vật",
+                  "base_grams": 6,
+                  "ingredients": [
+                    {
+                      "name": "Dầu thực vật",
+                      "grams": 6,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Gạo tẻ máy",
+                  "base_grams": 85,
+                  "ingredients": [
+                    {
+                      "name": "Gạo tẻ máy",
+                      "grams": 85,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Mọc thịt sốt",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Mọc thịt sốt",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt lợn rim",
+                  "base_grams": 60,
+                  "ingredients": [
+                    {
+                      "name": "Thịt lợn rim",
+                      "grams": 60,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cải xanh xào",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Cải xanh xào",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh rau cải",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Canh rau cải",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Dầu thực vật",
+                  "base_grams": 13,
+                  "ingredients": [
+                    {
+                      "name": "Dầu thực vật",
+                      "grams": 13,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gout-nerci",
+      "title": "Thực đơn gout — Nerci",
+      "tags": [
+        "gout"
+      ],
+      "disease_target": [
+        "gout"
+      ],
+      "source": "Nerci",
+      "dayCount": 7,
+      "confidence": 0.95,
+      "days": [
+        {
+          "day_index": 1,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Phở thịt bò",
+                  "base_grams": 195,
+                  "ingredients": [
+                    {
+                      "name": "Bánh phở",
+                      "grams": 150,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt bò",
+                      "grams": 35,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Hành lá và nước dùng",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm gạo tẻ",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "(khoảng 2 bát)",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Sườn heo rim",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Sườn heo rim",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Su su xào",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Su su xào",
+                      "grams": 200,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 7,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu phụ rán",
+                  "base_grams": 20,
+                  "ingredients": [
+                    {
+                      "name": "Đậu phụ rán",
+                      "grams": 20,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 3,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh cải xanh",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Canh cải xanh",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Vải thiều",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Vải thiều",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Cơm gạo tẻ",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Cơm gạo tẻ",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá rô phi rán",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Cá",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 5,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Khổ qua xào trứng",
+                  "base_grams": 220,
+                  "ingredients": [
+                    {
+                      "name": "Khổ qua",
+                      "grams": 200,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Trứng",
+                      "grams": 20,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 7,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh rau ngót",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Canh rau ngót",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Dưa hấu",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Dưa hấu",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 2,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Bún riêu cua",
+                  "base_grams": 340,
+                  "ingredients": [
+                    {
+                      "name": "Bún tươi",
+                      "grams": 180,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt cua đồng",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Đậu hũ",
+                      "grams": 100,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cà chua và nước lèo",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm gạo tẻ",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Cơm gạo tẻ",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá chép chiên sốt cà",
+                  "base_grams": 95,
+                  "ingredients": [
+                    {
+                      "name": "Cá",
+                      "grams": 70,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cà chua",
+                      "grams": 25,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 7,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt băm",
+                  "base_grams": 20,
+                  "ingredients": [
+                    {
+                      "name": "Thịt nạc vai",
+                      "grams": 20,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bắp cải luộc",
+                  "base_grams": 20,
+                  "ingredients": [
+                    {
+                      "name": "Bắp cải luộc",
+                      "grams": 20,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh bí xanh",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Canh bí xanh",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cam",
+                  "ingredients": [
+                    {
+                      "name": "Cam",
+                      "grams": 0.5,
+                      "unit": "quả"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Cơm gạo tẻ",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Cơm gạo tẻ",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt heo chiên",
+                  "base_grams": 70,
+                  "ingredients": [
+                    {
+                      "name": "Thịt nạc vai",
+                      "grams": 70,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 5,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu phộng rang",
+                  "base_grams": 10,
+                  "ingredients": [
+                    {
+                      "name": "Đậu phộng rang",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bầu luộc",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Bầu luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh mồng tơi",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Canh mồng tơi",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bưởi",
+                  "ingredients": [
+                    {
+                      "name": "Bưởi",
+                      "grams": 3,
+                      "unit": "múi"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 3,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Phở thịt bò",
+                  "base_grams": 195,
+                  "ingredients": [
+                    {
+                      "name": "Bánh phở",
+                      "grams": 150,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt bò",
+                      "grams": 35,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Hành lá và nước dùng",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm gạo tẻ",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "(khoảng 2 bát)",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Sườn heo rim",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Sườn heo rim",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Su su xào",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Su su xào",
+                      "grams": 200,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 7,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu phụ rán",
+                  "base_grams": 20,
+                  "ingredients": [
+                    {
+                      "name": "Đậu phụ rán",
+                      "grams": 20,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 3,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh cải xanh",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Canh cải xanh",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Vải thiều",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Vải thiều",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Cơm gạo tẻ",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Cơm gạo tẻ",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá rô phi rán",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Cá",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 5,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Khổ qua xào trứng",
+                  "base_grams": 220,
+                  "ingredients": [
+                    {
+                      "name": "Khổ qua",
+                      "grams": 200,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Trứng",
+                      "grams": 20,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 7,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh rau ngót",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Canh rau ngót",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Dưa hấu",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Dưa hấu",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 4,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Bún riêu cua",
+                  "base_grams": 340,
+                  "ingredients": [
+                    {
+                      "name": "Bún tươi",
+                      "grams": 180,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt cua đồng",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Đậu hũ",
+                      "grams": 100,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cà chua và nước lèo",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm gạo tẻ",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Cơm gạo tẻ",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá chép chiên sốt cà",
+                  "base_grams": 95,
+                  "ingredients": [
+                    {
+                      "name": "Cá",
+                      "grams": 70,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cà chua",
+                      "grams": 25,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 7,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt băm",
+                  "base_grams": 20,
+                  "ingredients": [
+                    {
+                      "name": "Thịt nạc vai",
+                      "grams": 20,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bắp cải luộc",
+                  "base_grams": 20,
+                  "ingredients": [
+                    {
+                      "name": "Bắp cải luộc",
+                      "grams": 20,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh bí xanh",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Canh bí xanh",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cam",
+                  "ingredients": [
+                    {
+                      "name": "Cam",
+                      "grams": 0.5,
+                      "unit": "quả"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Cơm gạo tẻ",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Cơm gạo tẻ",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt heo chiên",
+                  "base_grams": 70,
+                  "ingredients": [
+                    {
+                      "name": "Thịt nạc vai",
+                      "grams": 70,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 5,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu phộng rang",
+                  "base_grams": 10,
+                  "ingredients": [
+                    {
+                      "name": "Đậu phộng rang",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bầu luộc",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Bầu luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh mồng tơi",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Canh mồng tơi",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bưởi",
+                  "ingredients": [
+                    {
+                      "name": "Bưởi",
+                      "grams": 3,
+                      "unit": "múi"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 5,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Phở thịt bò",
+                  "base_grams": 195,
+                  "ingredients": [
+                    {
+                      "name": "Bánh phở",
+                      "grams": 150,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt bò",
+                      "grams": 35,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Hành lá và nước dùng",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm gạo tẻ",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "(khoảng 2 bát)",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Sườn heo rim",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Sườn heo rim",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Su su xào",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Su su xào",
+                      "grams": 200,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 7,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu phụ rán",
+                  "base_grams": 20,
+                  "ingredients": [
+                    {
+                      "name": "Đậu phụ rán",
+                      "grams": 20,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 3,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh cải xanh",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Canh cải xanh",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Vải thiều",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Vải thiều",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Cơm gạo tẻ",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Cơm gạo tẻ",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá rô phi rán",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Cá",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 5,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Khổ qua xào trứng",
+                  "base_grams": 220,
+                  "ingredients": [
+                    {
+                      "name": "Khổ qua",
+                      "grams": 200,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Trứng",
+                      "grams": 20,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 7,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh rau ngót",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Canh rau ngót",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Dưa hấu",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Dưa hấu",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 6,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Bún riêu cua",
+                  "base_grams": 340,
+                  "ingredients": [
+                    {
+                      "name": "Bún tươi",
+                      "grams": 180,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt cua đồng",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Đậu hũ",
+                      "grams": 100,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cà chua và nước lèo",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm gạo tẻ",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Cơm gạo tẻ",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá chép chiên sốt cà",
+                  "base_grams": 95,
+                  "ingredients": [
+                    {
+                      "name": "Cá",
+                      "grams": 70,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cà chua",
+                      "grams": 25,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 7,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt băm",
+                  "base_grams": 20,
+                  "ingredients": [
+                    {
+                      "name": "Thịt nạc vai",
+                      "grams": 20,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bắp cải luộc",
+                  "base_grams": 20,
+                  "ingredients": [
+                    {
+                      "name": "Bắp cải luộc",
+                      "grams": 20,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh bí xanh",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Canh bí xanh",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cam",
+                  "ingredients": [
+                    {
+                      "name": "Cam",
+                      "grams": 0.5,
+                      "unit": "quả"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Cơm gạo tẻ",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Cơm gạo tẻ",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt heo chiên",
+                  "base_grams": 70,
+                  "ingredients": [
+                    {
+                      "name": "Thịt nạc vai",
+                      "grams": 70,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 5,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu phộng rang",
+                  "base_grams": 10,
+                  "ingredients": [
+                    {
+                      "name": "Đậu phộng rang",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bầu luộc",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Bầu luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh mồng tơi",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Canh mồng tơi",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bưởi",
+                  "ingredients": [
+                    {
+                      "name": "Bưởi",
+                      "grams": 3,
+                      "unit": "múi"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 7,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Xôi đậu phộng",
+                  "base_grams": 60,
+                  "ingredients": [
+                    {
+                      "name": "Gạo nếp",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Đậu phộng và 3 g mè",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm gạo tẻ",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Cơm gạo tẻ",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt bò xào hành tây",
+                  "base_grams": 120,
+                  "ingredients": [
+                    {
+                      "name": "Thịt bò",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Hành tây",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cà chua",
+                      "grams": 20,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 7,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá bống kho tộ",
+                  "base_grams": 20,
+                  "ingredients": [
+                    {
+                      "name": "Cá bống kho tộ",
+                      "grams": 20,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Củ cải luộc",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Củ cải luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh bí xanh",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Canh bí xanh",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Xoài chín",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Xoài chín",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Cơm gạo tẻ",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Cơm gạo tẻ",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt heo chiên",
+                  "base_grams": 70,
+                  "ingredients": [
+                    {
+                      "name": "Thịt nạc vai",
+                      "grams": 70,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu",
+                      "grams": 5,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu phộng rang",
+                  "base_grams": 10,
+                  "ingredients": [
+                    {
+                      "name": "Đậu phộng rang",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bầu luộc",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Bầu luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh mồng tơi",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Canh mồng tơi",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bưởi",
+                  "ingredients": [
+                    {
+                      "name": "Bưởi",
+                      "grams": 3,
+                      "unit": "múi"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gout-mamacare",
+      "title": "Thực đơn gout — mamacare",
+      "tags": [
+        "gout"
+      ],
+      "disease_target": [
+        "gout"
+      ],
+      "source": "mamacare",
+      "dayCount": 7,
+      "confidence": 0.95,
+      "days": [
+        {
+          "day_index": 1,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Phở bò",
+                  "base_grams": 185,
+                  "ingredients": [
+                    {
+                      "name": "Bánh phở",
+                      "grams": 150,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt bò",
+                      "grams": 35,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Hành lá",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Nước dùng (muối 1 g/100 ml)",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "(khoảng 2 bát)",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Sườn rim",
+                  "ingredients": [
+                    {
+                      "name": "Sườn lợn bỏ xương",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu phụ rán",
+                  "base_grams": 20,
+                  "ingredients": [
+                    {
+                      "name": "Đậu phụ",
+                      "grams": 20,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": 3,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Su su xào",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Su su",
+                      "grams": 200,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": 7,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh cải xanh"
+                },
+                {
+                  "name": "Vải thiều"
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Cơm",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "(khoảng 1 bát con)",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá rô phi rán",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Cá",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": 5,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Mướp đắng xào",
+                  "base_grams": 220,
+                  "ingredients": [
+                    {
+                      "name": "Mướp đắng",
+                      "grams": 200,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Trứng gà",
+                      "grams": 20,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": 7,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh rau ngót"
+                },
+                {
+                  "name": "Dưa hấu"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 2,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Bún riêu cua",
+                  "base_grams": 310,
+                  "ingredients": [
+                    {
+                      "name": "Bún",
+                      "grams": 180,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Đậu hũ",
+                      "grams": 100,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt cua đồng",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Hành lá",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Cà chua",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Nước dùng",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "(khoảng 2 bát)",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá chép sốt cà chua",
+                  "base_grams": 70,
+                  "ingredients": [
+                    {
+                      "name": "Cá chép lọc xương",
+                      "grams": 70,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cà chua",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt băm rang",
+                  "base_grams": 20,
+                  "ingredients": [
+                    {
+                      "name": "Thịt heo nạc vai",
+                      "grams": 20,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cải bắp luộc",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Cải bắp luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh bí xanh"
+                },
+                {
+                  "name": "Cam",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Cam",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Cơm",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "(khoảng 1 bát)",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt lợn chiên",
+                  "base_grams": 70,
+                  "ingredients": [
+                    {
+                      "name": "Thịt nạc vai",
+                      "grams": 70,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": 5,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu phộng rang",
+                  "base_grams": 10,
+                  "ingredients": [
+                    {
+                      "name": "Đậu phộng rang",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bầu luộc",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Bầu luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh mồng tơi"
+                },
+                {
+                  "name": "Bưởi",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Bưởi",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 3,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Phở bò",
+                  "base_grams": 185,
+                  "ingredients": [
+                    {
+                      "name": "Bánh phở",
+                      "grams": 150,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt bò",
+                      "grams": 35,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Hành lá",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Nước dùng (muối 1 g/100 ml)",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "(khoảng 2 bát)",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Sườn rim",
+                  "ingredients": [
+                    {
+                      "name": "Sườn lợn bỏ xương",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu phụ rán",
+                  "base_grams": 20,
+                  "ingredients": [
+                    {
+                      "name": "Đậu phụ",
+                      "grams": 20,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": 3,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Su su xào",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Su su",
+                      "grams": 200,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": 7,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh cải xanh"
+                },
+                {
+                  "name": "Vải thiều"
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Cơm",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "(khoảng 1 bát con)",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá rô phi rán",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Cá",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": 5,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Mướp đắng xào",
+                  "base_grams": 220,
+                  "ingredients": [
+                    {
+                      "name": "Mướp đắng",
+                      "grams": 200,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Trứng gà",
+                      "grams": 20,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": 7,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh rau ngót"
+                },
+                {
+                  "name": "Dưa hấu"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 4,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Bún riêu cua",
+                  "base_grams": 310,
+                  "ingredients": [
+                    {
+                      "name": "Bún",
+                      "grams": 180,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Đậu hũ",
+                      "grams": 100,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt cua đồng",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Hành lá",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Cà chua",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Nước dùng",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "(khoảng 2 bát)",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá chép sốt cà chua",
+                  "base_grams": 70,
+                  "ingredients": [
+                    {
+                      "name": "Cá chép lọc xương",
+                      "grams": 70,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cà chua",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt băm rang",
+                  "base_grams": 20,
+                  "ingredients": [
+                    {
+                      "name": "Thịt heo nạc vai",
+                      "grams": 20,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cải bắp luộc",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Cải bắp luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh bí xanh"
+                },
+                {
+                  "name": "Cam",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Cam",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Cơm",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "(khoảng 1 bát)",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt lợn chiên",
+                  "base_grams": 70,
+                  "ingredients": [
+                    {
+                      "name": "Thịt nạc vai",
+                      "grams": 70,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": 5,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu phộng rang",
+                  "base_grams": 10,
+                  "ingredients": [
+                    {
+                      "name": "Đậu phộng rang",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bầu luộc",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Bầu luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh mồng tơi"
+                },
+                {
+                  "name": "Bưởi",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Bưởi",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 5,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Phở bò",
+                  "base_grams": 185,
+                  "ingredients": [
+                    {
+                      "name": "Bánh phở",
+                      "grams": 150,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt bò",
+                      "grams": 35,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Hành lá",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Nước dùng (muối 1 g/100 ml)",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "(khoảng 2 bát)",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Sườn rim",
+                  "ingredients": [
+                    {
+                      "name": "Sườn lợn bỏ xương",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu phụ rán",
+                  "base_grams": 20,
+                  "ingredients": [
+                    {
+                      "name": "Đậu phụ",
+                      "grams": 20,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": 3,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Su su xào",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Su su",
+                      "grams": 200,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": 7,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh cải xanh"
+                },
+                {
+                  "name": "Vải thiều"
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Cơm",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "(khoảng 1 bát con)",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá rô phi rán",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Cá",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": 5,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Mướp đắng xào",
+                  "base_grams": 220,
+                  "ingredients": [
+                    {
+                      "name": "Mướp đắng",
+                      "grams": 200,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Trứng gà",
+                      "grams": 20,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": 7,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh rau ngót"
+                },
+                {
+                  "name": "Dưa hấu"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 6,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Bún riêu cua",
+                  "base_grams": 310,
+                  "ingredients": [
+                    {
+                      "name": "Bún",
+                      "grams": 180,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Đậu hũ",
+                      "grams": 100,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt cua đồng",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Hành lá",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Cà chua",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Nước dùng",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "(khoảng 2 bát)",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá chép sốt cà chua",
+                  "base_grams": 70,
+                  "ingredients": [
+                    {
+                      "name": "Cá chép lọc xương",
+                      "grams": 70,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cà chua",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt băm rang",
+                  "base_grams": 20,
+                  "ingredients": [
+                    {
+                      "name": "Thịt heo nạc vai",
+                      "grams": 20,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cải bắp luộc",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Cải bắp luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh bí xanh"
+                },
+                {
+                  "name": "Cam",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Cam",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Cơm",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "(khoảng 1 bát)",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt lợn chiên",
+                  "base_grams": 70,
+                  "ingredients": [
+                    {
+                      "name": "Thịt nạc vai",
+                      "grams": 70,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": 5,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu phộng rang",
+                  "base_grams": 10,
+                  "ingredients": [
+                    {
+                      "name": "Đậu phộng rang",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bầu luộc",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Bầu luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh mồng tơi"
+                },
+                {
+                  "name": "Bưởi",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Bưởi",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 7,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Xôi đậu phộng",
+                  "base_grams": 60,
+                  "ingredients": [
+                    {
+                      "name": "Gạo nếp",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Đậu phộng và 3 g mè",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "(khoảng 2 bát)",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt bò xào",
+                  "base_grams": 120,
+                  "ingredients": [
+                    {
+                      "name": "Thịt bò",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Hành tây",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cà chua",
+                      "grams": 20,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": 7,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá bống kho tộ",
+                  "base_grams": 20,
+                  "ingredients": [
+                    {
+                      "name": "Cá bống",
+                      "grams": 20,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Củ cải luộc",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Củ cải luộc",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh bí xanh"
+                },
+                {
+                  "name": "Xoài chín",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Xoài chín",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "Cơm gạo tẻ",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "(khoảng 1 bát con)",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Tôm biển hấp sả",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Tôm",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Sả",
+                      "grams": 1,
+                      "unit": "tép"
+                    }
+                  ]
+                },
+                {
+                  "name": "Trứng đúc thịt",
+                  "base_grams": 10,
+                  "ingredients": [
+                    {
+                      "name": "Trứng gà",
+                      "grams": 0.5,
+                      "unit": "quả"
+                    },
+                    {
+                      "name": "Thịt nạc vai",
+                      "grams": 10,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": 3,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cải bắp xào",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Cải",
+                      "grams": 200,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dầu ăn",
+                      "grams": 7,
+                      "unit": "ml"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh rau cải",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Cải xanh",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Lựu",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Lựu",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cao-huyet-ap-long-chau",
+      "title": "Thực đơn huyết áp cao — Long Châu",
+      "tags": [
+        "huyết áp cao"
+      ],
+      "disease_target": [
+        "huyết áp cao"
+      ],
+      "source": "Long Châu",
+      "dayCount": 7,
+      "confidence": 0.95,
+      "days": [
+        {
+          "day_index": 1,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Bánh canh thịt",
+                  "base_grams": 230,
+                  "ingredients": [
+                    {
+                      "name": "Bánh canh",
+                      "grams": 150,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt heo nạc",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cà rốt",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Sữa đậu nành",
+                  "base_grams": 150
+                },
+                {
+                  "name": "1 quả chuối xiêm"
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "1,5 chén cơm"
+                },
+                {
+                  "name": "Cá basa kho"
+                },
+                {
+                  "name": "Cải cúc xào hoặc xào thịt nạc"
+                },
+                {
+                  "name": "Canh mồng tơi, có thể nấu cua"
+                },
+                {
+                  "name": "Dưa hấu",
+                  "base_grams": 130,
+                  "ingredients": [
+                    {
+                      "name": "Khoảng",
+                      "grams": 130,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "1 chén cơm"
+                },
+                {
+                  "name": "Thịt kho tiêu",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Thịt heo nạc",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu que xào",
+                  "base_grams": 105,
+                  "ingredients": [
+                    {
+                      "name": "Hoặc canh bí đỏ: 150 g bí",
+                      "grams": 100,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Tôm khô",
+                      "grams": 5,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "1 quả táo nhỏ"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 2,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Phở gà",
+                  "base_grams": 320,
+                  "ingredients": [
+                    {
+                      "name": "Bánh phở",
+                      "grams": 150,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt gà",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Rau giá",
+                      "grams": 140,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Sữa tươi tách béo",
+                  "base_grams": 200
+                },
+                {
+                  "name": "Nho ngọt",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Nho ngọt",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "1,5 chén cơm"
+                },
+                {
+                  "name": "Cá thu sốt cà chua"
+                },
+                {
+                  "name": "Bông cải luộc"
+                },
+                {
+                  "name": "Canh cải xanh"
+                },
+                {
+                  "name": "1 quả kiwi"
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "1 chén cơm"
+                },
+                {
+                  "name": "Đậu hũ dồn thịt sốt cà",
+                  "base_grams": 60,
+                  "ingredients": [
+                    {
+                      "name": "Đậu hũ",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt heo nạc",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bắp cải luộc",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Hoặc canh bí: 100 g",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Mít",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Mít",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 3,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "1 chén xôi đậu xanh",
+                  "base_grams": 115,
+                  "ingredients": [
+                    {
+                      "name": "Gạo nếp",
+                      "grams": 85,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Đậu xanh",
+                      "grams": 26,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Mè",
+                      "grams": 4,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "1 chén bơ dằm"
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "1,5 chén cơm"
+                },
+                {
+                  "name": "Khổ qua dồn cá thác lát",
+                  "base_grams": 170,
+                  "ingredients": [
+                    {
+                      "name": "Khổ qua",
+                      "grams": 100,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cá",
+                      "grams": 70,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Rau bí luộc",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Rau bí luộc",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Xoài chín",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Xoài chín",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "1 chén cơm"
+                },
+                {
+                  "name": "Tôm kho",
+                  "base_grams": 60,
+                  "ingredients": [
+                    {
+                      "name": "Tôm kho",
+                      "grams": 60,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bầu luộc",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Bầu luộc",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh cải xoong",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Canh cải xoong",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đu đủ chín",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Khoảng",
+                      "grams": 200,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 4,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "1 ổ bánh mì cá"
+                },
+                {
+                  "name": "Sữa đậu nành",
+                  "base_grams": 150
+                },
+                {
+                  "name": "1 quả chuối xiêm"
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "1,5 chén cơm"
+                },
+                {
+                  "name": "Khổ qua xào trứng",
+                  "base_grams": 130,
+                  "ingredients": [
+                    {
+                      "name": "Khổ qua",
+                      "grams": 100,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Trứng vịt",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Hoặc rau xào thập cẩm",
+                  "base_grams": 120,
+                  "ingredients": [
+                    {
+                      "name": "Nấm rơm/cà rốt",
+                      "grams": 20,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Bông cải",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh khoai mỡ",
+                  "base_grams": 50,
+                  "ingredients": [
+                    {
+                      "name": "Khoai",
+                      "grams": 40,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Tôm",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "1 quả sapoche"
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "1 chén cơm"
+                },
+                {
+                  "name": "Cá rô phi chưng tương",
+                  "base_grams": 53,
+                  "ingredients": [
+                    {
+                      "name": "Cá",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Tương hột",
+                      "grams": 3,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh rau ngót cá rô",
+                  "base_grams": 165,
+                  "ingredients": [
+                    {
+                      "name": "Rau",
+                      "grams": 150,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cá",
+                      "grams": 15,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thanh long",
+                  "base_grams": 140,
+                  "ingredients": [
+                    {
+                      "name": "Khoảng",
+                      "grams": 140,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 5,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Xôi bắp",
+                  "base_grams": 45,
+                  "ingredients": [
+                    {
+                      "name": "Bắp",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Đậu xanh",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Nếp",
+                      "grams": 15,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Hành phi",
+                      "grams": null,
+                      "unit": null
+                    }
+                  ]
+                },
+                {
+                  "name": "1 hũ sữa chua"
+                },
+                {
+                  "name": "Dâu tây",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Dâu tây",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "1,5 chén cơm"
+                },
+                {
+                  "name": "Nấm kho đậu hũ",
+                  "base_grams": 80,
+                  "ingredients": [
+                    {
+                      "name": "Nấm rơm",
+                      "grams": 20,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Đậu hũ",
+                      "grams": 60,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh súp",
+                  "base_grams": 120,
+                  "ingredients": [
+                    {
+                      "name": "Khoai tây",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cà rốt/củ dền/củ cải trắng",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt heo xay",
+                      "grams": 40,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "¼ quả bưởi"
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "1 chén cơm"
+                },
+                {
+                  "name": "Cá lóc kho"
+                },
+                {
+                  "name": "Huyết xào giá hẹ",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Huyết",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Giá",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Hẹ",
+                      "grams": 20,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Hoặc canh hẹ trứng",
+                  "base_grams": 130,
+                  "ingredients": [
+                    {
+                      "name": "Hẹ",
+                      "grams": 100,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Đậu hũ non",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Trứng",
+                      "grams": 2,
+                      "unit": "quả"
+                    }
+                  ]
+                },
+                {
+                  "name": "5 quả măng cụt vừa"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 6,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Bánh ướt",
+                  "base_grams": 120,
+                  "ingredients": [
+                    {
+                      "name": "Bánh",
+                      "grams": 1,
+                      "unit": "chén"
+                    },
+                    {
+                      "name": "Giò lụa hoặc chả",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dưa leo",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Giá",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Nước mắm",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "1 ly sữa tươi tách béo"
+                },
+                {
+                  "name": "1 quả lê nhỏ"
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "1 chén cơm"
+                },
+                {
+                  "name": "Gà kho gừng",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Gà",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu rồng luộc",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Đậu rồng luộc",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Súp đậu",
+                  "base_grams": 60,
+                  "ingredients": [
+                    {
+                      "name": "Đậu Hà Lan",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Đậu trắng",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Hạt sen khô",
+                      "grams": 20,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Nấm rơm",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Bắp non",
+                      "grams": 40,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "1 quả cam"
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "1 chén cơm"
+                },
+                {
+                  "name": "Mực xào thập cẩm",
+                  "base_grams": 160,
+                  "ingredients": [
+                    {
+                      "name": "Mực",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cà chua",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Dưa leo và thơm",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Rau muống xào tỏi",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Rau muống xào tỏi",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh cà chua trứng",
+                  "base_grams": 40,
+                  "ingredients": [
+                    {
+                      "name": "Cà chua",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Trứng",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 7,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "1 tô hủ tiếu thịt heo",
+                  "base_grams": 330,
+                  "ingredients": [
+                    {
+                      "name": "Hủ tiếu",
+                      "grams": 150,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt heo",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Giá",
+                      "grams": 100,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Xà lách",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "1 ly chè đậu đen",
+                  "base_grams": 30,
+                  "ingredients": [
+                    {
+                      "name": "Đậu",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "1 múi sầu riêng"
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "1,5 chén cơm"
+                },
+                {
+                  "name": "Canh chua cá hú",
+                  "base_grams": 200,
+                  "ingredients": [
+                    {
+                      "name": "Cá",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cà chua",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Đậu bắp",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Giá",
+                      "grams": 150,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá bống kho tiêu",
+                  "base_grams": 20,
+                  "ingredients": [
+                    {
+                      "name": "Cá bống kho tiêu",
+                      "grams": 20,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "1 quả cam nhỏ",
+                  "base_grams": 170,
+                  "ingredients": [
+                    {
+                      "name": "Khoảng",
+                      "grams": 170,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "dinner",
+              "dishes": [
+                {
+                  "name": "1 tô cháo gà",
+                  "base_grams": 160,
+                  "ingredients": [
+                    {
+                      "name": "Gà",
+                      "grams": 60,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Giá",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Gỏi bắp cải hoặc su hào",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Gỏi bắp cải hoặc su hào",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "1 quả vú sữa"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cao-huyet-ap-h-h-nutritrion",
+      "title": "Thực đơn huyết áp cao — H&H Nutritrion",
+      "tags": [
+        "huyết áp cao"
+      ],
+      "disease_target": [
+        "huyết áp cao"
+      ],
+      "source": "H&H Nutritrion",
+      "dayCount": 7,
+      "confidence": 0.95,
+      "days": [
+        {
+          "day_index": 1,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Phở bò",
+                  "base_grams": 330,
+                  "ingredients": [
+                    {
+                      "name": "Bánh phở",
+                      "grams": 180,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt bò",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Bò viên",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Giá",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Rau thơm",
+                      "grams": 20,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Tráng miệng: Táo",
+                  "ingredients": [
+                    {
+                      "name": "Táo",
+                      "grams": 0.5,
+                      "unit": "quả"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "snack",
+              "dishes": [
+                {
+                  "name": "Sữa dành riêng cho người tiểu đường",
+                  "ingredients": [
+                    {
+                      "name": "Sữa dành riêng cho người tiểu đường",
+                      "grams": 200,
+                      "unit": "ml"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm gạo lứt",
+                  "ingredients": [
+                    {
+                      "name": "Cơm gạo lứt",
+                      "grams": 1.5,
+                      "unit": "chén"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá lóc kho",
+                  "base_grams": 70,
+                  "ingredients": [
+                    {
+                      "name": "Cá lóc kho",
+                      "grams": 70,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Rau muống luộc",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Rau muống luộc",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 2,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Bún mọc",
+                  "base_grams": 320,
+                  "ingredients": [
+                    {
+                      "name": "Bún tươi",
+                      "grams": 180,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Mọc",
+                      "grams": 70,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Giá",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Rau thơm",
+                      "grams": 20,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Tráng miệng: Thanh long",
+                  "ingredients": [
+                    {
+                      "name": "Thanh long",
+                      "grams": 0.5,
+                      "unit": "quả"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "snack",
+              "dishes": [
+                {
+                  "name": "Sữa dành riêng cho người tiểu đường",
+                  "ingredients": [
+                    {
+                      "name": "Sữa dành riêng cho người tiểu đường",
+                      "grams": 200,
+                      "unit": "ml"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm gạo lứt",
+                  "ingredients": [
+                    {
+                      "name": "Cơm gạo lứt",
+                      "grams": 1.5,
+                      "unit": "chén"
+                    }
+                  ]
+                },
+                {
+                  "name": "Bông cải xanh luộc",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Bông cải xanh luộc",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt viên sốt cà chua",
+                  "base_grams": 70,
+                  "ingredients": [
+                    {
+                      "name": "Thịt viên",
+                      "grams": 70,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 3,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Bánh mì đen trứng ốp la",
+                  "ingredients": [
+                    {
+                      "name": "Bánh mì",
+                      "grams": 2,
+                      "unit": "lát"
+                    },
+                    {
+                      "name": "Trứng gà",
+                      "grams": 1,
+                      "unit": "quả"
+                    }
+                  ]
+                },
+                {
+                  "name": "Tráng miệng: Bưởi",
+                  "ingredients": [
+                    {
+                      "name": "Bưởi",
+                      "grams": 2,
+                      "unit": "múi"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "snack",
+              "dishes": [
+                {
+                  "name": "Sữa dành riêng cho người tiểu đường",
+                  "ingredients": [
+                    {
+                      "name": "Sữa dành riêng cho người tiểu đường",
+                      "grams": 200,
+                      "unit": "ml"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm gạo lứt",
+                  "ingredients": [
+                    {
+                      "name": "Cơm gạo lứt",
+                      "grams": 1.5,
+                      "unit": "chén"
+                    }
+                  ]
+                },
+                {
+                  "name": "Cá nục kho tiêu",
+                  "base_grams": 70,
+                  "ingredients": [
+                    {
+                      "name": "Cá nục kho tiêu",
+                      "grams": 70,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh bí đao nấu thịt bằm",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Bí",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 4,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Bún riêu",
+                  "base_grams": 320,
+                  "ingredients": [
+                    {
+                      "name": "Bún tươi",
+                      "grams": 180,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Riêu cua",
+                      "grams": 20,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Giá",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Rau sống",
+                      "grams": 40,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Tráng miệng: Kiwi",
+                  "ingredients": [
+                    {
+                      "name": "Kiwi",
+                      "grams": 1,
+                      "unit": "quả"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "snack",
+              "dishes": [
+                {
+                  "name": "Sữa dành riêng cho người tiểu đường",
+                  "ingredients": [
+                    {
+                      "name": "Sữa dành riêng cho người tiểu đường",
+                      "grams": 200,
+                      "unit": "ml"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm gạo lứt",
+                  "ingredients": [
+                    {
+                      "name": "Cơm gạo lứt",
+                      "grams": 1.5,
+                      "unit": "chén"
+                    }
+                  ]
+                },
+                {
+                  "name": "Đậu hũ nhồi thịt sốt cà",
+                  "base_grams": 80,
+                  "ingredients": [
+                    {
+                      "name": "Đậu",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt băm",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh rau dền",
+                  "base_grams": 110,
+                  "ingredients": [
+                    {
+                      "name": "Rau",
+                      "grams": 100,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt băm",
+                      "grams": 10,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 5,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Miến xào thịt nạc",
+                  "base_grams": 300,
+                  "ingredients": [
+                    {
+                      "name": "Miến đã luộc",
+                      "grams": 180,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt nạc",
+                      "grams": 70,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Rau củ",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Tráng miệng: Chuối",
+                  "ingredients": [
+                    {
+                      "name": "Chuối",
+                      "grams": 1,
+                      "unit": "quả"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "snack",
+              "dishes": [
+                {
+                  "name": "Sữa dành riêng cho người tiểu đường",
+                  "ingredients": [
+                    {
+                      "name": "Sữa dành riêng cho người tiểu đường",
+                      "grams": 200,
+                      "unit": "ml"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm gạo lứt",
+                  "ingredients": [
+                    {
+                      "name": "Cơm gạo lứt",
+                      "grams": 1.5,
+                      "unit": "chén"
+                    }
+                  ]
+                },
+                {
+                  "name": "Tôm rang",
+                  "base_grams": 60,
+                  "ingredients": [
+                    {
+                      "name": "Tôm rang",
+                      "grams": 60,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh chua",
+                  "base_grams": 90,
+                  "ingredients": [
+                    {
+                      "name": "Cà chua",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Bạc hà",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thơm",
+                      "grams": 30,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 6,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Cháo yến mạch tôm",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Yến mạch",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Tôm",
+                      "grams": 60,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cà rốt",
+                      "grams": 40,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Tráng miệng: Chuối",
+                  "ingredients": [
+                    {
+                      "name": "Chuối",
+                      "grams": 1,
+                      "unit": "quả"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "snack",
+              "dishes": [
+                {
+                  "name": "Sữa dành riêng cho người tiểu đường",
+                  "ingredients": [
+                    {
+                      "name": "Sữa dành riêng cho người tiểu đường",
+                      "grams": 200,
+                      "unit": "ml"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm gạo lứt",
+                  "ingredients": [
+                    {
+                      "name": "Cơm gạo lứt",
+                      "grams": 1.5,
+                      "unit": "chén"
+                    }
+                  ]
+                },
+                {
+                  "name": "Thịt bò xào cần tây",
+                  "base_grams": 90,
+                  "ingredients": [
+                    {
+                      "name": "Thịt bò",
+                      "grams": 70,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cần tây",
+                      "grams": 20,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Rau muống trộn nộm",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Rau muống trộn nộm",
+                      "grams": 100,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "day_index": 7,
+          "meals": [
+            {
+              "meal_type": "breakfast",
+              "dishes": [
+                {
+                  "name": "Nui xào bò",
+                  "base_grams": 330,
+                  "ingredients": [
+                    {
+                      "name": "Nui",
+                      "grams": 180,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Thịt bò",
+                      "grams": 70,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Hành tây tùy chỉnh",
+                      "grams": null,
+                      "unit": null
+                    },
+                    {
+                      "name": "Cải ngọt",
+                      "grams": 80,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Tráng miệng: Dâu tây",
+                  "ingredients": [
+                    {
+                      "name": "Dâu tây",
+                      "grams": 5,
+                      "unit": "quả"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "snack",
+              "dishes": [
+                {
+                  "name": "Sữa dành riêng cho người tiểu đường",
+                  "ingredients": [
+                    {
+                      "name": "Sữa dành riêng cho người tiểu đường",
+                      "grams": 200,
+                      "unit": "ml"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "meal_type": "lunch",
+              "dishes": [
+                {
+                  "name": "Cơm gạo lứt",
+                  "ingredients": [
+                    {
+                      "name": "Cơm gạo lứt",
+                      "grams": 1.5,
+                      "unit": "chén"
+                    }
+                  ]
+                },
+                {
+                  "name": "Canh bí đỏ nấu tôm",
+                  "base_grams": 150,
+                  "ingredients": [
+                    {
+                      "name": "Bí",
+                      "grams": 100,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Tôm",
+                      "grams": 50,
+                      "unit": "g"
+                    }
+                  ]
+                },
+                {
+                  "name": "Mực xào chua ngọt",
+                  "base_grams": 100,
+                  "ingredients": [
+                    {
+                      "name": "Mực",
+                      "grams": 50,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Ớt chuông",
+                      "grams": 30,
+                      "unit": "g"
+                    },
+                    {
+                      "name": "Cà rốt",
+                      "grams": 20,
+                      "unit": "g"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,172 +1,2097 @@
 {
   "_note": "Ingredient Dictionary — chuẩn hoá tên nguyên liệu, phân nhóm, đơn vị mua thực tế. Sửa file này KHÔNG cần sửa code. lib/family-menu/ingredients.js nạp và index hoá tại runtime.",
   "_version": 1,
-
   "categories": [
-    { "key": "rau", "label": "Rau & củ", "order": 1, "icon": "🥬" },
-    { "key": "trai_cay", "label": "Trái cây", "order": 2, "icon": "🍎" },
-    { "key": "thit", "label": "Thịt", "order": 3, "icon": "🥩" },
-    { "key": "hai_san", "label": "Hải sản", "order": 4, "icon": "🐟" },
-    { "key": "trung_sua", "label": "Trứng & sữa", "order": 5, "icon": "🥚" },
-    { "key": "tinh_bot", "label": "Tinh bột & ngũ cốc", "order": 6, "icon": "🍚" },
-    { "key": "do_kho", "label": "Đồ khô & hạt", "order": 7, "icon": "🫘" },
-    { "key": "gia_vi", "label": "Gia vị & dầu", "order": 8, "icon": "🧂" },
-    { "key": "khac", "label": "Khác", "order": 99, "icon": "📦" }
+    {
+      "key": "rau",
+      "label": "Rau & củ",
+      "order": 1,
+      "icon": "🥬"
+    },
+    {
+      "key": "trai_cay",
+      "label": "Trái cây",
+      "order": 2,
+      "icon": "🍎"
+    },
+    {
+      "key": "thit",
+      "label": "Thịt",
+      "order": 3,
+      "icon": "🥩"
+    },
+    {
+      "key": "hai_san",
+      "label": "Hải sản",
+      "order": 4,
+      "icon": "🐟"
+    },
+    {
+      "key": "trung_sua",
+      "label": "Trứng & sữa",
+      "order": 5,
+      "icon": "🥚"
+    },
+    {
+      "key": "tinh_bot",
+      "label": "Tinh bột & ngũ cốc",
+      "order": 6,
+      "icon": "🍚"
+    },
+    {
+      "key": "do_kho",
+      "label": "Đồ khô & hạt",
+      "order": 7,
+      "icon": "🫘"
+    },
+    {
+      "key": "gia_vi",
+      "label": "Gia vị & dầu",
+      "order": 8,
+      "icon": "🧂"
+    },
+    {
+      "key": "khac",
+      "label": "Khác",
+      "order": 99,
+      "icon": "📦"
+    }
   ],
-
   "unitFamilies": {
-    "mass": { "base": "g", "units": { "g": 1, "gram": 1, "gam": 1, "kg": 1000, "lạng": 100, "lang": 100 } },
-    "volume": { "base": "ml", "units": { "ml": 1, "l": 1000, "lit": 1000, "lít": 1000, "cc": 1 } },
-    "count": { "base": "cái", "units": { "cái": 1, "quả": 1, "trái": 1, "củ": 1, "bó": 1, "mớ": 1, "hộp": 1, "chai": 1, "gói": 1, "lon": 1, "vỉ": 1, "bìa": 1, "con": 1, "miếng": 1, "lát": 1, "nhánh": 1, "tép": 1 } }
+    "mass": {
+      "base": "g",
+      "units": {
+        "g": 1,
+        "gram": 1,
+        "gam": 1,
+        "kg": 1000,
+        "lạng": 100,
+        "lang": 100
+      }
+    },
+    "volume": {
+      "base": "ml",
+      "units": {
+        "ml": 1,
+        "l": 1000,
+        "lit": 1000,
+        "lít": 1000,
+        "cc": 1
+      }
+    },
+    "count": {
+      "base": "cái",
+      "units": {
+        "cái": 1,
+        "quả": 1,
+        "trái": 1,
+        "củ": 1,
+        "bó": 1,
+        "mớ": 1,
+        "hộp": 1,
+        "chai": 1,
+        "gói": 1,
+        "lon": 1,
+        "vỉ": 1,
+        "bìa": 1,
+        "con": 1,
+        "miếng": 1,
+        "lát": 1,
+        "nhánh": 1,
+        "tép": 1,
+        "chén": 1,
+        "bát": 1,
+        "tô": 1,
+        "muỗng": 1,
+        "thìa": 1,
+        "ly": 1,
+        "cốc": 1,
+        "ổ": 1,
+        "phần": 1,
+        "khúc": 1,
+        "cây": 1,
+        "nắm": 1,
+        "thanh": 1,
+        "múi": 1,
+        "viên": 1,
+        "ống": 1
+      }
+    }
   },
-
   "displayRules": {
     "_note": "Ngưỡng quy đổi khi HIỂN THỊ. 1200 g → 1,2 kg; 1500 ml → 1,5 l.",
-    "mass": [{ "from": 1000, "to": "kg", "divide": 1000, "decimals": 1 }],
-    "volume": [{ "from": 1000, "to": "l", "divide": 1000, "decimals": 1 }]
+    "mass": [
+      {
+        "from": 1000,
+        "to": "kg",
+        "divide": 1000,
+        "decimals": 1
+      }
+    ],
+    "volume": [
+      {
+        "from": 1000,
+        "to": "l",
+        "divide": 1000,
+        "decimals": 1
+      }
+    ]
   },
-
   "defaultRounding": {
     "_note": "Khi không tra được item cụ thể. roundTo = bội số làm tròn theo đơn vị hiển thị.",
-    "mass": { "roundTo": 50, "mode": "ceil", "minQty": 50 },
-    "massKg": { "roundTo": 0.1, "mode": "ceil", "minQty": 0.1 },
-    "volume": { "roundTo": 50, "mode": "ceil", "minQty": 50 },
-    "count": { "roundTo": 1, "mode": "ceil", "minQty": 1 }
+    "mass": {
+      "roundTo": 50,
+      "mode": "ceil",
+      "minQty": 50
+    },
+    "massKg": {
+      "roundTo": 0.1,
+      "mode": "ceil",
+      "minQty": 0.1
+    },
+    "volume": {
+      "roundTo": 50,
+      "mode": "ceil",
+      "minQty": 50
+    },
+    "count": {
+      "roundTo": 1,
+      "mode": "ceil",
+      "minQty": 1
+    }
   },
-
   "categoryKeywords": {
     "_note": "Fallback khi tên nguyên liệu không khớp item nào — quét từ khoá (đã bỏ dấu).",
-    "rau": ["rau", "cai", "xa lach", "sa lach", "gia do", "gia", "bap cai", "su hao", "ca rot", "khoai tay", "ca chua", "dua leo", "dua chuot", "bi", "muop", "dau bap", "ca tim", "hanh tay", "nam", "mong toi", "rau den", "rau muong", "ngo", "bong cai", "sup lo", "cu cai", "dau que", "dau co ve", "rong bien", "gia vi rau", "hen", "he", "thi la", "rau thom", "kinh gioi", "tia to", "rau ram"],
-    "trai_cay": ["cam", "chuoi", "tao", "le", "buoi", "dua hau", "xoai", "du du", "thanh long", "oi", "nho", "kiwi", "dau tay", "vai", "nhan", "mang cut", "chom chom", "man", "hong xiem", "sabo", "quyt", "chanh day", "bo ", "trai cay", "hoa qua", "dua luoi"],
-    "thit": ["thit", "heo", "lon", "bo ", "ga", "vit", "suon", "ba chi", "ba roi", "nac", "uc ga", "dui ga", "xuong", "cho quay", "gio", "cha lua", "xuc xich", "gan", "long"],
-    "hai_san": ["ca ", "tom", "muc", "nghieu", "ngao", "so", "cua", "ghe", "hau", "oc", "bach tuoc", "ca hoi", "ca thu", "ca ngu", "ca basa", "ca loc", "ca nuc", "ca trich", "ca thac lac", "hai san", "tep"],
-    "trung_sua": ["trung", "sua", "yaourt", "sua chua", "pho mai", "phomai", "bo lat", "kem tuoi", "whey"],
-    "tinh_bot": ["gao", "com", "bun", "pho", "mi", "mien", "banh mi", "banh pho", "hu tieu", "nui", "khoai lang", "yen mach", "bot", "banh trang", "banh cuon", "banh da"],
-    "do_kho": ["dau xanh", "dau den", "dau do", "dau nanh", "dau phong", "lac", "hat", "hanh nhan", "oc cho", "dieu", "me ", "vung", "nam huong kho", "moc nhi", "tom kho", "ca kho", "mang kho", "dau hu", "dau phu", "tau hu"],
-    "gia_vi": ["muoi", "duong", "nuoc mam", "xi dau", "nuoc tuong", "dau an", "dau oliu", "dau me", "tieu", "toi", "hanh tim", "hanh la", "gung", "sa ", "ot", "bot ngot", "hat nem", "giam", "me tuong", "tuong", "mam", "nghe", "quto", "bot canh", "sate"]
+    "rau": [
+      "rau",
+      "cai",
+      "xa lach",
+      "sa lach",
+      "gia do",
+      "gia",
+      "bap cai",
+      "su hao",
+      "ca rot",
+      "khoai tay",
+      "ca chua",
+      "dua leo",
+      "dua chuot",
+      "bi",
+      "muop",
+      "dau bap",
+      "ca tim",
+      "hanh tay",
+      "nam",
+      "mong toi",
+      "rau den",
+      "rau muong",
+      "ngo",
+      "bong cai",
+      "sup lo",
+      "cu cai",
+      "dau que",
+      "dau co ve",
+      "rong bien",
+      "gia vi rau",
+      "hen",
+      "he",
+      "thi la",
+      "rau thom",
+      "kinh gioi",
+      "tia to",
+      "rau ram"
+    ],
+    "trai_cay": [
+      "cam",
+      "chuoi",
+      "tao",
+      "le",
+      "buoi",
+      "dua hau",
+      "xoai",
+      "du du",
+      "thanh long",
+      "oi",
+      "nho",
+      "kiwi",
+      "dau tay",
+      "vai",
+      "nhan",
+      "mang cut",
+      "chom chom",
+      "man",
+      "hong xiem",
+      "sabo",
+      "quyt",
+      "chanh day",
+      "bo ",
+      "trai cay",
+      "hoa qua",
+      "dua luoi"
+    ],
+    "thit": [
+      "thit",
+      "heo",
+      "lon",
+      "bo ",
+      "ga",
+      "vit",
+      "suon",
+      "ba chi",
+      "ba roi",
+      "nac",
+      "uc ga",
+      "dui ga",
+      "xuong",
+      "cho quay",
+      "gio",
+      "cha lua",
+      "xuc xich",
+      "gan",
+      "long"
+    ],
+    "hai_san": [
+      "ca ",
+      "tom",
+      "muc",
+      "nghieu",
+      "ngao",
+      "so",
+      "cua",
+      "ghe",
+      "hau",
+      "oc",
+      "bach tuoc",
+      "ca hoi",
+      "ca thu",
+      "ca ngu",
+      "ca basa",
+      "ca loc",
+      "ca nuc",
+      "ca trich",
+      "ca thac lac",
+      "hai san",
+      "tep"
+    ],
+    "trung_sua": [
+      "trung",
+      "sua",
+      "yaourt",
+      "sua chua",
+      "pho mai",
+      "phomai",
+      "bo lat",
+      "kem tuoi",
+      "whey"
+    ],
+    "tinh_bot": [
+      "gao",
+      "com",
+      "bun",
+      "pho",
+      "mi",
+      "mien",
+      "banh mi",
+      "banh pho",
+      "hu tieu",
+      "nui",
+      "khoai lang",
+      "yen mach",
+      "bot",
+      "banh trang",
+      "banh cuon",
+      "banh da"
+    ],
+    "do_kho": [
+      "dau xanh",
+      "dau den",
+      "dau do",
+      "dau nanh",
+      "dau phong",
+      "lac",
+      "hat",
+      "hanh nhan",
+      "oc cho",
+      "dieu",
+      "me ",
+      "vung",
+      "nam huong kho",
+      "moc nhi",
+      "tom kho",
+      "ca kho",
+      "mang kho",
+      "dau hu",
+      "dau phu",
+      "tau hu"
+    ],
+    "gia_vi": [
+      "muoi",
+      "duong",
+      "nuoc mam",
+      "xi dau",
+      "nuoc tuong",
+      "dau an",
+      "dau oliu",
+      "dau me",
+      "tieu",
+      "toi",
+      "hanh tim",
+      "hanh la",
+      "gung",
+      "sa ",
+      "ot",
+      "bot ngot",
+      "hat nem",
+      "giam",
+      "me tuong",
+      "tuong",
+      "mam",
+      "nghe",
+      "quto",
+      "bot canh",
+      "sate"
+    ]
   },
-
   "items": [
-    { "id": "thit_ba_chi", "canonical": "Thịt ba chỉ", "aliases": ["ba rọi", "thịt ba rọi", "ba chỉ heo", "ba rọi heo", "thịt ba chỉ heo", "ba chỉ"], "category": "thit", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "thit_nac_heo", "canonical": "Thịt nạc heo", "aliases": ["thịt nạc", "nạc heo", "thịt heo nạc", "thịt lợn nạc", "nạc dăm", "thịt nạc dăm", "thịt thăn heo", "thăn heo"], "category": "thit", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "thit_heo", "canonical": "Thịt heo", "aliases": ["thịt lợn", "heo"], "category": "thit", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "suon_heo", "canonical": "Sườn heo", "aliases": ["sườn", "sườn non", "sườn lợn", "xương sườn"], "category": "thit", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "xuong_heo", "canonical": "Xương heo", "aliases": ["xương ống", "xương lợn", "xương hầm"], "category": "thit", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.5 },
-    { "id": "thit_bo", "canonical": "Thịt bò", "aliases": ["bò", "thăn bò", "bắp bò", "bò thăn", "thịt bò thăn"], "category": "thit", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "uc_ga", "canonical": "Ức gà", "aliases": ["thịt ức gà", "ức gà phi lê", "lườn gà"], "category": "thit", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "dui_ga", "canonical": "Đùi gà", "aliases": ["đùi gà góc tư", "má đùi gà"], "category": "thit", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "thit_ga", "canonical": "Thịt gà", "aliases": ["gà", "gà ta", "gà công nghiệp"], "category": "thit", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-
-    { "id": "ca_hoi", "canonical": "Cá hồi", "aliases": ["phi lê cá hồi", "cá hồi phi lê"], "category": "hai_san", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "ca_thu", "canonical": "Cá thu", "aliases": [], "category": "hai_san", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "ca_basa", "canonical": "Cá basa", "aliases": ["cá ba sa", "cá tra"], "category": "hai_san", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "ca_loc", "canonical": "Cá lóc", "aliases": ["cá quả"], "category": "hai_san", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "ca_nuc", "canonical": "Cá nục", "aliases": [], "category": "hai_san", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "ca_thac_lac", "canonical": "Cá thác lác", "aliases": ["chả cá thác lác", "cá thác lác phi lê"], "category": "hai_san", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "tom", "canonical": "Tôm", "aliases": ["tôm tươi", "tôm sú", "tôm thẻ"], "category": "hai_san", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "muc", "canonical": "Mực", "aliases": ["mực tươi", "mực ống"], "category": "hai_san", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "nghieu", "canonical": "Nghêu", "aliases": ["ngao", "nghiêu"], "category": "hai_san", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.5 },
-    { "id": "cua_dong", "canonical": "Cua đồng", "aliases": ["cua xay"], "category": "hai_san", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-
-    { "id": "rau_muong", "canonical": "Rau muống", "aliases": [], "category": "rau", "family": "count", "purchaseUnit": "bó", "gramsPerUnit": 300, "roundTo": 1 },
-    { "id": "rau_cai_ngot", "canonical": "Cải ngọt", "aliases": ["rau cải ngọt"], "category": "rau", "family": "count", "purchaseUnit": "bó", "gramsPerUnit": 300, "roundTo": 1 },
-    { "id": "cai_xanh", "canonical": "Cải xanh", "aliases": ["rau cải xanh", "cải bẹ xanh"], "category": "rau", "family": "count", "purchaseUnit": "bó", "gramsPerUnit": 300, "roundTo": 1 },
-    { "id": "cai_thao", "canonical": "Cải thảo", "aliases": [], "category": "rau", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.5 },
-    { "id": "bap_cai", "canonical": "Bắp cải", "aliases": ["cải bắp"], "category": "rau", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.5 },
-    { "id": "mong_toi", "canonical": "Mồng tơi", "aliases": ["rau mồng tơi", "mùng tơi"], "category": "rau", "family": "count", "purchaseUnit": "bó", "gramsPerUnit": 250, "roundTo": 1 },
-    { "id": "rau_den", "canonical": "Rau dền", "aliases": [], "category": "rau", "family": "count", "purchaseUnit": "bó", "gramsPerUnit": 250, "roundTo": 1 },
-    { "id": "rau_day", "canonical": "Rau đay", "aliases": [], "category": "rau", "family": "count", "purchaseUnit": "bó", "gramsPerUnit": 250, "roundTo": 1 },
-    { "id": "cai_xoong", "canonical": "Cải xoong", "aliases": ["xà lách xoong"], "category": "rau", "family": "count", "purchaseUnit": "bó", "gramsPerUnit": 200, "roundTo": 1 },
-    { "id": "xa_lach", "canonical": "Xà lách", "aliases": ["rau xà lách", "sà lách"], "category": "rau", "family": "count", "purchaseUnit": "bó", "gramsPerUnit": 200, "roundTo": 1 },
-    { "id": "gia_do", "canonical": "Giá đỗ", "aliases": ["giá", "rau giá", "giá đậu"], "category": "rau", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "bong_cai_xanh", "canonical": "Bông cải xanh", "aliases": ["súp lơ xanh", "bông cải", "broccoli"], "category": "rau", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "sup_lo_trang", "canonical": "Súp lơ trắng", "aliases": ["bông cải trắng"], "category": "rau", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "ca_rot", "canonical": "Cà rốt", "aliases": [], "category": "rau", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "khoai_tay", "canonical": "Khoai tây", "aliases": [], "category": "rau", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.5 },
-    { "id": "ca_chua", "canonical": "Cà chua", "aliases": [], "category": "rau", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "dua_leo", "canonical": "Dưa leo", "aliases": ["dưa chuột"], "category": "rau", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "bi_do", "canonical": "Bí đỏ", "aliases": ["bí ngô"], "category": "rau", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "bi_dao", "canonical": "Bí đao", "aliases": ["bí xanh"], "category": "rau", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "muop", "canonical": "Mướp", "aliases": ["mướp hương"], "category": "rau", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "muop_dang", "canonical": "Mướp đắng", "aliases": ["khổ qua"], "category": "rau", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "dau_bap", "canonical": "Đậu bắp", "aliases": [], "category": "rau", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "dau_que", "canonical": "Đậu que", "aliases": ["đậu cô ve"], "category": "rau", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "ca_tim", "canonical": "Cà tím", "aliases": [], "category": "rau", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "hanh_tay", "canonical": "Hành tây", "aliases": [], "category": "rau", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "nam_rom", "canonical": "Nấm rơm", "aliases": [], "category": "rau", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "nam_huong", "canonical": "Nấm hương", "aliases": ["nấm đông cô"], "category": "do_kho", "family": "mass", "purchaseUnit": "g", "roundTo": 50 },
-    { "id": "rong_bien", "canonical": "Rong biển", "aliases": ["tảo biển"], "category": "do_kho", "family": "mass", "purchaseUnit": "g", "roundTo": 10 },
-
-    { "id": "cam", "canonical": "Cam", "aliases": ["cam sành", "cam tươi"], "category": "trai_cay", "family": "count", "purchaseUnit": "quả", "gramsPerUnit": 200, "roundTo": 1 },
-    { "id": "chuoi", "canonical": "Chuối", "aliases": ["chuối tiêu", "chuối sứ"], "category": "trai_cay", "family": "count", "purchaseUnit": "quả", "gramsPerUnit": 120, "roundTo": 1 },
-    { "id": "tao", "canonical": "Táo", "aliases": ["táo tây"], "category": "trai_cay", "family": "count", "purchaseUnit": "quả", "gramsPerUnit": 180, "roundTo": 1 },
-    { "id": "buoi", "canonical": "Bưởi", "aliases": ["bưởi da xanh"], "category": "trai_cay", "family": "count", "purchaseUnit": "quả", "gramsPerUnit": 900, "roundTo": 1 },
-    { "id": "du_du", "canonical": "Đu đủ", "aliases": [], "category": "trai_cay", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.5 },
-    { "id": "thanh_long", "canonical": "Thanh long", "aliases": [], "category": "trai_cay", "family": "kg", "purchaseUnit": "kg", "roundTo": 0.5 },
-    { "id": "oi", "canonical": "Ổi", "aliases": [], "category": "trai_cay", "family": "count", "purchaseUnit": "quả", "gramsPerUnit": 200, "roundTo": 1 },
-    { "id": "trai_cay_chung", "canonical": "Trái cây", "aliases": ["hoa quả", "trái cây tươi", "hoa quả tươi"], "category": "trai_cay", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.5 },
-
-    { "id": "trung_ga", "canonical": "Trứng gà", "aliases": ["trứng", "trứng gà ta", "hột gà"], "category": "trung_sua", "family": "count", "purchaseUnit": "quả", "gramsPerUnit": 55, "roundTo": 1, "packSize": 10, "packUnit": "vỉ" },
-    { "id": "trung_vit", "canonical": "Trứng vịt", "aliases": ["hột vịt"], "category": "trung_sua", "family": "count", "purchaseUnit": "quả", "gramsPerUnit": 70, "roundTo": 1 },
-    { "id": "sua_tuoi", "canonical": "Sữa tươi", "aliases": ["sữa tươi không đường", "sữa"], "category": "trung_sua", "family": "volume", "purchaseUnit": "ml", "roundTo": 180, "packSize": 180, "packUnit": "hộp" },
-    { "id": "sua_tach_beo", "canonical": "Sữa tách béo", "aliases": ["sữa không béo", "sữa ít béo"], "category": "trung_sua", "family": "volume", "purchaseUnit": "ml", "roundTo": 180, "packSize": 180, "packUnit": "hộp" },
-    { "id": "sua_chua", "canonical": "Sữa chua", "aliases": ["yaourt", "da ua", "sữa chua ít đường", "sữa chua không đường"], "category": "trung_sua", "family": "count", "purchaseUnit": "hộp", "gramsPerUnit": 100, "roundTo": 1 },
-    { "id": "sua_dau_nanh", "canonical": "Sữa đậu nành", "aliases": ["sữa đậu nành không đường"], "category": "trung_sua", "family": "volume", "purchaseUnit": "ml", "roundTo": 200 },
-
-    { "id": "gao_te", "canonical": "Gạo tẻ", "aliases": ["gạo", "gạo trắng"], "category": "tinh_bot", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.5 },
-    { "id": "gao_lut", "canonical": "Gạo lứt", "aliases": ["gạo lức"], "category": "tinh_bot", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.5 },
-    { "id": "bun", "canonical": "Bún", "aliases": ["bún tươi"], "category": "tinh_bot", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "banh_pho", "canonical": "Bánh phở", "aliases": ["phở tươi"], "category": "tinh_bot", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "hu_tieu", "canonical": "Hủ tiếu", "aliases": ["hủ tíu"], "category": "tinh_bot", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.1 },
-    { "id": "banh_mi", "canonical": "Bánh mì", "aliases": ["bánh mỳ"], "category": "tinh_bot", "family": "count", "purchaseUnit": "ổ", "gramsPerUnit": 80, "roundTo": 1 },
-    { "id": "khoai_lang", "canonical": "Khoai lang", "aliases": [], "category": "tinh_bot", "family": "mass", "purchaseUnit": "kg", "roundTo": 0.5 },
-    { "id": "yen_mach", "canonical": "Yến mạch", "aliases": ["oat", "bột yến mạch"], "category": "tinh_bot", "family": "mass", "purchaseUnit": "g", "roundTo": 100 },
-    { "id": "mien", "canonical": "Miến", "aliases": ["miến dong"], "category": "tinh_bot", "family": "mass", "purchaseUnit": "g", "roundTo": 100 },
-
-    { "id": "dau_hu", "canonical": "Đậu hũ", "aliases": ["đậu phụ", "tàu hũ", "đậu hũ trắng", "tào phớ"], "category": "do_kho", "family": "count", "purchaseUnit": "bìa", "gramsPerUnit": 100, "roundTo": 1 },
-    { "id": "dau_xanh", "canonical": "Đậu xanh", "aliases": [], "category": "do_kho", "family": "mass", "purchaseUnit": "g", "roundTo": 100 },
-    { "id": "dau_den", "canonical": "Đậu đen", "aliases": [], "category": "do_kho", "family": "mass", "purchaseUnit": "g", "roundTo": 100 },
-    { "id": "dau_do", "canonical": "Đậu đỏ", "aliases": [], "category": "do_kho", "family": "mass", "purchaseUnit": "g", "roundTo": 100 },
-    { "id": "dau_phong", "canonical": "Đậu phộng", "aliases": ["lạc"], "category": "do_kho", "family": "mass", "purchaseUnit": "g", "roundTo": 100 },
-    { "id": "hanh_nhan", "canonical": "Hạnh nhân", "aliases": ["hạt hạnh nhân"], "category": "do_kho", "family": "mass", "purchaseUnit": "g", "roundTo": 50 },
-    { "id": "oc_cho", "canonical": "Óc chó", "aliases": ["hạt óc chó"], "category": "do_kho", "family": "mass", "purchaseUnit": "g", "roundTo": 50 },
-    { "id": "hat_dieu", "canonical": "Hạt điều", "aliases": [], "category": "do_kho", "family": "mass", "purchaseUnit": "g", "roundTo": 50 },
-    { "id": "me", "canonical": "Mè", "aliases": ["vừng", "hạt mè"], "category": "do_kho", "family": "mass", "purchaseUnit": "g", "roundTo": 50 },
-    { "id": "tom_kho", "canonical": "Tôm khô", "aliases": [], "category": "do_kho", "family": "mass", "purchaseUnit": "g", "roundTo": 50 },
-
-    { "id": "dau_an", "canonical": "Dầu ăn", "aliases": ["dầu thực vật"], "category": "gia_vi", "family": "volume", "purchaseUnit": "ml", "roundTo": 100 },
-    { "id": "dau_oliu", "canonical": "Dầu ô liu", "aliases": ["dầu oliu", "olive oil"], "category": "gia_vi", "family": "volume", "purchaseUnit": "ml", "roundTo": 100 },
-    { "id": "dau_me", "canonical": "Dầu mè", "aliases": ["dầu vừng"], "category": "gia_vi", "family": "volume", "purchaseUnit": "ml", "roundTo": 50 },
-    { "id": "nuoc_mam", "canonical": "Nước mắm", "aliases": [], "category": "gia_vi", "family": "volume", "purchaseUnit": "ml", "roundTo": 100 },
-    { "id": "nuoc_tuong", "canonical": "Nước tương", "aliases": ["xì dầu"], "category": "gia_vi", "family": "volume", "purchaseUnit": "ml", "roundTo": 100 },
-    { "id": "muoi", "canonical": "Muối", "aliases": ["muối ăn", "muối i-ốt"], "category": "gia_vi", "family": "mass", "purchaseUnit": "g", "roundTo": 50 },
-    { "id": "duong", "canonical": "Đường", "aliases": ["đường cát", "đường trắng", "đường ăn kiêng"], "category": "gia_vi", "family": "mass", "purchaseUnit": "g", "roundTo": 50 },
-    { "id": "tieu", "canonical": "Tiêu", "aliases": ["hạt tiêu", "tiêu xay"], "category": "gia_vi", "family": "mass", "purchaseUnit": "g", "roundTo": 10 },
-    { "id": "toi", "canonical": "Tỏi", "aliases": ["tỏi ta", "củ tỏi"], "category": "gia_vi", "family": "mass", "purchaseUnit": "g", "roundTo": 50 },
-    { "id": "hanh_tim", "canonical": "Hành tím", "aliases": ["hành khô", "củ hành tím"], "category": "gia_vi", "family": "mass", "purchaseUnit": "g", "roundTo": 50 },
-    { "id": "hanh_la", "canonical": "Hành lá", "aliases": ["hành hoa", "hành xanh"], "category": "gia_vi", "family": "count", "purchaseUnit": "bó", "gramsPerUnit": 100, "roundTo": 1 },
-    { "id": "gung", "canonical": "Gừng", "aliases": ["củ gừng"], "category": "gia_vi", "family": "mass", "purchaseUnit": "g", "roundTo": 50 },
-    { "id": "sa", "canonical": "Sả", "aliases": ["cây sả"], "category": "gia_vi", "family": "count", "purchaseUnit": "cây", "gramsPerUnit": 20, "roundTo": 1 },
-    { "id": "ot", "canonical": "Ớt", "aliases": ["ớt tươi", "ớt hiểm"], "category": "gia_vi", "family": "mass", "purchaseUnit": "g", "roundTo": 20 },
-    { "id": "hat_nem", "canonical": "Hạt nêm", "aliases": ["bột nêm", "bột canh"], "category": "gia_vi", "family": "mass", "purchaseUnit": "g", "roundTo": 50 },
-    { "id": "giam", "canonical": "Giấm", "aliases": ["giấm gạo", "giấm ăn"], "category": "gia_vi", "family": "volume", "purchaseUnit": "ml", "roundTo": 100 }
+    {
+      "id": "thit_ba_chi",
+      "canonical": "Thịt ba chỉ",
+      "aliases": [
+        "ba rọi",
+        "thịt ba rọi",
+        "ba chỉ heo",
+        "ba rọi heo",
+        "thịt ba chỉ heo",
+        "ba chỉ"
+      ],
+      "category": "thit",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "thit_nac_heo",
+      "canonical": "Thịt nạc heo",
+      "aliases": [
+        "thịt nạc",
+        "nạc heo",
+        "thịt heo nạc",
+        "thịt lợn nạc",
+        "nạc dăm",
+        "thịt nạc dăm",
+        "thịt thăn heo",
+        "thăn heo"
+      ],
+      "category": "thit",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "thit_heo",
+      "canonical": "Thịt heo",
+      "aliases": [
+        "thịt lợn",
+        "heo"
+      ],
+      "category": "thit",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "suon_heo",
+      "canonical": "Sườn heo",
+      "aliases": [
+        "sườn",
+        "sườn non",
+        "sườn lợn",
+        "xương sườn"
+      ],
+      "category": "thit",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "xuong_heo",
+      "canonical": "Xương heo",
+      "aliases": [
+        "xương ống",
+        "xương lợn",
+        "xương hầm"
+      ],
+      "category": "thit",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.5
+    },
+    {
+      "id": "thit_bo",
+      "canonical": "Thịt bò",
+      "aliases": [
+        "bò",
+        "thăn bò",
+        "bắp bò",
+        "bò thăn",
+        "thịt bò thăn"
+      ],
+      "category": "thit",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "uc_ga",
+      "canonical": "Ức gà",
+      "aliases": [
+        "thịt ức gà",
+        "ức gà phi lê",
+        "lườn gà"
+      ],
+      "category": "thit",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "dui_ga",
+      "canonical": "Đùi gà",
+      "aliases": [
+        "đùi gà góc tư",
+        "má đùi gà"
+      ],
+      "category": "thit",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "thit_ga",
+      "canonical": "Thịt gà",
+      "aliases": [
+        "gà",
+        "gà ta",
+        "gà công nghiệp"
+      ],
+      "category": "thit",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "ca_hoi",
+      "canonical": "Cá hồi",
+      "aliases": [
+        "phi lê cá hồi",
+        "cá hồi phi lê"
+      ],
+      "category": "hai_san",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "ca_thu",
+      "canonical": "Cá thu",
+      "aliases": [],
+      "category": "hai_san",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "ca_basa",
+      "canonical": "Cá basa",
+      "aliases": [
+        "cá ba sa",
+        "cá tra"
+      ],
+      "category": "hai_san",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "ca_loc",
+      "canonical": "Cá lóc",
+      "aliases": [
+        "cá quả"
+      ],
+      "category": "hai_san",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "ca_nuc",
+      "canonical": "Cá nục",
+      "aliases": [],
+      "category": "hai_san",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "ca_thac_lac",
+      "canonical": "Cá thác lác",
+      "aliases": [
+        "chả cá thác lác",
+        "cá thác lác phi lê"
+      ],
+      "category": "hai_san",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "tom",
+      "canonical": "Tôm",
+      "aliases": [
+        "tôm tươi",
+        "tôm sú",
+        "tôm thẻ"
+      ],
+      "category": "hai_san",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "muc",
+      "canonical": "Mực",
+      "aliases": [
+        "mực tươi",
+        "mực ống"
+      ],
+      "category": "hai_san",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "nghieu",
+      "canonical": "Nghêu",
+      "aliases": [
+        "ngao",
+        "nghiêu"
+      ],
+      "category": "hai_san",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.5
+    },
+    {
+      "id": "cua_dong",
+      "canonical": "Cua đồng",
+      "aliases": [
+        "cua xay"
+      ],
+      "category": "hai_san",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "rau_muong",
+      "canonical": "Rau muống",
+      "aliases": [],
+      "category": "rau",
+      "family": "count",
+      "purchaseUnit": "bó",
+      "gramsPerUnit": 300,
+      "roundTo": 1
+    },
+    {
+      "id": "rau_cai_ngot",
+      "canonical": "Cải ngọt",
+      "aliases": [
+        "rau cải ngọt"
+      ],
+      "category": "rau",
+      "family": "count",
+      "purchaseUnit": "bó",
+      "gramsPerUnit": 300,
+      "roundTo": 1
+    },
+    {
+      "id": "cai_xanh",
+      "canonical": "Cải xanh",
+      "aliases": [
+        "rau cải xanh",
+        "cải bẹ xanh"
+      ],
+      "category": "rau",
+      "family": "count",
+      "purchaseUnit": "bó",
+      "gramsPerUnit": 300,
+      "roundTo": 1
+    },
+    {
+      "id": "cai_thao",
+      "canonical": "Cải thảo",
+      "aliases": [],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.5
+    },
+    {
+      "id": "bap_cai",
+      "canonical": "Bắp cải",
+      "aliases": [
+        "cải bắp"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.5
+    },
+    {
+      "id": "mong_toi",
+      "canonical": "Mồng tơi",
+      "aliases": [
+        "rau mồng tơi",
+        "mùng tơi"
+      ],
+      "category": "rau",
+      "family": "count",
+      "purchaseUnit": "bó",
+      "gramsPerUnit": 250,
+      "roundTo": 1
+    },
+    {
+      "id": "rau_den",
+      "canonical": "Rau dền",
+      "aliases": [],
+      "category": "rau",
+      "family": "count",
+      "purchaseUnit": "bó",
+      "gramsPerUnit": 250,
+      "roundTo": 1
+    },
+    {
+      "id": "rau_day",
+      "canonical": "Rau đay",
+      "aliases": [],
+      "category": "rau",
+      "family": "count",
+      "purchaseUnit": "bó",
+      "gramsPerUnit": 250,
+      "roundTo": 1
+    },
+    {
+      "id": "cai_xoong",
+      "canonical": "Cải xoong",
+      "aliases": [
+        "xà lách xoong"
+      ],
+      "category": "rau",
+      "family": "count",
+      "purchaseUnit": "bó",
+      "gramsPerUnit": 200,
+      "roundTo": 1
+    },
+    {
+      "id": "xa_lach",
+      "canonical": "Xà lách",
+      "aliases": [
+        "rau xà lách",
+        "sà lách"
+      ],
+      "category": "rau",
+      "family": "count",
+      "purchaseUnit": "bó",
+      "gramsPerUnit": 200,
+      "roundTo": 1
+    },
+    {
+      "id": "gia_do",
+      "canonical": "Giá đỗ",
+      "aliases": [
+        "giá",
+        "rau giá",
+        "giá đậu"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "bong_cai_xanh",
+      "canonical": "Bông cải xanh",
+      "aliases": [
+        "súp lơ xanh",
+        "bông cải",
+        "broccoli"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "sup_lo_trang",
+      "canonical": "Súp lơ trắng",
+      "aliases": [
+        "bông cải trắng"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "ca_rot",
+      "canonical": "Cà rốt",
+      "aliases": [],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "khoai_tay",
+      "canonical": "Khoai tây",
+      "aliases": [],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.5
+    },
+    {
+      "id": "ca_chua",
+      "canonical": "Cà chua",
+      "aliases": [],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "dua_leo",
+      "canonical": "Dưa leo",
+      "aliases": [
+        "dưa chuột"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "bi_do",
+      "canonical": "Bí đỏ",
+      "aliases": [
+        "bí ngô"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "bi_dao",
+      "canonical": "Bí đao",
+      "aliases": [
+        "bí xanh"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "muop",
+      "canonical": "Mướp",
+      "aliases": [
+        "mướp hương"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "muop_dang",
+      "canonical": "Mướp đắng",
+      "aliases": [
+        "khổ qua"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "dau_bap",
+      "canonical": "Đậu bắp",
+      "aliases": [],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "dau_que",
+      "canonical": "Đậu que",
+      "aliases": [
+        "đậu cô ve"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "ca_tim",
+      "canonical": "Cà tím",
+      "aliases": [],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "hanh_tay",
+      "canonical": "Hành tây",
+      "aliases": [],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "nam_rom",
+      "canonical": "Nấm rơm",
+      "aliases": [],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "nam_huong",
+      "canonical": "Nấm hương",
+      "aliases": [
+        "nấm đông cô"
+      ],
+      "category": "do_kho",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 50
+    },
+    {
+      "id": "rong_bien",
+      "canonical": "Rong biển",
+      "aliases": [
+        "tảo biển"
+      ],
+      "category": "do_kho",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 10
+    },
+    {
+      "id": "cam",
+      "canonical": "Cam",
+      "aliases": [
+        "cam sành",
+        "cam tươi"
+      ],
+      "category": "trai_cay",
+      "family": "count",
+      "purchaseUnit": "quả",
+      "gramsPerUnit": 200,
+      "roundTo": 1
+    },
+    {
+      "id": "chuoi",
+      "canonical": "Chuối",
+      "aliases": [
+        "chuối tiêu",
+        "chuối sứ"
+      ],
+      "category": "trai_cay",
+      "family": "count",
+      "purchaseUnit": "quả",
+      "gramsPerUnit": 120,
+      "roundTo": 1
+    },
+    {
+      "id": "tao",
+      "canonical": "Táo",
+      "aliases": [
+        "táo tây"
+      ],
+      "category": "trai_cay",
+      "family": "count",
+      "purchaseUnit": "quả",
+      "gramsPerUnit": 180,
+      "roundTo": 1
+    },
+    {
+      "id": "buoi",
+      "canonical": "Bưởi",
+      "aliases": [
+        "bưởi da xanh"
+      ],
+      "category": "trai_cay",
+      "family": "count",
+      "purchaseUnit": "quả",
+      "gramsPerUnit": 900,
+      "roundTo": 1
+    },
+    {
+      "id": "du_du",
+      "canonical": "Đu đủ",
+      "aliases": [],
+      "category": "trai_cay",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.5
+    },
+    {
+      "id": "thanh_long",
+      "canonical": "Thanh long",
+      "aliases": [],
+      "category": "trai_cay",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.5
+    },
+    {
+      "id": "oi",
+      "canonical": "Ổi",
+      "aliases": [],
+      "category": "trai_cay",
+      "family": "count",
+      "purchaseUnit": "quả",
+      "gramsPerUnit": 200,
+      "roundTo": 1
+    },
+    {
+      "id": "trai_cay_chung",
+      "canonical": "Trái cây",
+      "aliases": [
+        "hoa quả",
+        "trái cây tươi",
+        "hoa quả tươi"
+      ],
+      "category": "trai_cay",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.5
+    },
+    {
+      "id": "trung_ga",
+      "canonical": "Trứng gà",
+      "aliases": [
+        "trứng",
+        "trứng gà ta",
+        "hột gà"
+      ],
+      "category": "trung_sua",
+      "family": "count",
+      "purchaseUnit": "quả",
+      "gramsPerUnit": 55,
+      "roundTo": 1,
+      "packSize": 10,
+      "packUnit": "vỉ"
+    },
+    {
+      "id": "trung_vit",
+      "canonical": "Trứng vịt",
+      "aliases": [
+        "hột vịt"
+      ],
+      "category": "trung_sua",
+      "family": "count",
+      "purchaseUnit": "quả",
+      "gramsPerUnit": 70,
+      "roundTo": 1
+    },
+    {
+      "id": "sua_tuoi",
+      "canonical": "Sữa tươi",
+      "aliases": [
+        "sữa tươi không đường",
+        "sữa"
+      ],
+      "category": "trung_sua",
+      "family": "volume",
+      "purchaseUnit": "ml",
+      "roundTo": 180,
+      "packSize": 180,
+      "packUnit": "hộp",
+      "gramsPerUnit": 1
+    },
+    {
+      "id": "sua_tach_beo",
+      "canonical": "Sữa tách béo",
+      "aliases": [
+        "sữa không béo",
+        "sữa ít béo"
+      ],
+      "category": "trung_sua",
+      "family": "volume",
+      "purchaseUnit": "ml",
+      "roundTo": 180,
+      "packSize": 180,
+      "packUnit": "hộp"
+    },
+    {
+      "id": "sua_chua",
+      "canonical": "Sữa chua",
+      "aliases": [
+        "yaourt",
+        "da ua",
+        "sữa chua ít đường",
+        "sữa chua không đường"
+      ],
+      "category": "trung_sua",
+      "family": "count",
+      "purchaseUnit": "hộp",
+      "gramsPerUnit": 100,
+      "roundTo": 1
+    },
+    {
+      "id": "sua_dau_nanh",
+      "canonical": "Sữa đậu nành",
+      "aliases": [
+        "sữa đậu nành không đường"
+      ],
+      "category": "trung_sua",
+      "family": "volume",
+      "purchaseUnit": "ml",
+      "roundTo": 200
+    },
+    {
+      "id": "gao_te",
+      "canonical": "Gạo tẻ",
+      "aliases": [
+        "gạo",
+        "gạo trắng"
+      ],
+      "category": "tinh_bot",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.5
+    },
+    {
+      "id": "gao_lut",
+      "canonical": "Gạo lứt",
+      "aliases": [
+        "gạo lức"
+      ],
+      "category": "tinh_bot",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.5
+    },
+    {
+      "id": "bun",
+      "canonical": "Bún",
+      "aliases": [
+        "bún tươi"
+      ],
+      "category": "tinh_bot",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "banh_pho",
+      "canonical": "Bánh phở",
+      "aliases": [
+        "phở tươi"
+      ],
+      "category": "tinh_bot",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "hu_tieu",
+      "canonical": "Hủ tiếu",
+      "aliases": [
+        "hủ tíu"
+      ],
+      "category": "tinh_bot",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "banh_mi",
+      "canonical": "Bánh mì",
+      "aliases": [
+        "bánh mỳ"
+      ],
+      "category": "tinh_bot",
+      "family": "count",
+      "purchaseUnit": "ổ",
+      "gramsPerUnit": 80,
+      "roundTo": 1
+    },
+    {
+      "id": "khoai_lang",
+      "canonical": "Khoai lang",
+      "aliases": [],
+      "category": "tinh_bot",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.5
+    },
+    {
+      "id": "yen_mach",
+      "canonical": "Yến mạch",
+      "aliases": [
+        "oat",
+        "bột yến mạch"
+      ],
+      "category": "tinh_bot",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 100
+    },
+    {
+      "id": "mien",
+      "canonical": "Miến",
+      "aliases": [
+        "miến dong"
+      ],
+      "category": "tinh_bot",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 100
+    },
+    {
+      "id": "dau_hu",
+      "canonical": "Đậu hũ",
+      "aliases": [
+        "đậu phụ",
+        "tàu hũ",
+        "đậu hũ trắng",
+        "tào phớ"
+      ],
+      "category": "do_kho",
+      "family": "count",
+      "purchaseUnit": "bìa",
+      "gramsPerUnit": 100,
+      "roundTo": 1
+    },
+    {
+      "id": "dau_xanh",
+      "canonical": "Đậu xanh",
+      "aliases": [],
+      "category": "do_kho",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 100
+    },
+    {
+      "id": "dau_den",
+      "canonical": "Đậu đen",
+      "aliases": [],
+      "category": "do_kho",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 100
+    },
+    {
+      "id": "dau_do",
+      "canonical": "Đậu đỏ",
+      "aliases": [],
+      "category": "do_kho",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 100
+    },
+    {
+      "id": "dau_phong",
+      "canonical": "Đậu phộng",
+      "aliases": [
+        "lạc"
+      ],
+      "category": "do_kho",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 100
+    },
+    {
+      "id": "hanh_nhan",
+      "canonical": "Hạnh nhân",
+      "aliases": [
+        "hạt hạnh nhân"
+      ],
+      "category": "do_kho",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 50
+    },
+    {
+      "id": "oc_cho",
+      "canonical": "Óc chó",
+      "aliases": [
+        "hạt óc chó"
+      ],
+      "category": "do_kho",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 50
+    },
+    {
+      "id": "hat_dieu",
+      "canonical": "Hạt điều",
+      "aliases": [],
+      "category": "do_kho",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 50
+    },
+    {
+      "id": "me",
+      "canonical": "Mè",
+      "aliases": [
+        "vừng",
+        "hạt mè"
+      ],
+      "category": "do_kho",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 50
+    },
+    {
+      "id": "tom_kho",
+      "canonical": "Tôm khô",
+      "aliases": [],
+      "category": "do_kho",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 50
+    },
+    {
+      "id": "dau_an",
+      "canonical": "Dầu ăn",
+      "aliases": [
+        "dầu thực vật",
+        "dầu",
+        "dầu thực vật"
+      ],
+      "category": "gia_vi",
+      "family": "volume",
+      "purchaseUnit": "ml",
+      "roundTo": 100,
+      "gramsPerUnit": 1
+    },
+    {
+      "id": "dau_oliu",
+      "canonical": "Dầu ô liu",
+      "aliases": [
+        "dầu oliu",
+        "olive oil"
+      ],
+      "category": "gia_vi",
+      "family": "volume",
+      "purchaseUnit": "ml",
+      "roundTo": 100
+    },
+    {
+      "id": "dau_me",
+      "canonical": "Dầu mè",
+      "aliases": [
+        "dầu vừng"
+      ],
+      "category": "gia_vi",
+      "family": "volume",
+      "purchaseUnit": "ml",
+      "roundTo": 50
+    },
+    {
+      "id": "nuoc_mam",
+      "canonical": "Nước mắm",
+      "aliases": [],
+      "category": "gia_vi",
+      "family": "volume",
+      "purchaseUnit": "ml",
+      "roundTo": 100
+    },
+    {
+      "id": "nuoc_tuong",
+      "canonical": "Nước tương",
+      "aliases": [
+        "xì dầu"
+      ],
+      "category": "gia_vi",
+      "family": "volume",
+      "purchaseUnit": "ml",
+      "roundTo": 100
+    },
+    {
+      "id": "muoi",
+      "canonical": "Muối",
+      "aliases": [
+        "muối ăn",
+        "muối i-ốt"
+      ],
+      "category": "gia_vi",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 50
+    },
+    {
+      "id": "duong",
+      "canonical": "Đường",
+      "aliases": [
+        "đường cát",
+        "đường trắng",
+        "đường ăn kiêng"
+      ],
+      "category": "gia_vi",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 50
+    },
+    {
+      "id": "tieu",
+      "canonical": "Tiêu",
+      "aliases": [
+        "hạt tiêu",
+        "tiêu xay"
+      ],
+      "category": "gia_vi",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 10
+    },
+    {
+      "id": "toi",
+      "canonical": "Tỏi",
+      "aliases": [
+        "tỏi ta",
+        "củ tỏi"
+      ],
+      "category": "gia_vi",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 50
+    },
+    {
+      "id": "hanh_tim",
+      "canonical": "Hành tím",
+      "aliases": [
+        "hành khô",
+        "củ hành tím"
+      ],
+      "category": "gia_vi",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 50
+    },
+    {
+      "id": "hanh_la",
+      "canonical": "Hành lá",
+      "aliases": [
+        "hành hoa",
+        "hành xanh"
+      ],
+      "category": "gia_vi",
+      "family": "count",
+      "purchaseUnit": "bó",
+      "gramsPerUnit": 100,
+      "roundTo": 1
+    },
+    {
+      "id": "gung",
+      "canonical": "Gừng",
+      "aliases": [
+        "củ gừng"
+      ],
+      "category": "gia_vi",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 50
+    },
+    {
+      "id": "sa",
+      "canonical": "Sả",
+      "aliases": [
+        "cây sả"
+      ],
+      "category": "gia_vi",
+      "family": "count",
+      "purchaseUnit": "cây",
+      "gramsPerUnit": 20,
+      "roundTo": 1
+    },
+    {
+      "id": "ot",
+      "canonical": "Ớt",
+      "aliases": [
+        "ớt tươi",
+        "ớt hiểm"
+      ],
+      "category": "gia_vi",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 20
+    },
+    {
+      "id": "hat_nem",
+      "canonical": "Hạt nêm",
+      "aliases": [
+        "bột nêm",
+        "bột canh"
+      ],
+      "category": "gia_vi",
+      "family": "mass",
+      "purchaseUnit": "g",
+      "roundTo": 50
+    },
+    {
+      "id": "giam",
+      "canonical": "Giấm",
+      "aliases": [
+        "giấm gạo",
+        "giấm ăn"
+      ],
+      "category": "gia_vi",
+      "family": "volume",
+      "purchaseUnit": "ml",
+      "roundTo": 100
+    },
+    {
+      "id": "bo_vien",
+      "canonical": "Bò viên",
+      "aliases": [
+        "bo vien",
+        "viên bò",
+        "chả bò viên"
+      ],
+      "category": "thit",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "thit_vien",
+      "canonical": "Thịt viên",
+      "aliases": [
+        "thit vien",
+        "chả viên",
+        "mọc viên"
+      ],
+      "category": "thit",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "bau",
+      "canonical": "Bầu",
+      "aliases": [
+        "quả bầu",
+        "bầu xanh"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "su_su",
+      "canonical": "Su su",
+      "aliases": [
+        "quả su su"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "cu_cai",
+      "canonical": "Củ cải",
+      "aliases": [
+        "củ cải trắng",
+        "cải củ"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "su_hao",
+      "canonical": "Su hào",
+      "aliases": [],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "rau_thom",
+      "canonical": "Rau thơm",
+      "aliases": [
+        "rau gia vị",
+        "rau mùi",
+        "ngò"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.05
+    },
+    {
+      "id": "rau_song",
+      "canonical": "Rau sống",
+      "aliases": [
+        "rau ăn kèm"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.05
+    },
+    {
+      "id": "rau_cu",
+      "canonical": "Rau củ",
+      "aliases": [
+        "rau củ quả",
+        "rau củ luộc"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "bac_ha",
+      "canonical": "Bạc hà",
+      "aliases": [
+        "dọc mùng"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "cai_chip",
+      "canonical": "Cải chíp",
+      "aliases": [
+        "cải thìa",
+        "cải bẹ trắng"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "cai_cuc",
+      "canonical": "Cải cúc",
+      "aliases": [
+        "tần ô"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "rau_ngot",
+      "canonical": "Rau ngót",
+      "aliases": [],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "rau_dang",
+      "canonical": "Rau đắng",
+      "aliases": [],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "rau_bi",
+      "canonical": "Rau bí",
+      "aliases": [
+        "ngọn bí"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "he",
+      "canonical": "Hẹ",
+      "aliases": [
+        "lá hẹ"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.05
+    },
+    {
+      "id": "can_tay",
+      "canonical": "Cần tây",
+      "aliases": [],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "ot_chuong",
+      "canonical": "Ớt chuông",
+      "aliases": [
+        "ớt ngọt"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "bap",
+      "canonical": "Bắp",
+      "aliases": [
+        "ngô",
+        "bắp ngọt"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "xoai",
+      "canonical": "Xoài",
+      "aliases": [
+        "xoài chín",
+        "xoài cát"
+      ],
+      "category": "trai_cay",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "vai",
+      "canonical": "Vải",
+      "aliases": [
+        "vải thiều"
+      ],
+      "category": "trai_cay",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "dua_hau",
+      "canonical": "Dưa hấu",
+      "aliases": [],
+      "category": "trai_cay",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.5
+    },
+    {
+      "id": "kiwi",
+      "canonical": "Kiwi",
+      "aliases": [],
+      "category": "trai_cay",
+      "family": "count",
+      "purchaseUnit": "quả",
+      "roundTo": 1
+    },
+    {
+      "id": "luu",
+      "canonical": "Lựu",
+      "aliases": [
+        "quả lựu"
+      ],
+      "category": "trai_cay",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "dau_tay",
+      "canonical": "Dâu tây",
+      "aliases": [],
+      "category": "trai_cay",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "thom",
+      "canonical": "Thơm",
+      "aliases": [
+        "dứa",
+        "khóm"
+      ],
+      "category": "trai_cay",
+      "family": "count",
+      "purchaseUnit": "quả",
+      "roundTo": 1,
+      "gramsPerUnit": 900
+    },
+    {
+      "id": "mit",
+      "canonical": "Mít",
+      "aliases": [
+        "múi mít"
+      ],
+      "category": "trai_cay",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "nho",
+      "canonical": "Nho",
+      "aliases": [
+        "nho ngọt",
+        "nho đỏ"
+      ],
+      "category": "trai_cay",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "thit_bam",
+      "canonical": "Thịt băm",
+      "aliases": [
+        "thịt xay",
+        "thịt heo băm"
+      ],
+      "category": "thit",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "thit_chan_gio",
+      "canonical": "Thịt chân giò",
+      "aliases": [
+        "chân giò",
+        "giò heo"
+      ],
+      "category": "thit",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "thit_ngan",
+      "canonical": "Thịt ngan",
+      "aliases": [
+        "ngan"
+      ],
+      "category": "thit",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "moc",
+      "canonical": "Mọc",
+      "aliases": [
+        "giò sống",
+        "mọc thịt"
+      ],
+      "category": "thit",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "ca",
+      "canonical": "Cá",
+      "aliases": [
+        "cá tươi"
+      ],
+      "category": "hai_san",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "ca_chep",
+      "canonical": "Cá chép",
+      "aliases": [],
+      "category": "hai_san",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "ca_bong",
+      "canonical": "Cá bống",
+      "aliases": [],
+      "category": "hai_san",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "ca_dieu_hong",
+      "canonical": "Cá diêu hồng",
+      "aliases": [
+        "diêu hồng"
+      ],
+      "category": "hai_san",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "ca_tram",
+      "canonical": "Cá trắm",
+      "aliases": [],
+      "category": "hai_san",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "rieu_cua",
+      "canonical": "Riêu cua",
+      "aliases": [
+        "gạch cua",
+        "cua xay"
+      ],
+      "category": "hai_san",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "thit_cua",
+      "canonical": "Thịt cua",
+      "aliases": [
+        "cua thịt"
+      ],
+      "category": "hai_san",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "nui",
+      "canonical": "Nui",
+      "aliases": [
+        "nui ống",
+        "macaroni"
+      ],
+      "category": "tinh_bot",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "banh_canh",
+      "canonical": "Bánh canh",
+      "aliases": [],
+      "category": "tinh_bot",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "gao_nep",
+      "canonical": "Gạo nếp",
+      "aliases": [
+        "nếp"
+      ],
+      "category": "tinh_bot",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.5
+    },
+    {
+      "id": "me_den",
+      "canonical": "Mè đen",
+      "aliases": [
+        "vừng đen"
+      ],
+      "category": "do_kho",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.05
+    },
+    {
+      "id": "hat_sen",
+      "canonical": "Hạt sen",
+      "aliases": [],
+      "category": "do_kho",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "tuong_hot",
+      "canonical": "Tương hột",
+      "aliases": [
+        "tương hạt"
+      ],
+      "category": "gia_vi",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    },
+    {
+      "id": "bi_xanh",
+      "canonical": "Bí xanh",
+      "aliases": [
+        "bí",
+        "bí đao",
+        "canh bí"
+      ],
+      "category": "rau",
+      "family": "mass",
+      "purchaseUnit": "kg",
+      "roundTo": 0.1
+    }
   ],
-
   "substitutes": {
     "_note": "Nguyên liệu thay thế tương đương khi thiếu hàng. Dùng cho cột 'Có thể thay bằng' trong Shopping List.",
-    "thit_ba_chi": ["thit_nac_heo", "uc_ga"],
-    "uc_ga": ["thit_nac_heo", "ca_basa"],
-    "ca_hoi": ["ca_thu", "ca_basa"],
-    "ca_thu": ["ca_nuc", "ca_basa"],
-    "tom": ["muc", "ca_basa"],
-    "sua_tuoi": ["sua_tach_beo", "sua_dau_nanh"],
-    "sua_tach_beo": ["sua_tuoi", "sua_dau_nanh"],
-    "gao_lut": ["gao_te"],
-    "rau_muong": ["rau_cai_ngot", "mong_toi", "cai_xanh"],
-    "mong_toi": ["rau_den", "rau_day", "rau_muong"],
-    "bong_cai_xanh": ["sup_lo_trang", "bap_cai"],
-    "dau_hu": ["trung_ga"],
-    "dau_oliu": ["dau_an"],
-    "hanh_nhan": ["oc_cho", "hat_dieu"]
+    "thit_ba_chi": [
+      "thit_nac_heo",
+      "uc_ga"
+    ],
+    "uc_ga": [
+      "thit_nac_heo",
+      "ca_basa"
+    ],
+    "ca_hoi": [
+      "ca_thu",
+      "ca_basa"
+    ],
+    "ca_thu": [
+      "ca_nuc",
+      "ca_basa"
+    ],
+    "tom": [
+      "muc",
+      "ca_basa"
+    ],
+    "sua_tuoi": [
+      "sua_tach_beo",
+      "sua_dau_nanh"
+    ],
+    "sua_tach_beo": [
+      "sua_tuoi",
+      "sua_dau_nanh"
+    ],
+    "gao_lut": [
+      "gao_te"
+    ],
+    "rau_muong": [
+      "rau_cai_ngot",
+      "mong_toi",
+      "cai_xanh"
+    ],
+    "mong_toi": [
+      "rau_den",
+      "rau_day",
+      "rau_muong"
+    ],
+    "bong_cai_xanh": [
+      "sup_lo_trang",
+      "bap_cai"
+    ],
+    "dau_hu": [
+      "trung_ga"
+    ],
+    "dau_oliu": [
+      "dau_an"
+    ],
+    "hanh_nhan": [
+      "oc_cho",
+      "hat_dieu"
+    ]
+  },
+  "unitAliases": {
+    "_note": "Bí danh đơn vị -> đơn vị chuẩn trong unitFamilies. Thêm đơn vị mới = sửa file này, không sửa code.",
+    "gam": "g",
+    "gram": "g",
+    "gr": "g",
+    "g.": "g",
+    "kilogam": "kg",
+    "kilo": "kg",
+    "kg.": "kg",
+    "lit": "l",
+    "lít": "l",
+    "l.": "l",
+    "mililit": "ml",
+    "mililít": "ml",
+    "trái": "quả",
+    "mớ": "bó",
+    "muỗng canh": "muỗng",
+    "thìa canh": "thìa"
+  },
+  "courseLabels": {
+    "_note": "Nhãn CHUNG CHUNG. parseDishSpec giữ lại phần nguyên liệu trong tên: \"Tráng miệng: ½ quả táo\" -> \"Tráng miệng: Táo\".",
+    "labels": [
+      "tráng miệng",
+      "món phụ",
+      "ăn kèm",
+      "bữa phụ",
+      "ăn nhẹ",
+      "đồ uống",
+      "nước uống",
+      "canh",
+      "món chính"
+    ]
+  },
+  "blockPhrases": {
+    "_note": "Cụm chặn khớp nhầm. Nếu tên nguyên liệu chứa cụm này thì KHÔNG được khớp sang id tương ứng. Vd \"sữa cho người tiểu đường\" không phải là mua Đường.",
+    "duong": [
+      "tiểu đường",
+      "tieu duong",
+      "đái tháo đường",
+      "dai thao duong",
+      "không đường",
+      "khong duong",
+      "ít đường",
+      "it duong"
+    ],
+    "muoi": [
+      "ít muối",
+      "it muoi",
+      "không muối",
+      "khong muoi",
+      "nhạt muối"
+    ],
+    "dau_an": [
+      "dầu gội",
+      "dau goi"
+    ],
+    "tieu": [
+      "tiểu đường",
+      "tieu duong",
+      "đái tháo đường",
+      "dai thao duong",
+      "tiểu tiện",
+      "tieu tien",
+      "tiêu hoá",
+      "tieu hoa",
+      "tiêu chảy",
+      "tieu chay"
+    ]
   }
 }

@@ -4,6 +4,7 @@
 // authenticated page repeated verbatim in the old HTML files.
 import SideNav from './SideNav';
 import Header from './Header';
+import FamilyNotices from './FamilyNotices';
 
 // `variant` scopes a page's custom layout so its CSS can target
 // `.app-shell--<variant>` / `.content--<variant>` instead of the GLOBAL
@@ -15,6 +16,8 @@ export default function PageShell({ children, variant }) {
   const contentClass = variant ? `content content--${variant}` : 'content';
   return (
     <div className={shellClass}>
+      {/* Thông báo gia đình để dành — không render gì, chỉ bắn toast 1 lần/phiên. */}
+      <FamilyNotices />
       <SideNav />
       <div className="main-wrapper">
         <Header />

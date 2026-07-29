@@ -148,14 +148,25 @@ export default function HouseholdPage() {
   }
 
   async function leaveFamily() {
+    // Xoá gia đình giờ gỡ LUÔN mọi thành viên (kể cả tài khoản thật đã tham gia),
+    // nên cảnh báo phải nói rõ con số — đây là hành động không hoàn tác được.
+    const otherCount = Math.max(0, members.length - 1);
     const msg = isOwner
-      ? t('hh.confirm_delete_family', 'Xoá gia đình của bạn? Toàn bộ thành viên phụ thuộc và thực đơn của gia đình sẽ bị xoá theo. Không thể hoàn tác.')
+      ? (otherCount > 0
+        ? tn('hh.confirm_delete_family_n', { n: otherCount },
+          `Xoá gia đình của bạn? ${otherCount} thành viên khác sẽ bị gỡ khỏi gia đình, cùng toàn bộ thực đơn và yêu cầu tham gia. Không thể hoàn tác.`)
+        : t('hh.confirm_delete_family', 'Xoá gia đình của bạn? Toàn bộ thực đơn của gia đình sẽ bị xoá theo. Không thể hoàn tác.'))
       : t('hh.confirm_leave', 'Rời khỏi gia đình này? Bạn sẽ mất quyền xem thực đơn chung của gia đình.');
     if (!window.confirm(msg)) return;
     try {
-      await post('/api/family-menu', { action: 'leave_family' });
+      const res = await post('/api/family-menu', { action: 'leave_family' });
+      const removed = Number(res?.removed_members) || 0;
       showToast(
-        isOwner ? t('hh.toast_family_deleted', 'Đã xoá gia đình.') : t('hh.toast_left', 'Đã rời khỏi gia đình.'),
+        isOwner
+          ? (removed > 0
+            ? tn('hh.toast_family_deleted_n', { n: removed }, `Đã xoá gia đình và gỡ ${removed} thành viên.`)
+            : t('hh.toast_family_deleted', 'Đã xoá gia đình.'))
+          : t('hh.toast_left', 'Đã rời khỏi gia đình.'),
         'success'
       );
       await loadHousehold();
@@ -373,7 +384,7 @@ export default function HouseholdPage() {
 
           <div className="card">
             <h3><i className="fa-solid fa-right-to-bracket" /> {t('hh.join_title_new', 'Đã có mã tham gia?')}</h3>
-            <p className="join-hint">{t('hh.join_desc', 'Nhập mã 6 chữ số do chủ hộ chia sẻ.')}</p>
+            <p className="join-hint">{t('hh.join_desc', 'Nhập mã 6 chữ số do chủ hộ chia sẻ (nếu chọn chế độ gia đình).')}</p>
             {joinPanel}
           </div>
         </>
@@ -450,7 +461,7 @@ export default function HouseholdPage() {
             <h3><i className="fa-solid fa-right-from-bracket" /> {isOwner ? t('hh.family_manage', 'Gia đình của bạn') : t('hh.membership', 'Tư cách thành viên')}</h3>
             <p className="join-hint">
               {isOwner
-                ? t('hh.leave_desc_owner', 'Bạn là chủ hộ. Muốn tham gia gia đình của người khác, bạn cần xoá gia đình này trước (chỉ được xoá khi không còn thành viên nào khác).')
+                ? t('hh.leave_desc_owner', 'Bạn là chủ hộ. Muốn tham gia gia đình của người khác, bạn cần xoá gia đình này trước — mọi thành viên sẽ tự động bị gỡ khỏi gia đình.')
                 : t('hh.leave_desc_member', 'Bạn đang là thành viên của gia đình này nên không thể tạo gia đình riêng hay sinh mã tham gia. Hãy rời gia đình nếu muốn tự tạo gia đình của mình.')}
             </p>
             <ActionButton className="btn btn-danger-soft" onClick={leaveFamily} loadingText={t('common.processing', 'Đang xử lý...')}>
@@ -535,7 +546,7 @@ export default function HouseholdPage() {
                 placeholder={GOALS_NEEDING_TARGET.has(memberForm.goal) ? '' : t('hh.f_target_weight_ph', 'Không cần cho mục tiêu này')}
               />
             </label>
-            <label>{t('hh.f_goal', 'Mục tiêu')}
+            <label>{t('hh.f_goal', 'Mục tiêu cân nặng')}
               <select value={memberForm.goal} onChange={(e) => setMemberForm((f) => ({ ...f, goal: e.target.value }))}>
                 <option value="maintain">{t('hh.goal_maintain', 'Giữ cân')}</option><option value="lose">{t('hh.goal_lose', 'Giảm cân')}</option><option value="gain">{t('hh.goal_gain', 'Tăng cân')}</option><option value="muscle">{t('hh.goal_muscle', 'Tăng cơ')}</option>
               </select>

@@ -5,6 +5,7 @@ import PageShell from '../../components/PageShell';
 import ActionButton from '../../components/ActionButton';
 import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
+import { openNearbySearch } from '../../lib-client/nearby';
 import {
   todayPlanDay, getTodayIntake, computeTodayTotals, isEaten, setEaten,
   isSkipped, setSkipped, addExtraFood, removeExtraFood, parseMacro,
@@ -30,19 +31,9 @@ function parseNum(val) {
 function escapeHtmlSc(s) {
   return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
+/** Dùng chung với trang Danh sách đi chợ — xem lib-client/nearby.js. */
 function searchFoodNearby(food) {
-  if (typeof navigator !== 'undefined' && navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude: lat, longitude: lng } = pos.coords;
-        const q = encodeURIComponent(food + ' gần đây');
-        window.open(`https://www.google.com/maps/search/${q}/@${lat},${lng},15z`, '_blank');
-      },
-      () => window.open(`https://www.google.com/search?q=${encodeURIComponent(food + ' gần đây')}`, '_blank')
-    );
-  } else {
-    window.open(`https://www.google.com/search?q=${encodeURIComponent(food + ' gần đây')}`, '_blank');
-  }
+  openNearbySearch(`${food} gần đây`);
 }
 async function optimizeImageFile(file, targetPixels = 2097152, quality = 0.9) {
   try {
