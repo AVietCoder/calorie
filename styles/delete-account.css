@@ -502,7 +502,6 @@
   margin-bottom: 28px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
 .dap-info-body {
