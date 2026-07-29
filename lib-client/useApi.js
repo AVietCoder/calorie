@@ -42,6 +42,7 @@ export function useApi() {
   const get = useCallback((path, query) => request(path, { method: 'GET', query }), [request]);
   const post = useCallback((path, body) => request(path, { method: 'POST', body }), [request]);
   const postForm = useCallback((path, formData) => request(path, { method: 'POST', body: formData, isForm: true }), [request]);
+  const del = useCallback((path, body) => request(path, { method: 'DELETE', body }), [request]);
 
   /**
    * Tải file nhị phân (Excel…) kèm bearer token.
@@ -80,7 +81,7 @@ export function useApi() {
     [token, ensureFresh]
   );
 
-  return { get, post, postForm, download, request };
+  return { get, post, postForm, del, download, request };
 }
 
 /** Ưu tiên `filename*=UTF-8''…` (có dấu) rồi mới tới `filename="…"`. */

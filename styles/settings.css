@@ -1,0 +1,180 @@
+/**
+ * settings.css — trang /settings và hộp thoại xoá tài khoản.
+ *
+ * Vùng nguy hiểm cố ý KHÔNG dùng token màu chính của app: nó phải trông khác
+ * hẳn phần còn lại để không ai lướt qua mà bấm nhầm.
+ */
+
+.set-row-desc { color: var(--text-sub); font-size: 14px; line-height: 1.6; margin: 0 0 14px; }
+
+/* ── vùng nguy hiểm ──────────────────────────────────────────────────────── */
+
+.set-danger {
+  margin-top: 26px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(231, 76, 60, .35);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.set-danger-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: rgba(231, 76, 60, .08);
+  border-bottom: 1px solid rgba(231, 76, 60, .2);
+}
+.set-danger-head i { color: var(--danger); font-size: 16px; }
+.set-danger-head h3 { margin: 0; font-size: 15px; font-weight: 800; color: var(--danger); }
+
+.set-danger-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 20px;
+}
+.set-danger-body b { display: block; font-size: 15px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
+.set-danger-body p { margin: 0; max-width: 62ch; font-size: 13.5px; line-height: 1.6; color: var(--text-sub); }
+
+.set-danger-foot {
+  margin: 0;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border-soft);
+  background: var(--surface-2);
+  font-size: 12.5px;
+  color: var(--text-sub);
+}
+
+/* Nút phá huỷ — đỏ đặc, dùng chung ở trang cài đặt và trong hộp thoại. */
+.btn-danger-solid {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--danger);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .18s ease, opacity .18s ease;
+}
+.btn-danger-solid:hover:not(:disabled) { background: #c0392b; }
+.btn-danger-solid:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ── hộp thoại xoá ───────────────────────────────────────────────────────── */
+
+.da-modal { max-width: 500px; }
+
+.da-header { border-bottom-color: rgba(231, 76, 60, .22); }
+.da-header h3 { color: var(--danger); }
+.da-icon {
+  width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: rgba(231, 76, 60, .12);
+  color: var(--danger);
+  font-size: 16px;
+  flex: 0 0 auto;
+}
+
+.da-lead { margin: 0; font-size: 14px; line-height: 1.6; color: var(--text-main); }
+
+.da-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.da-list li {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 13.5px;
+  color: var(--text-main);
+}
+.da-list li i {
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text-sub);
+  font-size: 12px;
+  flex: 0 0 auto;
+}
+
+.da-warn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--danger);
+  background: rgba(231, 76, 60, .08);
+  color: var(--danger);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.da-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--text-sub);
+}
+.da-confirm b { color: var(--danger); letter-spacing: 1px; }
+.da-confirm input {
+  padding: 11px 13px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent-gray);
+  background: var(--surface);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-align: center;
+}
+.da-confirm input:focus { outline: none; border-color: var(--danger); }
+
+.da-err {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(231, 76, 60, .1);
+  color: var(--danger);
+  font-size: 13px;
+}
+
+.da-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-soft);
+}
+
+/* ── màn thành công ──────────────────────────────────────────────────────── */
+
+.da-done { max-width: 420px; align-items: center; text-align: center; padding: 34px 28px; gap: 14px; }
+.da-done-icon {
+  width: 64px; height: 64px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: var(--sage-50);
+  color: var(--primary);
+  font-size: 30px;
+}
+.da-done h3 { margin: 0; font-size: 20px; font-weight: 800; color: var(--primary-deep); }
+.da-done p { margin: 0; font-size: 14px; line-height: 1.65; color: var(--text-sub); max-width: 44ch; }
+
+@media (max-width: 640px) {
+  .set-danger-body { flex-direction: column; align-items: stretch; }
+  .set-danger-body .btn-danger-solid { width: 100%; }
+  .da-foot { flex-direction: column-reverse; }
+  .da-foot > * { width: 100%; }
+}

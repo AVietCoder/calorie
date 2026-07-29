@@ -188,11 +188,12 @@ npx vercel dev          # chạy local (mặc định cổng 3000)
 
 Biến môi trường bắt buộc: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` (vd `qwen2.5-vl`). Tùy chọn: `LLM_VISION_MODEL`, `GEMINI_API_KEY` (vision ưu tiên), `FDC_API_KEY` (USDA), `CLOUDINARY_*` (nhật ký ảnh), `RAG_*` (tinh chỉnh RAG).
 
-Trên Supabase cần chạy các migration trong `migrations/` (đặc biệt `fulltext_search.sql` cho RAG và `nutrition_anchors.sql` cho cache dinh dưỡng), sau đó seed lớp tri thức nền:
+Trên Supabase cần chạy các migration trong `migrations/` (đặc biệt `fulltext_search.sql` cho RAG, `nutrition_anchors.sql` cho cache dinh dưỡng, và `account_deletion.sql` — **bắt buộc** để tính năng Xoá tài khoản chạy được, xem [docs/ACCOUNT-DELETION.md](docs/ACCOUNT-DELETION.md)), sau đó seed lớp tri thức nền:
 
 ```bash
 node scripts/seed-base-knowledge.mjs
-node scripts/test-nutrition.mjs     # bộ hồi quy engine dinh dưỡng: 48/48 offline
+node scripts/test-nutrition.mjs             # bộ hồi quy engine dinh dưỡng: 48/48 offline
+npm run verify:account-deletion             # soát "không bảng nào bị bỏ sót" khi xoá tài khoản
 ```
 
 Server LLM: xem `vllm-server/` — vLLM phục vụ Qwen3-VL 32B FP8, bật OpenAI-compatible API; backend chỉ cần trỏ `LLM_BASE_URL` vào đó.

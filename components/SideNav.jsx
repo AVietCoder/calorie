@@ -9,6 +9,8 @@ const ITEMS = [
   { href: '/schedule', icon: 'fa-calendar-days', key: 'nav.plan', fallback: 'PLAN' },
   { href: '/household', icon: 'fa-kitchen-set', key: 'nav.kitchen', fallback: 'KITCHEN' },
   { href: '/setup', icon: 'fa-user', key: 'nav.profile', fallback: 'PROFILE' },
+  // Cài đặt KHÔNG nằm ở đây: nó là nút bánh răng cạnh chuông trên Header —
+  // thanh bên đã đủ dài, thêm mục nữa chỉ làm loãng các mục dùng hằng ngày.
   { href: '/guide', icon: 'fa-circle-question', key: 'nav.guide', fallback: 'GUIDE' },
 ];
 

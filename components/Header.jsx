@@ -11,10 +11,17 @@ export default function Header() {
 
   return (
     <header className="header">
-      <Link href="/" className="logo"><img src="/banner.png" alt="Dr.Fit" style={{ height: 67, width: 'auto' }} /></Link>
+      <Link href="/diet-details" className="logo"><img src="/banner.png" alt="Dr.Fit" style={{ height: 67, width: 'auto' }} /></Link>
       <div id="auth-zone" className="header-tools">
         <LangSwitch />
         {isAuthenticated && <RemindersBell />}
+        {/* Cài đặt: dùng lại đúng kiểu nút của chuông (.rem-bell) để hai nút
+            cạnh nhau khớp kích thước, thay vì định nghĩa một kiểu gần giống. */}
+        {isAuthenticated && (
+          <Link href="/settings" className="rem-bell" title={t('set.title', 'Cài đặt')} aria-label={t('set.title', 'Cài đặt')}>
+            <i className="fa-solid fa-gear" />
+          </Link>
+        )}
         {isAuthenticated && (
           <div className="user-profile-nav" onClick={logout} title={t('common.logout_hint')}>
             <span className="user-name"><i className="fa-solid fa-circle-user" /> <strong>{t('common.logout')}</strong></span>
