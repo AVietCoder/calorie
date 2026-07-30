@@ -102,7 +102,7 @@ export default function TemplateDetail({ template, inUse, onBack, actions, shopp
           </div>
 
           <h2>{template.title}</h2>
-          {template.description && <p className="ml-hero-desc">{template.description}</p>}
+          {template.description && <p className="ml-hero-desc" style={{ color: 'white' }}>{template.description}</p>}
 
           <div className="ml-hero-stats">
             <span><b>{days.length}</b> {t('ml.days', 'ngày')}</span>
