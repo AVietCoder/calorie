@@ -514,7 +514,7 @@ export default function HouseholdPage() {
 
           <div className="section-title">
             <h2>{t('hh.lib_title', 'Thư viện thực đơn')}</h2>
-            <p><Link href="/menu-library">{t('hh.lib_link', 'Xem thư viện & tạo thực đơn cho gia đình →')}</Link></p>
+            <p><Link className="btn btn-primary" style={{ textDecoration: 'none' }} href="/menu-library">{t('hh.lib_link', 'Xem thư viện & tạo thực đơn cho gia đình →')}</Link></p>
           </div>
         </div>
       )}
