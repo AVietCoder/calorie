@@ -5,6 +5,7 @@
 import SideNav from './SideNav';
 import Header from './Header';
 import FamilyNotices from './FamilyNotices';
+import SurveyPrompt from './SurveyPrompt';
 
 // `variant` scopes a page's custom layout so its CSS can target
 // `.app-shell--<variant>` / `.content--<variant>` instead of the GLOBAL
@@ -18,6 +19,8 @@ export default function PageShell({ children, variant }) {
     <div className={shellClass}>
       {/* Thông báo gia đình để dành — không render gì, chỉ bắn toast 1 lần/phiên. */}
       <FamilyNotices />
+      {/* Lời mời khảo sát — tự ẩn cho tới khi người dùng đã dùng app đủ lâu. */}
+      <SurveyPrompt />
       <SideNav />
       <div className="main-wrapper">
         <Header />

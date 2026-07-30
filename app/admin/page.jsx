@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import PageShell from '../../components/PageShell';
 import ActionButton from '../../components/ActionButton';
@@ -195,6 +196,11 @@ export default function AdminPage() {
           <h1><i className="fa-solid fa-book-medical" /> {t('adm.title', 'Knowledge Base cho AI')}</h1>
           <p className="muted" dangerouslySetInnerHTML={{ __html: t('adm.desc_html', 'Tải tài liệu PDF lên để AI tham khảo khi tư vấn. Quy trình: lưu file gốc vào <strong>Supabase Storage</strong> → trích văn bản → chia đoạn → lưu vào Supabase → PostgreSQL tự tạo chỉ mục <strong>Full Text Search</strong> (tsvector + GIN + ts_rank). Không dùng embedding. Có hiệu lực ngay, không cần deploy lại.') }} />
         </div>
+        {/* Lối tắt sang báo cáo khảo sát — /admin/survey không có mục nào trong
+            thanh bên nên trước đây chỉ vào được bằng cách gõ thẳng URL. */}
+        <Link className="btn-ghost" href="/admin/survey">
+          <i className="fa-solid fa-chart-column" /> {t('adm.survey_report', 'Báo cáo khảo sát')}
+        </Link>
       </div>
 
       <div className="status-bar">

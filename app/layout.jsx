@@ -1,5 +1,6 @@
 import '../styles/both.css';
 import '../styles/toast.css';
+import '../styles/survey-prompt.css';
 import { AuthProvider } from '../lib-client/AuthContext';
 import { I18nProvider } from '../lib-client/I18nContext';
 import { ToastProvider } from '../lib-client/ToastContext';

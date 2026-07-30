@@ -1,10 +1,14 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import PageShell from '../../components/PageShell';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import SideNav from '../../components/SideNav';
+import LangSwitch from '../../components/LangSwitch';
 import { useApi } from '../../lib-client/useApi';
 import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
+import { markSurveyDone } from '../../lib-client/surveyPrompt';
 import { SURVEY_QUESTIONS, SURVEY_SECTIONS } from '../../lib/survey';
 import '../../styles/review.css';
 
@@ -92,6 +96,10 @@ function ageGroupFromBirthYear(birthYear) {
 }
 
 export default function SurveyPage() {
+  // Khảo sát mở được cả khi CHƯA đăng nhập (API cho phép gửi ẩn danh), nên
+  // thanh điều hướng phải theo trạng thái đăng nhập — giống hệt trang /guide:
+  // có tài khoản thì hiện SideNav, khách vãng lai thì ẩn đi.
+  const [authState, setAuthState] = useState('loading'); // loading | guest | user
   const [activeToc, setActiveToc] = useState('#intro');
   const [profile, setProfile] = useState(EMPTY_PROFILE);
   const [answers, setAnswers] = useState({});
@@ -101,6 +109,7 @@ export default function SurveyPage() {
   const { get, post } = useApi();
   const showToast = useToast();
   const { t } = useTranslation();
+  const router = useRouter();
 
   const toc = useMemo(
     () => [
@@ -118,6 +127,22 @@ export default function SurveyPage() {
 
   const answeredCount = Object.keys(answers).length;
   const progress = Math.round((answeredCount / SURVEY_QUESTIONS.length) * 100);
+
+  // Xác định khách / người dùng — cùng cách kiểm tra với trang /guide.
+  useEffect(() => {
+    const token = window.localStorage.getItem('calorie_ai_token');
+    if (!token) { setAuthState('guest'); return; }
+    (async () => {
+      try {
+        const res = await fetch('/api/status', { headers: { Authorization: `Bearer ${token}` } });
+        const data = await res.json();
+        if (res.ok && data.success) setAuthState('user');
+        else { window.localStorage.removeItem('calorie_ai_token'); setAuthState('guest'); }
+      } catch {
+        setAuthState('guest');
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     const token = window.localStorage.getItem('calorie_ai_token');
@@ -191,6 +216,8 @@ export default function SurveyPage() {
     setSubmitting(true);
     try {
       await post('/api/survey', { ...profile, answers, comment });
+      // Đã gửi xong thì thôi mời lại ở các phiên sau.
+      markSurveyDone();
       setSubmitted(true);
       showToast(t('review.submit_success', 'Cảm ơn bạn đã tham gia khảo sát!'), 'success');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -201,9 +228,38 @@ export default function SurveyPage() {
     }
   }
 
+  const isGuest = authState === 'guest';
+
   return (
-    <PageShell variant="review" showSideNav={false}>
-      <div className="review-layout">
+    <div className={`app-shell app-shell--review${isGuest ? ' app-shell--no-nav' : ''}`}>
+      {!isGuest && <SideNav />}
+      <div className="main-wrapper">
+        <header className="header">
+          <Link href={isGuest ? '/' : '/chat'} className="logo">
+            <img src="/banner.png" alt="Dr.Fit" style={{ height: 67, width: 'auto' }} />
+          </Link>
+          <div className="header-tools">
+            <LangSwitch />
+            {isGuest ? (
+              <div className="user-profile-nav" onClick={() => router.push('/signin')} title="Đăng nhập">
+                <span className="user-name">
+                  <i className="fa-solid fa-right-to-bracket" />
+                  <strong>{t('guide.login_to_continue', 'Đăng nhập để tiếp tục')}</strong>
+                </span>
+              </div>
+            ) : (
+              <div className="user-profile-nav" onClick={() => router.push('/diet-details')} title="Quay lại Dashboard">
+                <span className="user-name">
+                  <i className="fa-solid fa-arrow-left" />
+                  <strong>{t('guide.back_dashboard', 'Về Dashboard')}</strong>
+                </span>
+              </div>
+            )}
+          </div>
+        </header>
+
+        <main className="content content--review" id="main-content">
+          <div className="review-layout">
         <aside className="review-toc" aria-label="Nội dung khảo sát">
           <div className="review-toc__head">
             <span className="review-toc__kicker">Tiến độ của bạn</span>
@@ -376,7 +432,9 @@ export default function SurveyPage() {
             </>
           )}
         </form>
+          </div>
+        </main>
       </div>
-    </PageShell>
+    </div>
   );
 }
