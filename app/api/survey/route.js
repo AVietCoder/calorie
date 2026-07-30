@@ -186,6 +186,24 @@ function buildAdminStats(responses, answers) {
   };
 }
 
+/*
+ * Trước đây MỌI lỗi database đều báo "hãy kiểm tra đã chạy migration", kể cả khi
+ * migration đã chạy — che mất nguyên nhân thật và khiến việc chẩn đoán đi sai
+ * hướng. Giờ chỉ nói tới migration khi Postgres thực sự báo thiếu đối tượng.
+ */
+function submitErrorMessage(error) {
+  // P0001 = raise exception trong submit_survey_response(): thông báo đã dành cho
+  // người dùng cuối (vd "Cần trả lời đầy đủ 22 câu hỏi.") nên trả về nguyên văn.
+  if (error?.code === 'P0001' && error.message) return error.message;
+
+  // 42883 undefined_function · 42P01 undefined_table · PGRST202 không thấy RPC
+  if (['42883', '42P01', 'PGRST202'].includes(error?.code)) {
+    return 'Chưa thể lưu khảo sát: thiếu bảng hoặc hàm trong database. Hãy chạy lại file migrations/survey_analytics.sql.';
+  }
+
+  return 'Chưa thể lưu khảo sát do lỗi hệ thống. Vui lòng thử lại sau.';
+}
+
 export async function POST(request) {
   const body = await request.json().catch(() => null);
   const answers = normalizedAnswers(body?.answers);
@@ -217,10 +235,9 @@ export async function POST(request) {
 
   if (submitError) {
     console.error('Survey submit error:', submitError);
-    return corsJson(NextResponse, {
-      success: false,
-      error: 'Chưa thể lưu khảo sát. Hãy kiểm tra đã chạy file migrations/survey_analytics.sql.',
-    }, { status: 500 });
+    return corsJson(NextResponse, { success: false, error: submitErrorMessage(submitError) }, {
+      status: submitError.code === 'P0001' ? 400 : 500,
+    });
   }
 
   return corsJson(NextResponse, {

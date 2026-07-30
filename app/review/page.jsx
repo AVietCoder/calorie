@@ -104,7 +104,7 @@ export default function SurveyPage() {
 
   const toc = useMemo(
     () => [
-      { href: '#intro', icon: 'fa-sparkles', label: 'Giới thiệu' },
+      { href: '#intro', icon: 'fa-brands fa-readme', label: 'Giới thiệu' },
       { href: '#profile', icon: 'fa-user-group', label: 'Thông tin chung' },
       ...SURVEY_SECTIONS.map((section) => ({
         href: `#${section.id}`,

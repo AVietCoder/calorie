@@ -123,6 +123,7 @@ as $$
 declare
   v_response_id uuid;
   v_question_count integer;
+  v_answer_count integer;
   v_average numeric;
 begin
   if p_age_group not in ('under_18', '18_24', '25_34', '35_44', '45_54', '55_plus', 'prefer_not')
@@ -148,7 +149,14 @@ begin
   from public.survey_questions
   where is_active = true;
 
-  if jsonb_object_length(p_answers) <> v_question_count then
+  -- PostgreSQL KHÔNG có jsonb_object_length(); đếm khoá bằng jsonb_object_keys().
+  -- (Thân hàm plpgsql chỉ được kiểm tra cú pháp lúc CREATE, nên một hàm không tồn
+  -- tại vẫn tạo được và chỉ nổ lúc chạy.)
+  select count(*)
+    into v_answer_count
+  from jsonb_object_keys(p_answers);
+
+  if v_answer_count <> v_question_count then
     raise exception 'Cần trả lời đầy đủ % câu hỏi.', v_question_count;
   end if;
 
