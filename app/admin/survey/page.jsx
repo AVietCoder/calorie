@@ -210,7 +210,7 @@ function SurveyCharts({ data }) {
 
   return (
     <div className="survey-charts-grid">
-      <ChartPanel className="survey-chart-card--wide" title="Nhịp độ phản hồi" description="Số lượt gửi và điểm trung bình theo ngày" icon="fa-arrow-trend-up">
+      <ChartPanel title="Nhịp độ phản hồi" description="Số lượt gửi và điểm trung bình theo ngày" icon="fa-arrow-trend-up">
         <div className="survey-chart survey-chart--trend"><canvas ref={trendRef} role="img" aria-label="Biểu đồ phản hồi theo ngày" /></div>
       </ChartPanel>
       <ChartPanel title="Chất lượng theo nhóm" description="So sánh 7 khía cạnh trải nghiệm" icon="fa-bullseye">
