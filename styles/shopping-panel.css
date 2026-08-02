@@ -1,0 +1,175 @@
+/**
+ * styles/shopping-panel.css — style của <ShoppingPanel> và khối "Mua ở đâu".
+ *
+ * Vì sao tách khỏi menu-plan.css: ShoppingPanel là component DÙNG CHUNG, được
+ * render ở CẢ HAI trang — /menu-plan (kế hoạch đang chạy) và /menu-library
+ * (xem trước thực đơn trong TemplateDetail). Trước đây style nằm hết trong
+ * menu-plan.css mà /menu-library không import file đó, nên ở thư viện bảng đi
+ * chợ mất sạch định dạng: tên nguyên liệu dính liền dòng "Gộp từ...", các cột
+ * Đơn giá / Thành tiền dồn vào nhau, chip "cần ước lượng" thành chữ trơn.
+ *
+ * Cùng cách làm với day-notes.css — component dùng chung thì stylesheet cũng
+ * dùng chung, hai trang cùng import.
+ *
+ * Giữ nguyên tiền tố .mp-* để không phải sửa markup (và vì đây vẫn là "menu
+ * plan" theo nghĩa dữ liệu, chỉ là hiển thị được ở hai nơi).
+ */
+
+/* Dùng bởi cả ShoppingPanel lẫn TemplateDetail — phải nằm ở file dùng chung,
+   không thì "Chưa có món" ở thư viện mất màu. */
+.mp-empty { color: var(--text-sub); font-size: 14px; }
+
+/* ── dải tổng kết ────────────────────────────────────────────────────────── */
+
+.mp-shop-summary {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  border-radius: var(--radius);
+  border-left: 3px solid var(--primary);
+  background: var(--sage-50);
+  font-size: 13px;
+  color: var(--text-sub);
+}
+.mp-shop-summary b { color: var(--primary-deep); font-weight: 800; }
+.mp-shop-summary .warn { color: #9a6400; }
+
+.mp-shop-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  border-radius: var(--radius);
+  border: 1px dashed var(--accent-gray);
+  background: var(--surface-2);
+  font-size: 13px;
+  color: var(--text-sub);
+  line-height: 1.6;
+}
+.mp-shop-text p { margin: 0; flex: 1; word-break: break-word; }
+
+/* Thu gọn còn 2 dòng; -webkit-line-clamp vẫn là cách duy nhất mọi trình duyệt
+   hiện hành đều hiểu, nên khai kèm cả thuộc tính chuẩn `line-clamp`. */
+.mp-shop-text:not(.is-open) p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.mp-shop-text-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+.mp-shop-text-toggle {
+  padding: 4px 6px;
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.mp-shop-text-toggle:hover { text-decoration: underline; }
+
+/* ── bảng nguyên liệu theo nhóm ──────────────────────────────────────────── */
+
+.mp-shop-group { margin-bottom: 22px; }
+.mp-shop-group h4 {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--primary-deep);
+  margin: 0 0 8px;
+}
+
+/* Bảng THẬT SỰ có viền — bản cũ trỏ vào #shopping-list-body (selector chết). */
+.mp-shop-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.mp-shop-table th {
+  text-align: left;
+  padding: 9px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  border-bottom: 1px solid var(--accent-gray);
+}
+.mp-shop-table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-main);
+  vertical-align: top;
+}
+.mp-shop-table tr:last-child td { border-bottom: none; }
+.mp-shop-table th:nth-child(n+2),
+.mp-shop-table td:nth-child(n+2) { text-align: right; white-space: nowrap; }
+.mp-shop-table th:first-child,
+.mp-shop-table td:first-child { text-align: left; white-space: normal; }
+
+/* display:block — nếu thiếu, "Gộp từ: ..." dính liền ngay sau tên nguyên liệu
+   thành "Bắp cảiGộp từ: Canh bắp cải cuộn thịt". */
+.mp-shop-alias { display: block; font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+/* Giá khai tay trong Excel — phân biệt với giá tra bảng tự động. */
+.mp-shop-manual-price {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--sage-50);
+  color: var(--primary-deep);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mp-est-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(243, 156, 18, .12);
+  color: #9a6400;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ── ô tick "đã mua" ─────────────────────────────────────────────────────── */
+
+.mp-shop-table th.mp-shop-tick,
+.mp-shop-table td.mp-shop-tick { width: 34px; text-align: center; padding-right: 0; }
+.mp-shop-table td.mp-shop-tick input { width: 15px; height: 15px; accent-color: var(--primary); cursor: pointer; }
+.mp-shop-table tr.is-bought td { opacity: .45; text-decoration: line-through; }
+.mp-shop-table tr.is-bought td.mp-shop-tick { opacity: 1; text-decoration: none; }
+
+/* ── gợi ý nơi mua ───────────────────────────────────────────────────────── */
+
+.mp-nearby { margin-top: 8px; }
+.mp-nearby h4 { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: var(--text-main); margin: 0 0 4px; }
+.mp-nearby h4 i { color: var(--primary); }
+.mp-nearby p { font-size: 13px; color: var(--text-sub); margin: 0 0 12px; }
+.mp-nearby-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.mp-nearby-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent-gray);
+  background: var(--surface);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .18s ease;
+}
+.mp-nearby-btn:hover { border-color: var(--primary); color: var(--primary-deep); transform: translateY(-1px); }
+.mp-nearby-btn i { color: var(--primary); }
+
+@media (max-width: 640px) {
+  .mp-shop-table { font-size: 12.5px; }
+  .mp-shop-table th, .mp-shop-table td { padding: 8px 7px; }
+}

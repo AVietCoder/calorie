@@ -227,6 +227,8 @@ async function persistTemplateDays(templateId, days) {
               // Không ép mặc định 'g'/0: nguồn không khai thì để null.
               grams: i.grams ?? null,
               unit: i.unit ?? null,
+              // Giá nguyên liệu: nguyên văn, '' nếu trống.
+              price: asPriceText(i.price),
               tags: i.tags || [],
             })));
           if (ingErr) throw ingErr;

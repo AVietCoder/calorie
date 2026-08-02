@@ -18,6 +18,7 @@ const qty = (v) => (v == null || !Number.isFinite(Number(v)) ? '' : Number(v).to
  */
 export default function ShoppingPanel({ items, groups, totals, text, error, loading, checkable, scope, t }) {
   const [copied, setCopied] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const { has, toggle } = useChecklist(scope);
 
   async function copyText() {
@@ -40,6 +41,16 @@ export default function ShoppingPanel({ items, groups, totals, text, error, load
 
   const shown = groups?.length ? groups : [{ key: 'all', label: '', items }];
 
+  /*
+   * Xem trước thực đơn trong thư viện thường CHƯA có giá nào — khi đó hai cột
+   * "Đơn giá"/"Thành tiền" chỉ toàn dấu "-" trải dài, vừa chiếm chỗ vừa làm
+   * bảng trông như bị hỏng. Chỉ giấu khi TOÀN BỘ danh sách không có giá; còn
+   * một mục có giá thì vẫn giữ cột để không mất thông tin.
+   */
+  const hasAnyPrice = items.some(
+    (i) => i.unit_price != null || i.line_total != null || i.manual_price
+  );
+
   return (
     <>
       {totals && (
@@ -57,13 +68,22 @@ export default function ShoppingPanel({ items, groups, totals, text, error, load
         </div>
       )}
 
+      {/* Chuỗi này để CHÉP đi (nhắn Zalo, ghi ra giấy) chứ không phải để đọc:
+          53 nguyên liệu nối bằng dấu "/" thành một khối chữ dài choán hết thẻ,
+          đẩy bảng thật xuống dưới màn hình. Mặc định thu gọn, nút Chép vẫn luôn
+          hiện vì đó mới là việc người dùng cần ở đây. */}
       {text && (
-        <div className="mp-shop-text">
+        <div className={`mp-shop-text${expanded ? ' is-open' : ''}`}>
           <p>{text}</p>
-          <button type="button" className="btn btn-secondary" onClick={copyText}>
-            <i className={`fa-regular ${copied ? 'fa-circle-check' : 'fa-copy'}`} />{' '}
-            {copied ? t('mp.copied', 'Đã chép') : t('mp.copy', 'Chép')}
-          </button>
+          <div className="mp-shop-text-actions">
+            <button type="button" className="btn btn-secondary" onClick={copyText}>
+              <i className={`fa-regular ${copied ? 'fa-circle-check' : 'fa-copy'}`} />{' '}
+              {copied ? t('mp.copied', 'Đã chép') : t('mp.copy', 'Chép')}
+            </button>
+            <button type="button" className="mp-shop-text-toggle" onClick={() => setExpanded((v) => !v)}>
+              {expanded ? t('mp.collapse', 'Thu gọn') : t('mp.expand', 'Xem đầy đủ')}
+            </button>
+          </div>
         </div>
       )}
 
@@ -76,8 +96,8 @@ export default function ShoppingPanel({ items, groups, totals, text, error, load
                 {checkable && <th className="mp-shop-tick" aria-label={t('mp.bought', 'Đã mua')} />}
                 <th>{t('mp.ingredient', 'Nguyên liệu')}</th>
                 <th>{t('mp.qty', 'Số lượng')}</th>
-                <th>{t('mp.unit_price', 'Đơn giá')}</th>
-                <th>{t('mp.line_total', 'Thành tiền')}</th>
+                {hasAnyPrice && <th>{t('mp.unit_price', 'Đơn giá')}</th>}
+                {hasAnyPrice && <th>{t('mp.line_total', 'Thành tiền')}</th>}
               </tr>
             </thead>
             <tbody>
@@ -107,8 +127,17 @@ export default function ShoppingPanel({ items, groups, totals, text, error, load
                       ? <span className="mp-est-chip">{t('mp.need_estimate', 'cần ước lượng')}</span>
                       : `${qty(it.qty)} ${it.unit || ''}`}
                   </td>
-                  <td>{money(it.unit_price)}</td>
-                  <td>{money(it.line_total)}</td>
+                  {/* Giá khai trong Excel hiện NGUYÊN VĂN (có thể là một khoảng
+                      như "12.000đ -> 15.000đ"); không có thì lùi về giá tra bảng
+                      đã định dạng. */}
+                  {hasAnyPrice && (
+                    <td>
+                      {it.manual_price
+                        ? <span className="mp-shop-manual-price" title={t('mp.price_from_excel', 'Giá khai trong file Excel')}>{it.manual_price}</span>
+                        : money(it.unit_price)}
+                    </td>
+                  )}
+                  {hasAnyPrice && <td>{money(it.line_total)}</td>}
                 </tr>
                 );
               })}

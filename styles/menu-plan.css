@@ -168,7 +168,6 @@
 .mp-dish-chip::before { content: '·'; color: var(--primary); font-weight: 800; margin-right: 7px; }
 .mp-more { font-size: 12px; font-weight: 600; color: var(--primary); margin-top: 2px; }
 
-.mp-empty { color: var(--text-sub); font-size: 14px; }
 
 /* Vỏ modal (.mp-modal*) nằm ở styles/modal.css — /menu-library dùng chung. */
 
@@ -226,114 +225,14 @@
   margin-top: 4px;
 }
 
-/* ── danh sách đi chợ ────────────────────────────────────────────────────── */
+/* Danh sách đi chợ + "Mua ở đâu" đã chuyển sang styles/shopping-panel.css
+   (component dùng chung cho cả /menu-plan lẫn /menu-library). */
 
-.mp-shop-summary {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  padding: 14px 18px;
-  margin-bottom: 18px;
-  border-radius: var(--radius);
-  border-left: 3px solid var(--primary);
-  background: var(--sage-50);
-  font-size: 13px;
-  color: var(--text-sub);
-}
-.mp-shop-summary b { color: var(--primary-deep); font-weight: 800; }
-.mp-shop-summary .warn { color: #9a6400; }
-
-.mp-shop-text {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px 16px;
-  margin-bottom: 18px;
-  border-radius: var(--radius);
-  border: 1px dashed var(--accent-gray);
-  background: var(--surface-2);
-  font-size: 13px;
-  color: var(--text-sub);
-  line-height: 1.6;
-}
-.mp-shop-text p { margin: 0; flex: 1; word-break: break-word; }
-
-.mp-shop-group { margin-bottom: 22px; }
-.mp-shop-group h4 {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--primary-deep);
-  margin: 0 0 8px;
-}
-
-/* Bảng THẬT SỰ có viền — bản cũ trỏ vào #shopping-list-body (selector chết). */
-.mp-shop-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-.mp-shop-table th {
-  text-align: left;
-  padding: 9px 12px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .6px;
-  text-transform: uppercase;
-  color: var(--text-sub);
-  border-bottom: 1px solid var(--accent-gray);
-}
-.mp-shop-table td {
-  padding: 11px 12px;
-  border-bottom: 1px solid var(--border-soft);
-  color: var(--text-main);
-  vertical-align: top;
-}
-.mp-shop-table tr:last-child td { border-bottom: none; }
-.mp-shop-table th:nth-child(n+2),
-.mp-shop-table td:nth-child(n+2) { text-align: right; white-space: nowrap; }
-.mp-shop-table th:first-child,
-.mp-shop-table td:first-child { text-align: left; white-space: normal; }
-.mp-shop-alias { display: block; font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-
-.mp-est-chip {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(243, 156, 18, .12);
-  color: #9a6400;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-/* ── gợi ý nơi mua ───────────────────────────────────────────────────────── */
-
-.mp-nearby { margin-top: 8px; }
-.mp-nearby h4 { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: var(--text-main); margin: 0 0 4px; }
-.mp-nearby h4 i { color: var(--primary); }
-.mp-nearby p { font-size: 13px; color: var(--text-sub); margin: 0 0 12px; }
-.mp-nearby-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-.mp-nearby-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: var(--radius);
-  border: 1px solid var(--accent-gray);
-  background: var(--surface);
-  color: var(--text-main);
-  font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all .18s ease;
-}
-.mp-nearby-btn:hover { border-color: var(--primary); color: var(--primary-deep); transform: translateY(-1px); }
-.mp-nearby-btn i { color: var(--primary); }
 
 @media (max-width: 640px) {
   .mp-toolbar { align-items: stretch; }
   .mp-actions { justify-content: space-between; }
   .mp-days { grid-template-columns: 1fr; }
-  .mp-shop-table { font-size: 12.5px; }
-  .mp-shop-table th, .mp-shop-table td { padding: 8px 7px; }
 }
 
 /* Chi phí dự kiến — hiện ở thẻ ngày, đầu modal và từng bữa. */
@@ -350,8 +249,3 @@
 .mp-meal-cost { color: var(--gold, #B8975A); font-weight: 700; }
 
 /* Cột tick "đã mua" — chỉ hiện khi ShoppingPanel nhận prop checkable. */
-.mp-shop-table th.mp-shop-tick,
-.mp-shop-table td.mp-shop-tick { width: 34px; text-align: center; padding-right: 0; }
-.mp-shop-table td.mp-shop-tick input { width: 15px; height: 15px; accent-color: var(--primary); cursor: pointer; }
-.mp-shop-table tr.is-bought td { opacity: .45; text-decoration: line-through; }
-.mp-shop-table tr.is-bought td.mp-shop-tick { opacity: 1; text-decoration: none; }

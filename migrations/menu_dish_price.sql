@@ -25,3 +25,15 @@ alter table public.menu_template_dishes
 -- món gốc trong thư viện lúc sinh kế hoạch / đổi món.
 alter table public.plan_dishes
   add column if not exists price text not null default '';
+
+-- ── Giá NGUYÊN LIỆU ─────────────────────────────────────────────────────────
+-- Cùng quy tắc: chuỗi nguyên văn, tuỳ chọn, bỏ trống thì ''.
+--
+-- Khác với `ingredient_prices` (bảng giá tự động theo vùng): đây là giá do
+-- người nhập thực đơn tự khai trong file Excel, gắn với ĐÚNG nguyên liệu của
+-- đúng món đó. Khi có, danh sách đi chợ hiển thị giá này thay cho giá tra bảng.
+alter table public.menu_template_dish_ingredients
+  add column if not exists price text not null default '';
+
+alter table public.plan_dish_ingredients
+  add column if not exists price text not null default '';

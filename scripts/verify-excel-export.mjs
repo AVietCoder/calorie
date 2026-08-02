@@ -83,8 +83,19 @@ function buildFakeModel() {
         for (const k of ['calories', 'protein', 'fat', 'carbs', 'fiber', 'sugar', 'sodium']) {
           totals[k] = Math.round((totals[k] + d[k]) * 10) / 10;
         }
-        for (const [iname, qty, unit] of INGREDIENTS[name] || []) {
-          ingredientRows.push({ name: iname, grams: qty, unit });
+        // Phủ cả ba nhánh giá nguyên liệu:
+        //   idx 0 → một con số  → được ưu tiên, tính ra Thành tiền
+        //   idx 1 → một khoảng  → chỉ hiển thị, KHÔNG tự chọn số để nhân
+        //   còn lại → bỏ trống  → lùi về bảng giá tự động
+        const MANUAL = ['45.000đ', '20.000đ -> 30.000đ'];
+        d.ingredients = (INGREDIENTS[name] || []).map(([iname, q, unit], idx) => ({
+          name: iname,
+          grams: q,
+          unit,
+          price: MANUAL[idx] || '',
+        }));
+        for (const ing of d.ingredients) {
+          ingredientRows.push({ name: ing.name, grams: ing.grams, unit: ing.unit, price: ing.price });
         }
       }
       meals[mt] = { dishes: cell, text: cell.map((d) => `${d.name} (${d.grams} g · ${d.calories} kcal)`).join('\n') };

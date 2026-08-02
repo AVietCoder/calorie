@@ -23,6 +23,7 @@ import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
 import '../../styles/modal.css';
 import '../../styles/menu-plan.css';
+import '../../styles/shopping-panel.css';
 import '../../styles/day-notes.css';
 
 export default function MenuPlanPage() {
