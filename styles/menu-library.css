@@ -229,6 +229,12 @@
 .ml-meal ul { margin: 0; padding-left: 16px; }
 .ml-meal li { font-size: 13px; color: var(--text-main); line-height: 1.55; }
 .ml-meal li small { color: var(--text-dim); }
+/* Giá tiền: chip riêng để không lẫn với phần "· 450 kcal" ngay cạnh. */
+.ml-dish-price {
+  display: inline-block; margin-left: 8px; padding: 1px 8px;
+  background: var(--sage-50, #eef5f0); border-radius: 999px;
+  color: var(--primary) !important; font-weight: 600; white-space: nowrap;
+}
 
 @media (max-width: 640px) {
   .ml-grid, .ml-days { grid-template-columns: 1fr; }

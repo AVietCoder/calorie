@@ -8,7 +8,7 @@ và `knowledge/{excel-theme,excel-template-profiles,ingredient-catalog,ingredien
 ## 1. Vấn đề
 
 Trước bản này hệ thống **chưa có** chức năng xuất thực đơn ra Excel. Chỗ duy nhất
-dùng Excel là nút tải file mẫu trống 16 cột ở `/menu-library` và bộ đọc file đó.
+dùng Excel là nút tải file mẫu trống ở `/menu-library` (nay là `drfit-mau-nhap-thuc-don.xlsx`, 17 cột) và bộ đọc file đó.
 Kế hoạch tuần và danh sách đi chợ chỉ hiển thị trên web.
 
 Yêu cầu: file sinh ra phải **không phân biệt được** với 43 file thực đơn mẫu do
@@ -194,7 +194,7 @@ Thứ tự ưu tiên trong `roundForPurchase`:
 ## 10. Bộ nhập thông minh
 
 ```
-Upload → read-sheet.js → mẫu 16 cột? ──có──▶ parser cũ (giữ nguyên)
+Upload → read-sheet.js → đúng mẫu chuẩn? ──có──▶ parser cũ (giữ nguyên)
                               │không
                               ▼
                      analyze-layout.js  (5 chiến lược, tự chấm điểm)
@@ -249,7 +249,7 @@ tạo ra món không tồn tại. Mọi toạ độ ngoài lưới đều bị l
 
 | Thứ | Trạng thái |
 |---|---|
-| Mẫu 16 cột cũ | Vẫn nhận diện và xử lý y hệt (`isLegacyFlatFormat` → `parseLegacyFlat`) |
+| Mẫu chuẩn (16 cột cũ) | Vẫn nhận diện y hệt; cột `price` là tuỳ chọn nên file cũ nhập bình thường, giá ra chuỗi rỗng |
 | `buildShoppingList()` | Giữ nguyên `{ name, total_qty, unit }`; mọi trường mới là **bổ sung** |
 | Bảng DB cũ | Không sửa/xoá cột nào; migration mới hoàn toàn additive |
 | Chưa chạy migration | `pricing.js` lùi về bảng tĩnh, `buildShoppingList` lùi về bộ cột cũ |

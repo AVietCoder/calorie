@@ -47,6 +47,8 @@ function DayBlock({ day, t }) {
                 <li key={d.id}>
                   {d.name}
                   {Number(d.calories) > 0 && <small> · {Math.round(d.calories)} kcal</small>}
+                  {/* Giá tiền nhập từ Excel — in nguyên văn, không định dạng lại. */}
+                  {String(d.price || '').trim() && <small className="ml-dish-price">{d.price}</small>}
                 </li>
               ))}
             </ul>

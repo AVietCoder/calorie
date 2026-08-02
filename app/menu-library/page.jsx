@@ -178,7 +178,7 @@ export default function MenuLibraryPage() {
   // style, và giữ hai nơi định nghĩa cột là nguồn gốc của lệch chuẩn.
   async function downloadTemplate() {
     try {
-      await download('/api/family-menu', { resource: 'import-template' }, 'calorie-ai-mau-nhap-thuc-don.xlsx');
+      await download('/api/family-menu', { resource: 'import-template' }, 'drfit-mau-nhap-thuc-don.xlsx');
       showToast(t('ml.template_downloaded', 'Đã tải file mẫu — điền theo mẫu rồi tải lên nhé!'), 'success');
     } catch (e) {
       showToast(e.message, 'error');

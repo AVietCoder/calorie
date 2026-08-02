@@ -85,7 +85,15 @@ export default function DayDetailModal({ day, auditByDish, cost, readOnly, onClo
                   const dishKcal = num(dish.calories);
                   return (
                     <div className={`mp-dish-row${audits.length ? ' has-audit' : ''}`} key={dish.id}>
-                      <span className="mp-dish-name">{dish.name}</span>
+                      <span className="mp-dish-name">
+                        {dish.name}
+                        {/* Giá tiền theo món (nhập từ Excel) — in nguyên văn.
+                            Khác với chi phí đi chợ ở ShoppingPanel: cái đó tính
+                            từ bảng giá nguyên liệu, cái này là giá người nhập. */}
+                        {String(dish.price || '').trim() && (
+                          <small className="mp-dish-price">{dish.price}</small>
+                        )}
+                      </span>
                       <span className="mp-dish-meta">
                         {[
                           dishKcal != null ? `${Math.round(dishKcal)} kcal` : null,

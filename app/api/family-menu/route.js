@@ -80,6 +80,15 @@ const asList = (v) =>
     .map((s) => s.trim())
     .filter(Boolean);
 
+/**
+ * Giá tiền món ăn — KHÔNG ép kiểu, KHÔNG chuyển đổi, chỉ trim.
+ *
+ * Giá trị là một khoảng giá do người dùng gõ ("15.000đ -> 18.000đ", "25k ->
+ * 30k") và phải xuất Excel lại đúng nguyên văn, nên mọi thao tác parse/format
+ * đều là sai. Cắt ở 120 ký tự để một ô Excel hỏng không thổi phồng hàng DB.
+ */
+const asPriceText = (v) => asText(v).slice(0, 120);
+
 const ok = (data, status = 200) => corsJson(NextResponse, { success: true, data }, { status });
 const fail = (status, error) => corsJson(NextResponse, { success: false, error: String(error?.message || error) }, { status });
 
@@ -190,6 +199,8 @@ async function persistTemplateDays(templateId, days) {
           .insert({
             template_meal_id: mealRow.id,
             name: dish.name,
+            // Giá tiền: lưu nguyên văn chuỗi người nhập (khoảng giá), '' nếu trống.
+            price: asPriceText(dish.price),
             base_grams: dish.base_grams,
             calories: dish.calories,
             protein: dish.protein,

@@ -63,6 +63,9 @@ function buildFakeModel() {
           mealType: mt,
           mealLabel: { breakfast: 'Bữa sáng', lunch: 'Bữa trưa', dinner: 'Bữa tối', snack: 'Bữa phụ' }[mt],
           name,
+          // Khoảng giá dạng chữ — cố tình để một số món trống để kiểm tra cột
+          // "Giá tiền" chịu được ô rỗng mà không rơi ra "undefined".
+          price: kcal >= 200 ? `${fmtVnd(kcal * 80)} -> ${fmtVnd(kcal * 110)}` : '',
           grams,
           calories: kcal,
           protein: Math.round(kcal * 0.05 * 10) / 10,
@@ -193,6 +196,11 @@ function assert(cond, label, onFail) {
     console.log(`   ✘ ${label}`);
     onFail?.();
   }
+}
+
+/** 36000 → "36.000đ" — chỉ để dựng dữ liệu giả cho kiểm thử. */
+function fmtVnd(n) {
+  return `${Math.round(n / 1000) * 1000}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + 'đ';
 }
 
 function parseArgs(argv) {
