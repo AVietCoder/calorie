@@ -9,6 +9,7 @@
  * gánh theo payload ảnh.
  */
 import { useEffect, useRef, useState } from 'react';
+import { scopeOptions } from '../../lib/family-menu/scope-labels';
 import { MENU_CATEGORIES, getCategory } from '../../lib/family-menu/menu-categories';
 
 const MAX_MB = 5;
@@ -16,7 +17,7 @@ const ACCEPT = 'image/jpeg,image/png,image/webp';
 
 const listToText = (v) => (Array.isArray(v) ? v.join(', ') : (v || ''));
 
-export default function TemplateEditor({ template, isAdmin, onCancel, onSave, onDelete, t, tn }) {
+export default function TemplateEditor({ template, household, isAdmin, onCancel, onSave, onDelete, t, tn }) {
   const [form, setForm] = useState(() => ({
     title: template.title || '',
     description: template.description || '',
@@ -152,8 +153,9 @@ export default function TemplateEditor({ template, isAdmin, onCancel, onSave, on
           <label className="ml-editor-field">
             {t('ml.f_scope', 'Phạm vi')}
             <select value={form.visibility} onChange={set('visibility')}>
-              <option value="public">{t('ml.scope_public', 'Công khai (mặc định)')}</option>
-              <option value="private">{t('ml.scope_private', 'Chỉ gia đình tôi')}</option>
+              {scopeOptions(household?.mode, t).map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
             </select>
           </label>
 

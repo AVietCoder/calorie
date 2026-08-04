@@ -1,6 +1,110 @@
 /* menu-library.css — Thư viện thực đơn: filter chip, grid card, upload form. */
 
 .tag-filter { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+
+/* ── Tab: Thư viện / Thêm menu ───────────────────────────────────────────── */
+
+.ml-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 22px;
+  padding: 5px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.ml-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  color: var(--text-sub);
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+}
+.ml-tab:hover { color: var(--primary-deep); }
+.ml-tab.active {
+  background: var(--surface);
+  color: var(--primary-deep);
+  box-shadow: 0 2px 8px rgba(15, 40, 28, .1);
+}
+.ml-tab i { font-size: 13px; }
+/* Badge đếm — dùng chung cho tab và chip bộ lọc nguồn. */
+.ml-tab em,
+.ml-origin-filter .tag-chip em {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--sage-100, #dbeae1);
+  color: var(--primary-deep);
+  font-size: 11.5px;
+  font-style: normal;
+  font-weight: 700;
+}
+.ml-origin-filter .tag-chip.selected em { background: rgba(255, 255, 255, .3); color: inherit; }
+
+/* ── Ô tìm kiếm ──────────────────────────────────────────────────────────── */
+
+.ml-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.ml-search > i {
+  position: absolute;
+  left: 16px;
+  color: var(--text-dim);
+  font-size: 14px;
+  pointer-events: none;
+}
+.ml-search input {
+  width: 100%;
+  padding: 12px 42px;
+  border-radius: 12px;
+  border: 1px solid var(--accent-gray);
+  background: var(--surface);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 14.5px;
+}
+.ml-search input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(88, 166, 119, .14);
+}
+/* Nút xoá mặc định của <input type=search> xấu và lệch — dùng nút riêng. */
+.ml-search input::-webkit-search-cancel-button { display: none; }
+.ml-search-clear {
+  position: absolute;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 28px; height: 28px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.ml-search-clear:hover { background: var(--surface-2); color: var(--text-main); }
+
+.ml-no-result {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 28px 4px;
+  color: var(--text-sub);
+  text-align: center;
+}
 .tag-chip {
   padding: 7px 14px;
   border-radius: 999px;
@@ -152,6 +256,25 @@
 }
 .ml-cover i { font-size: 34px; color: rgba(255,255,255,.92); }
 .ml-cover img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Logo đơn vị phát hành: đặt trên tấm nền trắng bo góc.
+   Logo nguồn có đủ kiểu nền (trong suốt, trắng, màu) nên thả thẳng lên gradient
+   sẽ chỗ chìm chỗ chói. `contain` để không cắt mất chữ trong logo. */
+.ml-source-logo {
+  display: grid;
+  place-items: center;
+  width: 76%;
+  max-width: 190px;
+  height: 62px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 4px 14px rgba(15, 40, 28, .16);
+}
+.ml-source-logo img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+}
 
 .ml-badge {
   position: absolute;
@@ -380,6 +503,18 @@
 .ml-hero-body { flex: 1 1 320px; min-width: 0; }
 
 .ml-hero-top { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+/* Logo nguồn ở hero: nền trắng vì logo có đủ kiểu nền, thả thẳng lên gradient
+   thì logo nền tối sẽ chìm. */
+.ml-hero-logo {
+  display: inline-grid;
+  place-items: center;
+  height: 30px;
+  padding: 3px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .95);
+}
+.ml-hero-logo img { max-height: 24px; max-width: 120px; object-fit: contain; display: block; }
+
 .ml-hero-cat,
 .ml-hero-badge {
   display: inline-flex;
@@ -593,6 +728,132 @@
 .ml-builder-tab.active em { background: rgba(255, 255, 255, .28); }
 
 .ml-builder-day { display: flex; flex-direction: column; gap: 12px; }
+
+/* ── Nhập tay: chọn chế độ ───────────────────────────────────────────────── */
+
+.ml-mode-switch {
+  display: flex;
+  gap: 5px;
+  margin: 14px 0 10px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  width: fit-content;
+  max-width: 100%;
+}
+.ml-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 9px;
+  background: none;
+  color: var(--text-sub);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .16s ease, color .16s ease;
+}
+.ml-mode-btn.active { background: var(--surface); color: var(--primary-deep); box-shadow: 0 1px 5px rgba(15,40,28,.1); }
+
+.ml-builder-meal { display: flex; flex-direction: column; gap: 6px; }
+.ml-builder-meal-name { font-size: 13px; font-weight: 700; color: var(--text-sub); }
+.ml-builder-meal textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent-gray);
+  background: var(--surface);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.55;
+  resize: vertical;
+}
+.ml-builder-meal textarea:focus { outline: none; border-color: var(--primary); }
+
+/* ── Xem trước nguyên liệu đã tách được ──────────────────────────────────── */
+
+.ml-parse-preview { list-style: none; margin: 2px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.ml-parse-preview li {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-sub);
+}
+.ml-parse-preview li b { color: var(--text-main); font-weight: 600; flex-shrink: 0; }
+.ml-parse-preview li.ok i { color: var(--primary); }
+.ml-parse-preview li.plain i { color: var(--text-dim); }
+.ml-parse-preview li span { min-width: 0; word-break: break-word; }
+
+/* ── Soạn thảo chi tiết từng nguyên liệu ─────────────────────────────────── */
+
+.ml-detail-editor { display: flex; flex-direction: column; gap: 10px; }
+.ml-detail-dish {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-soft);
+  background: var(--surface-2);
+}
+.ml-detail-dish-head { display: flex; gap: 8px; }
+.ml-detail-dish-head input { flex: 1; font-weight: 600; }
+.ml-detail-ing { display: grid; grid-template-columns: 1fr 84px 74px 32px; gap: 6px; }
+.ml-detail-dish input {
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent-gray);
+  background: var(--surface);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 13.5px;
+}
+.ml-detail-dish input:focus { outline: none; border-color: var(--primary); }
+.ml-detail-dish-head button,
+.ml-detail-ing button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  border: 1px solid var(--accent-gray);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.ml-detail-dish-head button:hover,
+.ml-detail-ing button:hover { border-color: var(--danger); color: var(--danger); }
+
+.ml-detail-add-ing,
+.ml-detail-add-dish {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 6px 12px;
+  border: 1px dashed var(--accent-gray);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--primary);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ml-detail-add-ing:hover,
+.ml-detail-add-dish:hover { border-color: var(--primary); background: var(--sage-50); }
+
+@media (max-width: 560px) {
+  .ml-detail-ing { grid-template-columns: 1fr 68px 60px 30px; }
+}
 .ml-builder-count { font-size: 13px; font-weight: 700; color: var(--text-sub); }
 
 @media (max-width: 640px) {

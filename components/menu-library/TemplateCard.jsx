@@ -6,11 +6,23 @@
  * cũng có bìa ngay, không cần file ảnh. `image_url` do admin tải lên sẽ đè lên.
  */
 import { getCategory } from '../../lib/family-menu/menu-categories';
+import { sourceLogo } from '../../lib/family-menu/source-logos';
 
 export default function TemplateCard({ item, onOpen, onEdit, t }) {
   const tpl = item.template;
   const cat = getCategory(tpl.category);
   const dayCount = item.dayCount ?? tpl.day_count ?? null;
+
+  /*
+   * Bìa thẻ, theo thứ tự ưu tiên:
+   *   1. ảnh admin tự tải lên
+   *   2. logo ĐƠN VỊ phát hành (thực đơn hệ thống) — để phân biệt nguồn thay vì
+   *      thẻ nào cũng một icon danh mục giống hệt nhau
+   *   3. icon danh mục
+   * Nguồn chưa có logo thì sourceLogo() trả null → rơi xuống (3); gán đại một
+   * logo khác là ghi sai đơn vị phát hành.
+   */
+  const logo = tpl.image_url ? null : sourceLogo(tpl.source_name);
 
   return (
     // Lớp bọc tồn tại vì nút Sửa KHÔNG được nằm trong <button> của thẻ —
@@ -25,9 +37,13 @@ export default function TemplateCard({ item, onOpen, onEdit, t }) {
         className="ml-cover"
         style={{ '--ml-grad': `linear-gradient(135deg, ${cat.from}, ${cat.to})` }}
       >
-        {tpl.image_url
-          ? <img src={tpl.image_url} alt="" />
-          : <i className={`fa-solid ${cat.icon}`} aria-hidden="true" />}
+        {tpl.image_url && <img src={tpl.image_url} alt="" />}
+        {!tpl.image_url && logo && (
+          <span className="ml-source-logo">
+            <img src={logo} alt={tpl.source_name || ''} loading="lazy" />
+          </span>
+        )}
+        {!tpl.image_url && !logo && <i className={`fa-solid ${cat.icon}`} aria-hidden="true" />}
 
         {item.in_use && (
           <span className="ml-badge">

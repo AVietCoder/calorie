@@ -105,11 +105,25 @@
   gap: 18px;
 }
 
+/* Mỗi ngày một sắc độ riêng — vẫn nằm trong dải xanh/đất của thương hiệu, chỉ
+   xoay tông để 7 thẻ cạnh nhau không nhoè vào nhau. `--d-ink` là màu chữ tiêu
+   đề, `--d-tint` là nền dải đầu thẻ. */
+.mp-day-card[data-day="1"] { --d-ink: #2f6f54; --d-tint: #e6f3ec; }
+.mp-day-card[data-day="2"] { --d-ink: #2b6b63; --d-tint: #e3f2f0; }
+.mp-day-card[data-day="3"] { --d-ink: #4a6b2f; --d-tint: #ecf3e2; }
+.mp-day-card[data-day="4"] { --d-ink: #7a6320; --d-tint: #f7f0dc; }
+.mp-day-card[data-day="5"] { --d-ink: #8a5524; --d-tint: #faeee1; }
+.mp-day-card[data-day="6"] { --d-ink: #6b4a72; --d-tint: #f2eaf5; }
+.mp-day-card[data-day="7"] { --d-ink: #9a4a4a; --d-tint: #fbe9e9; }
+
 .mp-day-card {
+  --d-ink: var(--primary-deep);
+  --d-tint: var(--sage-50);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 20px;
+  /* padding-top nhỏ hơn vì dải tiêu đề đã có nền riêng và tự chừa khoảng. */
+  padding: 0 20px 20px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-soft);
   background: var(--surface);
@@ -117,18 +131,34 @@
   cursor: pointer;
   text-align: left;
   font-family: inherit;
+  overflow: hidden;
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 .mp-day-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   box-shadow: var(--shadow);
-  border-color: var(--primary);
+  border-color: var(--d-ink);
 }
 
-.mp-day-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-.mp-day-name { font-size: 16px; font-weight: 800; color: var(--primary-deep); letter-spacing: -.2px; }
-.mp-day-kcal { font-size: 15px; font-weight: 800; color: var(--primary); white-space: nowrap; }
-.mp-day-kcal small { font-size: 11px; font-weight: 600; color: var(--text-sub); margin-left: 3px; }
+/* Dải tiêu đề tràn hết bề ngang thẻ (bù lại padding ngang của thẻ). */
+.mp-day-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 -20px 2px;
+  padding: 16px 20px 14px;
+  background: var(--d-tint);
+  border-bottom: 1px solid rgba(0, 0, 0, .05);
+}
+.mp-day-name {
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--d-ink);
+  letter-spacing: -.3px;
+}
+.mp-day-kcal { font-size: 19px; font-weight: 800; color: var(--d-ink); white-space: nowrap; }
+.mp-day-kcal small { font-size: 11px; font-weight: 700; color: var(--d-ink); opacity: .7; margin-left: 4px; }
 
 /* thanh macro — 3 đoạn theo % năng lượng (P×4, F×9, C×4) */
 .mp-macro-track {
@@ -156,17 +186,18 @@
 .mp-macro-legend .dot-f { background: #f5a623; }
 .mp-macro-legend .dot-c { background: #7dc976; }
 
-.mp-day-dishes { display: flex; flex-direction: column; gap: 5px; }
+.mp-day-dishes { display: flex; flex-direction: column; gap: 6px; }
 .mp-dish-chip {
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--text-main);
-  line-height: 1.45;
+  line-height: 1.5;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.mp-dish-chip::before { content: '·'; color: var(--primary); font-weight: 800; margin-right: 7px; }
-.mp-more { font-size: 12px; font-weight: 600; color: var(--primary); margin-top: 2px; }
+.mp-dish-chip::before { content: '·'; color: var(--d-ink, var(--primary)); font-weight: 800; margin-right: 7px; }
+.mp-more { font-size: 12.5px; font-weight: 700; color: var(--d-ink, var(--primary)); margin-top: 2px; }
 
 
 /* Vỏ modal (.mp-modal*) nằm ở styles/modal.css — /menu-library dùng chung. */

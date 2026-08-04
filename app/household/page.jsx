@@ -456,17 +456,31 @@ export default function HouseholdPage() {
           )}
 
           {/* Ảnh 3.1: mỗi người chỉ thuộc MỘT gia đình. Muốn tạo gia đình riêng
-              hoặc tham gia nơi khác thì phải rời gia đình hiện tại trước. */}
+              hoặc tham gia nơi khác thì phải rời gia đình hiện tại trước.
+
+              Ở chế độ ĐẦU BẾP không có khái niệm "gia đình": người dùng quản lý
+              hồ sơ cho một tổ chức, không ai tham gia bằng mã và cũng không rời
+              đi được. Nên toàn bộ chữ nghĩa gia đình được thay bằng chữ tổ chức
+              — KHÔNG ẩn cả thẻ, vì đây là lối duy nhất để xoá hồ sơ đã tạo. */}
           <div className="card">
-            <h3><i className="fa-solid fa-right-from-bracket" /> {isOwner ? t('hh.family_manage', 'Gia đình của bạn') : t('hh.membership', 'Tư cách thành viên')}</h3>
+            <h3>
+              <i className="fa-solid fa-right-from-bracket" />{' '}
+              {!isFamily
+                ? t('hh.org_manage', 'Tổ chức của bạn')
+                : (isOwner ? t('hh.family_manage', 'Gia đình của bạn') : t('hh.membership', 'Tư cách thành viên'))}
+            </h3>
             <p className="join-hint">
-              {isOwner
-                ? t('hh.leave_desc_owner', 'Bạn là chủ hộ. Muốn tham gia gia đình của người khác, bạn cần xoá gia đình này trước — mọi thành viên sẽ tự động bị gỡ khỏi gia đình.')
-                : t('hh.leave_desc_member', 'Bạn đang là thành viên của gia đình này nên không thể tạo gia đình riêng hay sinh mã tham gia. Hãy rời gia đình nếu muốn tự tạo gia đình của mình.')}
+              {!isFamily
+                ? t('hh.leave_desc_chef', 'Bạn đang quản lý hồ sơ dinh dưỡng cho tổ chức này. Xoá tổ chức sẽ gỡ toàn bộ hồ sơ thành viên bạn đã tạo — thao tác không hoàn tác được.')
+                : (isOwner
+                  ? t('hh.leave_desc_owner', 'Bạn là chủ hộ. Muốn tham gia gia đình của người khác, bạn cần xoá gia đình này trước — mọi thành viên sẽ tự động bị gỡ khỏi gia đình.')
+                  : t('hh.leave_desc_member', 'Bạn đang là thành viên của gia đình này nên không thể tạo gia đình riêng hay sinh mã tham gia. Hãy rời gia đình nếu muốn tự tạo gia đình của mình.'))}
             </p>
             <ActionButton className="btn btn-danger-soft" onClick={leaveFamily} loadingText={t('common.processing', 'Đang xử lý...')}>
               <i className="fa-solid fa-right-from-bracket" />{' '}
-              {isOwner ? t('hh.delete_family_btn', 'Xoá gia đình của tôi') : t('hh.leave_btn', 'Rời gia đình')}
+              {!isFamily
+                ? t('hh.delete_org_btn', 'Xoá tổ chức của tôi')
+                : (isOwner ? t('hh.delete_family_btn', 'Xoá gia đình của tôi') : t('hh.leave_btn', 'Rời gia đình'))}
             </ActionButton>
           </div>
 

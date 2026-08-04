@@ -36,8 +36,18 @@ export default function DayCard({ day, cost, onOpen, t }) {
   const named = dishes.map((d) => d.name).filter(Boolean);
   const rest = named.length - MAX_CHIPS;
 
+  /*
+   * Mỗi ngày một sắc độ riêng (`data-day` → biến màu trong menu-plan.css).
+   * Bảy thẻ giống hệt nhau xếp cạnh nhau rất khó phân biệt và nhìn đơn điệu;
+   * đổi tông theo ngày giúp định vị nhanh mà vẫn nằm trong dải màu thương hiệu.
+   */
   return (
-    <button type="button" className="mp-day-card" onClick={() => onOpen(day)}>
+    <button
+      type="button"
+      className="mp-day-card"
+      data-day={((day.day_index - 1) % 7) + 1}
+      onClick={() => onOpen(day)}
+    >
       <div className="mp-day-head">
         <span className="mp-day-name">{dayLabel(day.day_index, { withDate: false })}</span>
         <span className="mp-day-kcal">

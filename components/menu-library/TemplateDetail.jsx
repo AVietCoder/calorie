@@ -8,6 +8,7 @@
  */
 import { dayLabel, mealLabel, MEAL_ORDER } from '../../lib/excel/labels';
 import { getCategory } from '../../lib/family-menu/menu-categories';
+import { sourceLogo } from '../../lib/family-menu/source-logos';
 import ShoppingPanel from '../menu-plan/ShoppingPanel';
 import DayNotes from '../menu-plan/DayNotes';
 
@@ -71,6 +72,7 @@ function avgKcal(days) {
 
 export default function TemplateDetail({ template, inUse, onBack, actions, shopping, t }) {
   const cat = getCategory(template.category);
+  const logo = sourceLogo(template.source_name);
   const days = [...(template.days || [])].sort((a, b) => a.day_index - b.day_index);
   const today = days.find((d) => d.day_index === todayDayIndex());
   const dishCount = days.reduce((s, d) => s + mealsOf(d).reduce((n, m) => n + (m.menu_template_dishes?.length || 0), 0), 0);
@@ -91,6 +93,12 @@ export default function TemplateDetail({ template, inUse, onBack, actions, shopp
         <div className="ml-hero-body">
           <div className="ml-hero-top">
             <span className="ml-hero-cat"><i className={`fa-solid ${cat.icon}`} /> {cat.label}</span>
+            {/* Logo đơn vị phát hành — ghi nhận nguồn ngay ở đầu trang. */}
+            {!template.image_url && logo && (
+              <span className="ml-hero-logo" title={template.source_name || ''}>
+                <img src={logo} alt={template.source_name || ''} loading="lazy" />
+              </span>
+            )}
             {inUse && (
               <span className="ml-hero-badge">
                 <i className="fa-solid fa-circle-check" /> {t('ml.in_use', 'Đang sử dụng')}
@@ -111,9 +119,18 @@ export default function TemplateDetail({ template, inUse, onBack, actions, shopp
             <span><b>{dishCount}</b> {t('ml.dishes', 'món')}</span>
             {kcal != null && <span><b>{kcal.toLocaleString('vi-VN')}</b> {t('ml.kcal_day', 'kcal/ngày')}</span>}
             {shopping?.totals?.estimatedCost > 0 && (
-              <span><b>≈ {Math.round(shopping.totals.estimatedCost).toLocaleString('vi-VN')} đ</b> {t('ml.week_cost', '/ tuần')}</span>
+              <span title={t('mp.price_note', 'Giá là ước tính cho một người và thay đổi theo nơi bạn mua nguyên liệu.')}>
+                <b>≈ {Math.round(shopping.totals.estimatedCost).toLocaleString('vi-VN')} đ</b> {t('ml.week_cost', '/ tuần')}
+              </span>
             )}
           </div>
+
+          {shopping?.totals?.estimatedCost > 0 && (
+            <p className="ml-hero-price-note">
+              <i className="fa-solid fa-circle-info" />{' '}
+              {t('ml.price_note_short', 'Ước tính cho một người — thay đổi theo nơi mua nguyên liệu.')}
+            </p>
+          )}
         </div>
 
         <div className="ml-hero-actions">{actions}</div>

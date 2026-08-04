@@ -36,6 +36,22 @@
 .mp-shop-summary b { color: var(--primary-deep); font-weight: 800; }
 .mp-shop-summary .warn { color: #9a6400; }
 
+/* Ghi chú "giá chỉ là ước tính" — bám ngay dưới dải tổng chi phí. */
+.mp-price-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: -8px 0 18px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: rgba(243, 156, 18, .08);
+  border-left: 3px solid var(--warn);
+  color: var(--text-sub);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+.mp-price-note i { color: var(--warn); margin-top: 2px; flex-shrink: 0; }
+
 .mp-shop-text {
   display: flex;
   align-items: flex-start;
@@ -87,8 +103,14 @@
   margin: 0 0 8px;
 }
 
-/* Bảng THẬT SỰ có viền — bản cũ trỏ vào #shopping-list-body (selector chết). */
-.mp-shop-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+/* Bảng THẬT SỰ có viền — bản cũ trỏ vào #shopping-list-body (selector chết).
+   table-layout: fixed + colgroup ⇒ mọi nhóm dùng chung một khung cột, không
+   còn cảnh nhóm này cột "Số lượng" ở giữa, nhóm kia lại dạt sang phải. */
+.mp-shop-table { width: 100%; border-collapse: collapse; font-size: 13.5px; table-layout: fixed; }
+.mp-shop-table col.c-tick { width: 34px; }
+.mp-shop-table col.c-qty { width: 132px; }
+.mp-shop-table col.c-price { width: 118px; }
+.mp-shop-table col.c-total { width: 112px; }
 .mp-shop-table th {
   text-align: left;
   padding: 9px 12px;
@@ -172,4 +194,8 @@
 @media (max-width: 640px) {
   .mp-shop-table { font-size: 12.5px; }
   .mp-shop-table th, .mp-shop-table td { padding: 8px 7px; }
+  /* Màn hẹp: nhường chỗ cho tên nguyên liệu, cột số co lại. */
+  .mp-shop-table col.c-qty { width: 92px; }
+  .mp-shop-table col.c-price { width: 80px; }
+  .mp-shop-table col.c-total { width: 84px; }
 }

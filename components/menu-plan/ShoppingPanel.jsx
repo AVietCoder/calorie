@@ -6,6 +6,7 @@
  * (qua API), KHÔNG tính lại gì ở đây — cùng nguồn với file Excel xuất ra.
  */
 import { useState } from 'react';
+import ActionButton from '../ActionButton';
 import { openNearbySearch, SHOP_KINDS } from '../../lib-client/nearby';
 import { useChecklist } from '../../lib-client/useChecklist';
 
@@ -68,6 +69,15 @@ export default function ShoppingPanel({ items, groups, totals, text, error, load
         </div>
       )}
 
+      {/* Giá là ƯỚC TÍNH và phụ thuộc nơi mua — phải nói rõ ngay cạnh con số,
+          không để người dùng hiểu đây là giá cố định. */}
+      {totals && (
+        <p className="mp-price-note">
+          <i className="fa-solid fa-circle-info" />
+          <span>{t('mp.price_note', 'Giá là ước tính cho một người và thay đổi theo nơi bạn mua nguyên liệu (siêu thị, chợ, cửa hàng tiện lợi). Hãy xem đây là mức tham khảo.')}</span>
+        </p>
+      )}
+
       {/* Chuỗi này để CHÉP đi (nhắn Zalo, ghi ra giấy) chứ không phải để đọc:
           53 nguyên liệu nối bằng dấu "/" thành một khối chữ dài choán hết thẻ,
           đẩy bảng thật xuống dưới màn hình. Mặc định thu gọn, nút Chép vẫn luôn
@@ -91,6 +101,17 @@ export default function ShoppingPanel({ items, groups, totals, text, error, load
         <div className="mp-shop-group" key={g.key}>
           {g.label && <h4>{g.label}</h4>}
           <table className="mp-shop-table">
+            {/* Mỗi nhóm là một <table> riêng. Không khai chiều rộng thì mỗi bảng
+                tự co theo nội dung của chính nó, nên "Rau & củ" và "Thịt" ra hai
+                bộ vị trí cột khác nhau — đó là chỗ nhìn lệch. colgroup + fixed
+                layout ép mọi nhóm dùng chung một khung cột. */}
+            <colgroup>
+              {checkable && <col className="c-tick" />}
+              <col />
+              <col className="c-qty" />
+              {hasAnyPrice && <col className="c-price" />}
+              {hasAnyPrice && <col className="c-total" />}
+            </colgroup>
             <thead>
               <tr>
                 {checkable && <th className="mp-shop-tick" aria-label={t('mp.bought', 'Đã mua')} />}
@@ -152,15 +173,17 @@ export default function ShoppingPanel({ items, groups, totals, text, error, load
         <h4><i className="fa-solid fa-location-dot" /> {t('mp.where_title', 'Mua ở đâu gần bạn?')}</h4>
         <p>{t('mp.where_desc', 'Mở Google Maps quanh vị trí hiện tại của bạn.')}</p>
         <div className="mp-nearby-actions">
+          {/* ActionButton: lấy toạ độ mất vài giây (và lần đầu còn phải hỏi
+              quyền), không có spinner thì bấm xong tưởng nút hỏng. */}
           {SHOP_KINDS.map((k) => (
-            <button
-              type="button"
+            <ActionButton
               className="mp-nearby-btn"
               key={k.key}
+              loadingText={t('mp.opening_maps', 'Đang mở bản đồ…')}
               onClick={() => openNearbySearch(`${k.query} gần đây`)}
             >
               <i className={`fa-solid ${k.icon}`} /> {t(k.tkey, k.label)}
-            </button>
+            </ActionButton>
           ))}
         </div>
       </div>

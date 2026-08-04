@@ -12,6 +12,7 @@ import TemplateDetail from '../../components/menu-library/TemplateDetail';
 import TemplateEditor from '../../components/menu-library/TemplateEditor';
 import ActiveMenuBanner from '../../components/menu-library/ActiveMenuBanner';
 import ManualMenuBuilder from '../../components/menu-library/ManualMenuBuilder';
+import { scopeOptions } from '../../lib/family-menu/scope-labels';
 import { MENU_CATEGORIES } from '../../lib/family-menu/menu-categories';
 import '../../styles/modal.css';
 import '../../styles/menu-library.css';
@@ -30,12 +31,28 @@ const LAYOUT_LABELS = {
   'legacy-flat': 'Mẫu 16 cột',
 };
 
+/** Bỏ dấu + thường hoá để tìm kiếm không phụ thuộc dấu tiếng Việt. */
+const deaccent = (s) =>
+  String(s || '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/đ/gi, 'd')
+    .toLowerCase()
+    .trim();
+
 export default function MenuLibraryPage() {
   const [household, setHousehold] = useState(null);
   const [loading, setLoading] = useState(true);
   const [ranked, setRanked] = useState([]);
   const [activeTemplateId, setActiveTemplateId] = useState(null);
   const [selectedCat, setSelectedCat] = useState(null);
+  /* Tab: 'browse' = xem thư viện · 'add' = tải lên / nhập tay.
+     Trước đây form thêm menu nằm ngay dưới lưới thẻ nên trang vừa dài vừa rối —
+     người chỉ muốn CHỌN thực đơn vẫn phải cuộn qua cả form nhập liệu. */
+  const [tab, setTab] = useState('browse');
+  const [query, setQuery] = useState('');
+  /** null = tất cả · 'system' = thực đơn hệ thống · 'mine' = do người dùng tạo. */
+  const [origin, setOrigin] = useState(null);
   const [detail, setDetail] = useState(null);       // template đang xem chi tiết
   const [editing, setEditing] = useState(null);     // template đang sửa (Ảnh 3)
   const [isAdmin, setIsAdmin] = useState(false);
@@ -226,13 +243,29 @@ export default function MenuLibraryPage() {
   // Chỉ hiện những danh mục THỰC SỰ có thực đơn — tránh dãy chip rỗng.
   const catIds = new Set(ranked.map((r) => r.template.category).filter(Boolean));
   const usedCategories = MENU_CATEGORIES.filter((c) => catIds.has(c.id));
-  const visible = selectedCat ? ranked.filter((r) => r.template.category === selectedCat) : ranked;
   const activeItem = ranked.find((r) => r.template.id === activeTemplateId) || null;
 
-  /** Kéo màn hình xuống form tải Excel và focus luôn ô chọn file. */
+  const systemCount = ranked.filter((r) => r.template.is_system).length;
+
+  /* Lọc dồn: danh mục → nguồn tạo → từ khoá. Tìm cả tiêu đề, mô tả và tên đơn
+     vị phát hành, bỏ dấu hai bên để gõ "long chau" vẫn ra "Long Châu". */
+  const visible = ranked.filter((r) => {
+    const tpl = r.template;
+    if (selectedCat && tpl.category !== selectedCat) return false;
+    if (origin === 'system' && !tpl.is_system) return false;
+    if (origin === 'mine' && tpl.is_system) return false;
+    if (!query.trim()) return true;
+    const hay = deaccent([tpl.title, tpl.description, tpl.source_name].filter(Boolean).join(' '));
+    return deaccent(query).split(/\s+/).filter(Boolean).every((w) => hay.includes(w));
+  });
+
+  /** Từ tab thư viện nhảy sang tab thêm menu và focus ô chọn file. */
   function jumpToUpload() {
-    uploadRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setTimeout(() => fileInputRef.current?.focus(), 400);
+    setTab('add');
+    setTimeout(() => {
+      uploadRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      fileInputRef.current?.focus();
+    }, 60);
   }
 
   async function createManual(payload) {
@@ -301,13 +334,70 @@ export default function MenuLibraryPage() {
         />
       ) : (
         <div>
+          {/* Hai tab: xem thư viện / thêm menu. Gộp chung một trang khiến người
+              chỉ muốn chọn thực đơn vẫn phải cuộn qua toàn bộ form nhập liệu. */}
+          <div className="ml-tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === 'browse'}
+              className={`ml-tab${tab === 'browse' ? ' active' : ''}`}
+              onClick={() => setTab('browse')}
+            >
+              <i className="fa-solid fa-book-open" /> {t('ml.tab_browse', 'Thư viện')}
+              <em>{ranked.length}</em>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === 'add'}
+              className={`ml-tab${tab === 'add' ? ' active' : ''}`}
+              onClick={() => setTab('add')}
+            >
+              <i className="fa-solid fa-plus" /> {t('ml.tab_add', 'Thêm menu')}
+            </button>
+          </div>
+
+          {tab === 'browse' && (
+          <>
           <ActiveMenuBanner
             active={activeItem}
             onOpen={openDetail}
             onUpload={jumpToUpload}
-            onManual={() => setManualOpen(true)}
+            onManual={() => { setTab('add'); setManualOpen(true); }}
             t={t}
           />
+
+          <div className="ml-search">
+            <i className="fa-solid fa-magnifying-glass" />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t('ml.search_ph', 'Tìm theo tên thực đơn, bệnh lý hoặc đơn vị…')}
+              aria-label={t('ml.search', 'Tìm thực đơn')}
+            />
+            {query && (
+              <button type="button" className="ml-search-clear" onClick={() => setQuery('')} aria-label={t('common.close', 'Đóng')}>
+                <i className="fa-solid fa-xmark" />
+              </button>
+            )}
+          </div>
+
+          {/* Nguồn tạo — tách thực đơn hệ thống khỏi thực đơn người dùng tự thêm. */}
+          <div className="tag-filter ml-origin-filter">
+            <span className={`tag-chip${!origin ? ' selected' : ''}`} onClick={() => setOrigin(null)}>
+              {t('ml.origin_all', 'Mọi nguồn')}
+            </span>
+            <span className={`tag-chip${origin === 'system' ? ' selected' : ''}`} onClick={() => setOrigin('system')}>
+              <i className="fa-solid fa-shield-halved" style={{ marginRight: 6 }} />
+              {t('ml.origin_system', 'Hệ thống')} <em>{systemCount}</em>
+            </span>
+            <span className={`tag-chip${origin === 'mine' ? ' selected' : ''}`} onClick={() => setOrigin('mine')}>
+              <i className="fa-solid fa-user-pen" style={{ marginRight: 6 }} />
+              {t('ml.origin_mine', 'Người dùng tạo')} <em>{ranked.length - systemCount}</em>
+            </span>
+          </div>
 
           <div className="tag-filter">
             <span className={`tag-chip${!selectedCat ? ' selected' : ''}`} onClick={() => setSelectedCat(null)}>
@@ -326,8 +416,10 @@ export default function MenuLibraryPage() {
 
           <div className="ml-grid">
             {visible.length === 0 ? (
-              <p style={{ color: 'var(--text-sub)' }}>
-                {t('ml.empty', 'Chưa có thực đơn nào trong thư viện — hãy tải lên một menu mới ở dưới.')}
+              <p className="ml-no-result">
+                {ranked.length === 0
+                  ? t('ml.empty', 'Chưa có thực đơn nào trong thư viện — hãy thêm menu ở tab bên cạnh.')
+                  : t('ml.no_match', 'Không có thực đơn nào khớp bộ lọc. Thử xoá bớt từ khoá hoặc chọn "Mọi nguồn".')}
               </p>
             ) : (
               visible.map((r) => (
@@ -341,7 +433,11 @@ export default function MenuLibraryPage() {
               ))
             )}
           </div>
+          </>
+          )}
 
+          {tab === 'add' && (
+          <>
           <div className="section-title" ref={uploadRef}>
             <h2>{t('ml.add_title', 'Tự thêm menu vào thư viện')}</h2>
             <p>{t('ml.add_sub', 'Tải lên Excel hoặc nhập tay — mặc định công khai cho mọi người dùng')}</p>
@@ -360,8 +456,9 @@ export default function MenuLibraryPage() {
               <label>{t('ml.f_disease', 'Bệnh lý hướng đến')} <input type="text" value={form.disease} onChange={(e) => setForm((f) => ({ ...f, disease: e.target.value }))} placeholder={t('ml.f_disease_ph', 'tiểu đường, gout...')} /></label>
               <label>{t('ml.f_scope', 'Phạm vi')}
                 <select value={form.visibility} onChange={(e) => setForm((f) => ({ ...f, visibility: e.target.value }))}>
-                  <option value="public">{t('ml.scope_public', 'Công khai (mặc định)')}</option>
-                  <option value="private">{t('ml.scope_private', 'Chỉ gia đình tôi')}</option>
+                  {scopeOptions(household?.mode, t).map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
                 </select>
               </label>
             </div>
@@ -393,6 +490,8 @@ export default function MenuLibraryPage() {
               </div>
             )}
           </div>
+          </>
+          )}
         </div>
       )}
 
@@ -408,6 +507,7 @@ export default function MenuLibraryPage() {
       {editing && (
         <TemplateEditor
           template={editing}
+          household={household}
           isAdmin={isAdmin}
           onCancel={() => setEditing(null)}
           onSave={saveTemplate}

@@ -2,16 +2,23 @@
 /**
  * ManualMenuBuilder — tự gõ thực đơn, không cần Excel.
  *
- * Mỗi bữa là MỘT ô nhiều dòng, mỗi dòng một món. Cách này nhập nhanh hơn hẳn
- * form từng-món-một-hàng (7 ngày × 4 bữa × 3 món = 84 ô), và khớp đúng cách
- * người ta chép thực đơn từ giấy hoặc từ web.
+ * Hai chế độ nhập, dùng CHUNG một nguồn dữ liệu là chuỗi nhiều dòng của mỗi bữa:
+ *
+ *   • Nhập nhanh — mỗi dòng một món, định lượng viết sau dấu ":".
+ *                  Nhập nhanh nhất, khớp cách người ta chép thực đơn từ giấy/web.
+ *   • Chi tiết   — mỗi món một khối, nguyên liệu nhập từng dòng (tên/lượng/đơn vị).
+ *
+ * Vì sao KHÔNG giữ hai state song song: chế độ chi tiết chỉ là một trình soạn
+ * thảo có cấu trúc bên trên đúng chuỗi đó — mọi thay đổi được serialize ngược
+ * lại ngay. Giữ hai bản sao thì sớm muộn cũng lệch nhau và mất dữ liệu lúc
+ * chuyển qua lại.
  *
  * Dinh dưỡng để trống — máy chủ tự ước tính bằng đúng engine của đường Excel.
- * Định lượng có thể viết ngay trong tên món ("Phở bò: 180 g bánh phở, 50 g thịt
- * bò") và bộ tách nguyên liệu sẽ hiểu.
  */
 import { useState } from 'react';
+import { scopeOptions } from '../../lib/family-menu/scope-labels';
 import { MENU_CATEGORIES } from '../../lib/family-menu/menu-categories';
+import { parseDishSpec } from '../../lib/family-menu/dish-parse';
 import { mealLabel, dayLabel } from '../../lib/excel/labels';
 
 const MEALS = ['breakfast', 'lunch', 'dinner', 'snack'];
@@ -23,13 +30,48 @@ const emptyDays = (n) =>
     meals: Object.fromEntries(MEALS.map((m) => [m, ''])),
   }));
 
-/** Ô nhiều dòng → mảng món, bỏ dòng trống và gạch đầu dòng thừa. */
-function linesToDishes(text) {
+/** Ô nhiều dòng → mảng dòng món, bỏ dòng trống và gạch đầu dòng thừa. */
+function toLines(text) {
   return String(text || '')
     .split('\n')
     .map((s) => s.replace(/^[\s•·\-–*]+/u, '').trim())
-    .filter(Boolean)
-    .map((name) => ({ name: name.slice(0, 300) }));
+    .filter(Boolean);
+}
+
+function linesToDishes(text) {
+  return toLines(text).map((name) => ({ name: name.slice(0, 300) }));
+}
+
+/**
+ * Một dòng món → cấu trúc để soạn thảo.
+ *
+ * `needsEstimate` của parseDishSpec nghĩa là "không khai định lượng" — với
+ * trình soạn thảo thì coi như chưa có nguyên liệu nào, để trống chờ nhập.
+ */
+function lineToDish(line) {
+  const spec = parseDishSpec(line);
+  const declared = (spec.ingredients || []).filter((i) => !i.needsEstimate);
+  return {
+    name: spec.name || line,
+    ingredients: declared.map((i) => ({
+      name: i.name || '',
+      grams: i.grams == null ? '' : String(i.grams),
+      unit: i.unit || 'g',
+    })),
+  };
+}
+
+/** Cấu trúc → đúng cú pháp mà bộ nhập hiểu: "Phở gà: 180 g bánh phở, 100 g gà". */
+function dishToLine(dish) {
+  const name = String(dish.name || '').trim();
+  const parts = (dish.ingredients || [])
+    .filter((i) => String(i.name || '').trim())
+    .map((i) => {
+      const qty = String(i.grams ?? '').trim();
+      const unit = String(i.unit || '').trim();
+      return qty ? `${qty} ${unit || 'g'} ${i.name.trim()}` : i.name.trim();
+    });
+  return parts.length ? `${name}: ${parts.join(', ')}` : name;
 }
 
 export default function ManualMenuBuilder({ household, onCancel, onSubmit, t }) {
@@ -38,6 +80,7 @@ export default function ManualMenuBuilder({ household, onCancel, onSubmit, t }) 
   });
   const [days, setDays] = useState(() => emptyDays(MAX_DAYS));
   const [openDay, setOpenDay] = useState(1);
+  const [mode, setMode] = useState('quick');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
 
@@ -49,8 +92,28 @@ export default function ManualMenuBuilder({ household, onCancel, onSubmit, t }) 
     )));
   }
 
+  /** Sửa một món ở chế độ chi tiết → ghi thẳng ngược về chuỗi của bữa. */
+  function updateDish(dayIndex, meal, dishIndex, mutate) {
+    const lines = toLines(days.find((d) => d.day_index === dayIndex).meals[meal]);
+    const dish = lineToDish(lines[dishIndex] || '');
+    mutate(dish);
+    lines[dishIndex] = dishToLine(dish);
+    setMeal(dayIndex, meal, lines.join('\n'));
+  }
+
+  function addDish(dayIndex, meal) {
+    const cur = days.find((d) => d.day_index === dayIndex).meals[meal];
+    setMeal(dayIndex, meal, `${cur ? `${cur}\n` : ''}${t('ml.new_dish', 'Món mới')}`);
+  }
+
+  function removeDish(dayIndex, meal, dishIndex) {
+    const lines = toLines(days.find((d) => d.day_index === dayIndex).meals[meal]);
+    lines.splice(dishIndex, 1);
+    setMeal(dayIndex, meal, lines.join('\n'));
+  }
+
   const dishCount = days.reduce(
-    (s, d) => s + MEALS.reduce((n, m) => n + linesToDishes(d.meals[m]).length, 0), 0
+    (s, d) => s + MEALS.reduce((n, m) => n + toLines(d.meals[m]).length, 0), 0
   );
 
   async function submit(e) {
@@ -96,11 +159,6 @@ export default function ManualMenuBuilder({ household, onCancel, onSubmit, t }) 
         <div className="mp-modal-body">
           {err && <p className="ml-editor-err"><i className="fa-solid fa-circle-exclamation" /> {err}</p>}
 
-          <p className="ml-builder-hint">
-            <i className="fa-solid fa-lightbulb" />{' '}
-            {t('ml.manual_hint', 'Mỗi dòng là một món. Muốn khai định lượng thì viết kèm sau dấu hai chấm — ví dụ "Phở bò: 180 g bánh phở, 50 g thịt bò" — hệ thống sẽ tự tách ra danh sách đi chợ.')}
-          </p>
-
           <label className="ml-editor-field">
             {t('ml.f_name', 'Tên menu')}
             <input type="text" value={meta.title} onChange={setMetaField('title')} maxLength={200} required
@@ -122,16 +180,43 @@ export default function ManualMenuBuilder({ household, onCancel, onSubmit, t }) 
             <label className="ml-editor-field">
               {t('ml.f_scope', 'Phạm vi')}
               <select value={meta.visibility} onChange={setMetaField('visibility')}>
-                <option value="public">{t('ml.scope_public', 'Công khai (mặc định)')}</option>
-                <option value="private">{t('ml.scope_private', 'Chỉ gia đình tôi')}</option>
+                {scopeOptions(household?.mode, t).map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
               </select>
             </label>
           </div>
 
+          {/* Chọn cách nhập. Cả hai ghi vào cùng một chuỗi nên đổi qua lại
+              không mất dữ liệu đã gõ. */}
+          <div className="ml-mode-switch" role="tablist">
+            <button
+              type="button" role="tab" aria-selected={mode === 'quick'}
+              className={`ml-mode-btn${mode === 'quick' ? ' active' : ''}`}
+              onClick={() => setMode('quick')}
+            >
+              <i className="fa-solid fa-bolt" /> {t('ml.mode_quick', 'Nhập nhanh')}
+            </button>
+            <button
+              type="button" role="tab" aria-selected={mode === 'detail'}
+              className={`ml-mode-btn${mode === 'detail' ? ' active' : ''}`}
+              onClick={() => setMode('detail')}
+            >
+              <i className="fa-solid fa-list-check" /> {t('ml.mode_detail', 'Nhập từng nguyên liệu')}
+            </button>
+          </div>
+
+          {mode === 'quick' && (
+            <p className="ml-builder-hint">
+              <i className="fa-solid fa-lightbulb" />{' '}
+              {t('ml.manual_hint', 'Mỗi dòng là một món. Muốn khai định lượng thì viết kèm sau dấu hai chấm — ví dụ "Phở bò: 180 g bánh phở, 50 g thịt bò" — hệ thống sẽ tự tách ra danh sách đi chợ.')}
+            </p>
+          )}
+
           {/* Tab theo ngày — 7 ngày × 4 bữa trải phẳng sẽ dài không đọc nổi. */}
           <div className="ml-builder-tabs">
             {days.map((d) => {
-              const n = MEALS.reduce((s, m) => s + linesToDishes(d.meals[m]).length, 0);
+              const n = MEALS.reduce((s, m) => s + toLines(d.meals[m]).length, 0);
               return (
                 <button
                   type="button"
@@ -149,15 +234,31 @@ export default function ManualMenuBuilder({ household, onCancel, onSubmit, t }) 
           {days.filter((d) => d.day_index === openDay).map((d) => (
             <div className="ml-builder-day" key={d.day_index}>
               {MEALS.map((m) => (
-                <label className="ml-editor-field" key={m}>
-                  {mealLabel(m)}
-                  <textarea
-                    rows={3}
-                    value={d.meals[m]}
-                    onChange={(e) => setMeal(d.day_index, m, e.target.value)}
-                    placeholder={t('ml.manual_ph', 'Mỗi dòng một món...')}
-                  />
-                </label>
+                <div className="ml-builder-meal" key={m}>
+                  <span className="ml-builder-meal-name">{mealLabel(m)}</span>
+
+                  {mode === 'quick' ? (
+                    <>
+                      <textarea
+                        rows={3}
+                        value={d.meals[m]}
+                        onChange={(e) => setMeal(d.day_index, m, e.target.value)}
+                        placeholder={t('ml.manual_ph', 'Mỗi dòng một món...')}
+                      />
+                      {/* Xem trước: cho thấy hệ thống ĐÃ tách được gì, để người
+                          dùng biết cú pháp ":" có ăn hay không thay vì đoán. */}
+                      <QuickPreview text={d.meals[m]} t={t} />
+                    </>
+                  ) : (
+                    <DetailEditor
+                      text={d.meals[m]}
+                      onChangeDish={(i, mutate) => updateDish(d.day_index, m, i, mutate)}
+                      onRemoveDish={(i) => removeDish(d.day_index, m, i)}
+                      onAddDish={() => addDish(d.day_index, m)}
+                      t={t}
+                    />
+                  )}
+                </div>
               ))}
             </div>
           ))}
@@ -179,6 +280,102 @@ export default function ManualMenuBuilder({ household, onCancel, onSubmit, t }) 
           </div>
         </div>
       </form>
+    </div>
+  );
+}
+
+/* ───────────────────────── xem trước (chế độ nhanh) ───────────────────────── */
+
+function QuickPreview({ text, t }) {
+  const lines = toLines(text);
+  if (!lines.length) return null;
+
+  return (
+    <ul className="ml-parse-preview">
+      {lines.map((line, i) => {
+        const dish = lineToDish(line);
+        const n = dish.ingredients.length;
+        return (
+          <li key={i} className={n ? 'ok' : 'plain'}>
+            <i className={`fa-solid ${n ? 'fa-circle-check' : 'fa-circle-minus'}`} />
+            <b>{dish.name}</b>
+            <span>
+              {n
+                ? `${n} ${t('ml.pv_ingredients', 'nguyên liệu')}: ${dish.ingredients.map((x) => x.name).join(', ')}`
+                : t('ml.pv_none', 'chưa khai định lượng — hệ thống sẽ tự ước tính')}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/* ───────────────────────── soạn thảo chi tiết ───────────────────────── */
+
+function DetailEditor({ text, onChangeDish, onRemoveDish, onAddDish, t }) {
+  const dishes = toLines(text).map(lineToDish);
+
+  return (
+    <div className="ml-detail-editor">
+      {dishes.map((dish, di) => (
+        <div className="ml-detail-dish" key={di}>
+          <div className="ml-detail-dish-head">
+            <input
+              type="text"
+              value={dish.name}
+              onChange={(e) => onChangeDish(di, (d) => { d.name = e.target.value; })}
+              placeholder={t('ml.pv_dish_name', 'Tên món')}
+            />
+            <button type="button" onClick={() => onRemoveDish(di)} aria-label={t('common.delete', 'Xóa')}>
+              <i className="fa-solid fa-trash" />
+            </button>
+          </div>
+
+          {dish.ingredients.map((ing, ii) => (
+            <div className="ml-detail-ing" key={ii}>
+              <input
+                type="text"
+                value={ing.name}
+                onChange={(e) => onChangeDish(di, (d) => { d.ingredients[ii].name = e.target.value; })}
+                placeholder={t('ml.pv_ing_name', 'Nguyên liệu')}
+              />
+              <input
+                type="text"
+                inputMode="decimal"
+                value={ing.grams}
+                onChange={(e) => onChangeDish(di, (d) => { d.ingredients[ii].grams = e.target.value; })}
+                placeholder={t('ml.pv_qty', 'Lượng')}
+              />
+              <input
+                type="text"
+                value={ing.unit}
+                onChange={(e) => onChangeDish(di, (d) => { d.ingredients[ii].unit = e.target.value; })}
+                placeholder="g"
+              />
+              <button
+                type="button"
+                onClick={() => onChangeDish(di, (d) => { d.ingredients.splice(ii, 1); })}
+                aria-label={t('common.delete', 'Xóa')}
+              >
+                <i className="fa-solid fa-xmark" />
+              </button>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            className="ml-detail-add-ing"
+            onClick={() => onChangeDish(di, (d) => { d.ingredients.push({ name: '', grams: '', unit: 'g' }); })}
+          >
+            <i className="fa-solid fa-plus" /> {t('ml.pv_add_ing', 'Thêm nguyên liệu')}
+          </button>
+        </div>
+      ))}
+
+      <button type="button" className="ml-detail-add-dish" onClick={onAddDish}>
+        <i className="fa-solid fa-plus" /> {t('ml.pv_add_dish', 'Thêm món')}
+      </button>
     </div>
   );
 }

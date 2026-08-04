@@ -92,6 +92,7 @@ for (const file of files) {
     visibility: 'public',
     is_system: true,
     source,
+    source_name: meta.sourceName,
   }).select().single();
   if (error) fail(`Chèn "${meta.title}" lỗi: ${error.message}`);
 
@@ -119,6 +120,9 @@ async function persistDays(templateId, days) {
         const { data: dishRow, error: dishErr } = await sb.from('menu_template_dishes').insert({
           template_meal_id: mealRow.id,
           name: dish.name,
+          // Giá nguyên văn từ bộ thực đơn chuẩn (price / price_range).
+          price: dish.price || '',
+          price_range: dish.price_range || '',
           base_grams: dish.base_grams ?? null,
           calories: dish.calories ?? null,
           protein: dish.protein ?? null,
@@ -137,7 +141,8 @@ async function persistDays(templateId, days) {
         if (dish.ingredients?.length) {
           const { error: iErr } = await sb.from('menu_template_dish_ingredients').insert(
             dish.ingredients.map((i) => ({
-              dish_id: dishRow.id, name: i.name, grams: i.grams ?? null, unit: i.unit ?? null, tags: [],
+              dish_id: dishRow.id, name: i.name, grams: i.grams ?? null, unit: i.unit ?? null,
+              price: i.price || '', tags: i.tags || [],
             }))
           );
           if (iErr) fail(`menu_template_dish_ingredients: ${iErr.message}`);
@@ -181,7 +186,8 @@ function describe(file, days, dishes) {
     `Thực đơn ${days.length} ngày (${dishes} món) dành cho người ${cat.label.toLowerCase()}, `
     + `tham khảo từ ${source}.`;
 
-  return { title: title.slice(0, 180), description, category, tags: category === 'khac' ? [] : [cat.label.toLowerCase()] };
+  // sourceName = tên ĐƠN VỊ phát hành, lưu tách để tra logo (source-logos.js).
+  return { title: title.slice(0, 180), description, category, sourceName: source, tags: category === 'khac' ? [] : [cat.label.toLowerCase()] };
 }
 
 function titleCase(s) {
