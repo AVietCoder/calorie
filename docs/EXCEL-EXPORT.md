@@ -64,7 +64,7 @@ Thêm file mẫu mới → chạy lại script → theme tự đổi. **Không s
 
 ```bash
 pip install -r scripts/requirements.txt
-python3 scripts/extract-excel-templates.py --src ./reference-menus
+python3 scripts/extract-excel-templates.py --src ./final_sample
 ```
 
 ### Token đã trích (canonical — giá trị modal của 43 file)

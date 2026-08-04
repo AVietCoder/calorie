@@ -18,13 +18,23 @@
 -- =============================================================================
 
 -- Món trong thư viện thực đơn (đích đến của import Excel).
+--   price       — một con số trung bình, vd "14.000đ"
+--   price_range — khoảng từ tự nấu đến mua ngoài cho MỘT người,
+--                 vd "11.000đ–17.000đ/người"
+-- Hai cột riêng vì bộ thực đơn chuẩn tách sẵn như vậy; gộp lại là mất một nửa
+-- thông tin, mà tách ra thì chỗ nào cần số dùng `price`, chỗ nào cần biên độ
+-- dùng `price_range`.
 alter table public.menu_template_dishes
   add column if not exists price text not null default '';
+alter table public.menu_template_dishes
+  add column if not exists price_range text not null default '';
 
 -- Món trong kế hoạch đã sinh (nguồn của export Excel). Giá được sao chép từ
 -- món gốc trong thư viện lúc sinh kế hoạch / đổi món.
 alter table public.plan_dishes
   add column if not exists price text not null default '';
+alter table public.plan_dishes
+  add column if not exists price_range text not null default '';
 
 -- ── Giá NGUYÊN LIỆU ─────────────────────────────────────────────────────────
 -- Cùng quy tắc: chuỗi nguyên văn, tuỳ chọn, bỏ trống thì ''.

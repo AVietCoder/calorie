@@ -1,5 +1,5 @@
 /**
- * scripts/seed-reference-menus.mjs — nạp reference-menus/*.xlsx vào menu_templates.
+ * scripts/seed-reference-menus.mjs — nạp final_sample/*.xlsx vào menu_templates.
  *
  *   node scripts/seed-reference-menus.mjs              # dry-run (mặc định)
  *   node scripts/seed-reference-menus.mjs --apply
@@ -29,7 +29,7 @@ const { categoryFromName, getCategory } = await import('../lib/family-menu/menu-
 const args = process.argv.slice(2);
 const APPLY = args.includes('--apply');
 const FORCE = args.includes('--force');
-const SRC = valueOf('--src') || path.join(ROOT, 'reference-menus');
+const SRC = valueOf('--src') || path.join(ROOT, 'final_sample');
 const LIMIT = Number(valueOf('--limit') || 0);
 
 const MIN_DAYS = 5;
@@ -168,7 +168,9 @@ function countDishes(days) {
 }
 
 function describe(file, days, dishes) {
-  const base = file.replace(/\.xlsx?m?$/i, '');
+  // Bỏ cả đuôi file lẫn hậu tố "_formatted" mà bộ thực đơn chuẩn gắn vào mọi
+  // tên — không bỏ thì tiêu đề thư viện hiện "… — Vinmec_formatted".
+  const base = file.replace(/\.xlsx?m?$/i, '').replace(/[_\s-]*formatted$/i, '').trim();
   const m = base.match(/^\[([^\]]+)\]\s*(.*)$/);
   const category = categoryFromName(base);
   const cat = getCategory(category);

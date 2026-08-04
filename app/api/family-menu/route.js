@@ -201,6 +201,7 @@ async function persistTemplateDays(templateId, days) {
             name: dish.name,
             // Giá tiền: lưu nguyên văn chuỗi người nhập (khoảng giá), '' nếu trống.
             price: asPriceText(dish.price),
+            price_range: asPriceText(dish.price_range),
             base_grams: dish.base_grams,
             calories: dish.calories,
             protein: dish.protein,

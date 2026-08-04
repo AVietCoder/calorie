@@ -1,9 +1,9 @@
 /**
- * scripts/build-sample-menus.mjs — sinh knowledge/sample-menus.json từ reference-menus/.
+ * scripts/build-sample-menus.mjs — sinh knowledge/sample-menus.json từ final_sample/.
  *
  *   npm run build:sample-menus
  *
- * Vì sao phải sinh ra JSON rồi commit: reference-menus/*.xlsx bị .gitignore nên
+ * Vì sao phải sinh ra JSON rồi commit: final_sample/*.xlsx bị .gitignore nên
  * KHÔNG tồn tại trên Vercel. App đọc JSON đã commit, không đọc xlsx lúc chạy.
  *
  * Dùng lại đúng importer deterministic của tính năng upload (useAI:false), nên
@@ -18,7 +18,7 @@ loadEnv(path.join(ROOT, '.env.local'));
 const { importMenuWorkbook } = await import('../lib/excel/import/index.js');
 
 const args = process.argv.slice(2);
-const SRC = valueOf('--src') || path.join(ROOT, 'reference-menus');
+const SRC = valueOf('--src') || path.join(ROOT, 'final_sample');
 const OUT = valueOf('--out') || path.join(ROOT, 'knowledge', 'sample-menus.json');
 const LIMIT = Number(valueOf('--limit') || 8);
 const MAX_BYTES = Number(valueOf('--max-bytes') || 180_000);
@@ -86,11 +86,17 @@ const payload = {
   _generatedBy: 'scripts/build-sample-menus.mjs',
   _generatedAt: new Date().toISOString(),
   _sourceCount: files.length,
-  _note: 'Sinh tự động từ reference-menus/. KHÔNG sửa tay — chạy lại npm run build:sample-menus.',
+  _note: 'Sinh tự động từ final_sample/. KHÔNG sửa tay — chạy lại npm run build:sample-menus.',
   menus,
 };
 
-const json = `${JSON.stringify(payload, null, 2)}\n`;
+/*
+ * Ghi GỌN, không thụt lề. Đây là file sinh tự động (đã ghi rõ "KHÔNG sửa tay")
+ * nên không ai đọc bằng mắt, trong khi thụt lề 2 dấu cách làm phình gần gấp 3:
+ * bộ thực đơn chuẩn có đủ dinh dưỡng + nguyên liệu cho từng món nên nội dung
+ * thật ~167 KB mà bản thụt lề lên tới ~496 KB, vượt ngưỡng bundle serverless.
+ */
+const json = `${JSON.stringify(payload)}\n`;
 const bytes = Buffer.byteLength(json, 'utf8');
 
 console.log(`\nChọn ${menus.length}/${candidates.length} thực đơn · ${bytes.toLocaleString('vi-VN')} bytes`);
@@ -142,8 +148,13 @@ function countDishesWithIngredients(days) {
   return days.reduce((s, d) => s + d.meals.reduce((t, m) => t + m.dishes.filter((x) => x.ingredients?.length).length, 0), 0);
 }
 
+/** Bỏ đuôi file + hậu tố "_formatted" mà bộ thực đơn chuẩn gắn vào mọi tên. */
+function baseName(file) {
+  return file.replace(/\.xlsx?m?$/i, '').replace(/[_\s-]*formatted$/i, '').trim();
+}
+
 function describe(file) {
-  const base = file.replace(/\.xlsx?m?$/i, '');
+  const base = baseName(file);
   const m = base.match(/^\[([^\]]+)\]\s*(.*)$/);
   if (m) {
     const tag = DISEASE_TAGS[m[1].trim().toUpperCase()] || m[1].trim().toLowerCase();
@@ -153,12 +164,11 @@ function describe(file) {
 }
 
 function sourceName(file) {
-  return file.replace(/\.xlsx?m?$/i, '').replace(/^\[[^\]]+\]\s*/, '').trim();
+  return baseName(file).replace(/^\[[^\]]+\]\s*/, '').trim();
 }
 
 function slug(file) {
-  return file
-    .replace(/\.xlsx?m?$/i, '')
+  return baseName(file)
     .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd')
     .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
     .slice(0, 60);
