@@ -24,6 +24,10 @@ import { useTranslation } from '../../lib-client/I18nContext';
 import '../../styles/modal.css';
 import '../../styles/menu-plan.css';
 import '../../styles/shopping-panel.css';
+// Thanh macro dùng chung với modal chi tiết ngày (styles/macro-bar.css).
+import '../../styles/macro-bar.css';
+// Khối bữa ăn + danh sách món trong modal chi tiết ngày.
+import '../../styles/dish-list.css';
 import '../../styles/day-notes.css';
 
 export default function MenuPlanPage() {

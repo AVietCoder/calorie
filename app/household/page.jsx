@@ -96,7 +96,12 @@ export default function HouseholdPage() {
   async function createHousehold(mode) {
     try {
       await post('/api/family-menu', { action: 'create_household', mode });
-      showToast(t('hh.toast_created', 'Đã tạo hồ sơ gia đình!'), 'success');
+      showToast(
+        mode === 'chef'
+          ? t('hh.toast_created_org', 'Đã tạo hồ sơ tổ chức!')
+          : t('hh.toast_created', 'Đã tạo hồ sơ gia đình!'),
+        'success'
+      );
       await loadHousehold();
     } catch (e) {
       showToast(e.message, 'error');
@@ -151,22 +156,30 @@ export default function HouseholdPage() {
     // Xoá gia đình giờ gỡ LUÔN mọi thành viên (kể cả tài khoản thật đã tham gia),
     // nên cảnh báo phải nói rõ con số — đây là hành động không hoàn tác được.
     const otherCount = Math.max(0, members.length - 1);
-    const msg = isOwner
-      ? (otherCount > 0
-        ? tn('hh.confirm_delete_family_n', { n: otherCount },
-          `Xoá gia đình của bạn? ${otherCount} thành viên khác sẽ bị gỡ khỏi gia đình, cùng toàn bộ thực đơn và yêu cầu tham gia. Không thể hoàn tác.`)
-        : t('hh.confirm_delete_family', 'Xoá gia đình của bạn? Toàn bộ thực đơn của gia đình sẽ bị xoá theo. Không thể hoàn tác.'))
-      : t('hh.confirm_leave', 'Rời khỏi gia đình này? Bạn sẽ mất quyền xem thực đơn chung của gia đình.');
+    // Chế độ đầu bếp không có "gia đình" — cùng một hành động nhưng phải gọi
+    // đúng tên là tổ chức, nếu không hộp xác nhận mâu thuẫn với chính giao diện.
+    const isChef = household?.mode === 'chef';
+    const msg = isChef
+      ? tn('hh.confirm_delete_org', { n: otherCount },
+        `Xoá tổ chức của bạn? ${otherCount} hồ sơ thành viên sẽ bị xoá theo, cùng toàn bộ thực đơn. Không thể hoàn tác.`)
+      : isOwner
+        ? (otherCount > 0
+          ? tn('hh.confirm_delete_family_n', { n: otherCount },
+            `Xoá gia đình của bạn? ${otherCount} thành viên khác sẽ bị gỡ khỏi gia đình, cùng toàn bộ thực đơn và yêu cầu tham gia. Không thể hoàn tác.`)
+          : t('hh.confirm_delete_family', 'Xoá gia đình của bạn? Toàn bộ thực đơn của gia đình sẽ bị xoá theo. Không thể hoàn tác.'))
+        : t('hh.confirm_leave', 'Rời khỏi gia đình này? Bạn sẽ mất quyền xem thực đơn chung của gia đình.');
     if (!window.confirm(msg)) return;
     try {
       const res = await post('/api/family-menu', { action: 'leave_family' });
       const removed = Number(res?.removed_members) || 0;
       showToast(
-        isOwner
-          ? (removed > 0
-            ? tn('hh.toast_family_deleted_n', { n: removed }, `Đã xoá gia đình và gỡ ${removed} thành viên.`)
-            : t('hh.toast_family_deleted', 'Đã xoá gia đình.'))
-          : t('hh.toast_left', 'Đã rời khỏi gia đình.'),
+        isChef
+          ? t('hh.toast_org_deleted', 'Đã xoá tổ chức.')
+          : isOwner
+            ? (removed > 0
+              ? tn('hh.toast_family_deleted_n', { n: removed }, `Đã xoá gia đình và gỡ ${removed} thành viên.`)
+              : t('hh.toast_family_deleted', 'Đã xoá gia đình.'))
+            : t('hh.toast_left', 'Đã rời khỏi gia đình.'),
         'success'
       );
       await loadHousehold();
@@ -528,7 +541,13 @@ export default function HouseholdPage() {
 
           <div className="section-title">
             <h2>{t('hh.lib_title', 'Thư viện thực đơn')}</h2>
-            <p><Link className="btn btn-primary" style={{ textDecoration: 'none' }} href="/menu-library">{t('hh.lib_link', 'Xem thư viện & tạo thực đơn cho gia đình →')}</Link></p>
+            <p>
+              <Link className="btn btn-primary" style={{ textDecoration: 'none' }} href="/menu-library">
+                {isFamily
+                  ? t('hh.lib_link', 'Xem thư viện & tạo thực đơn cho gia đình →')
+                  : t('hh.lib_link_org', 'Xem thư viện & tạo thực đơn cho tổ chức →')}
+              </Link>
+            </p>
           </div>
         </div>
       )}

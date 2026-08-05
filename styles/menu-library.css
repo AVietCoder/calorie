@@ -319,6 +319,30 @@
 
 /* ── màn chi tiết ────────────────────────────────────────────────────────── */
 
+/* Thẻ "hôm nay" và 7 thẻ ngày đều là <button> bấm được → phải khử style mặc
+   định của button (font, text-align, border) rồi mới dựng lại. */
+.ml-today,
+.ml-day {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  position: relative;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+/* BẮT BUỘC phải là flex-column, KHÔNG để block.
+   Các thẻ nằm trong CSS Grid nên bị kéo cao bằng thẻ dài nhất trong hàng. Với
+   <button>, trình duyệt căn giữa nội dung theo chiều dọc, nên thẻ nào ngắn hơn
+   thì dải tiêu đề bị đẩy tụt xuống — đúng cảnh "Thứ 3/4/5/6 lệch nhau" trong
+   khi "Thứ 2" (dài nhất) thì khít mép. flex-column ghim nội dung lên đỉnh. */
+.ml-day {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
 .ml-today {
   border-radius: var(--radius-lg);
   border: 1px solid var(--primary);
@@ -326,7 +350,13 @@
   padding: 18px 20px;
   margin-bottom: 18px;
 }
-.ml-today h3 { font-size: 15px; font-weight: 800; color: var(--primary-deep); margin: 0 0 10px; }
+.ml-today:hover { box-shadow: 0 8px 24px rgba(45, 52, 54, .1); }
+.ml-today h3 {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 18px; font-weight: 800; color: var(--primary-deep); margin: 0 0 12px;
+}
+/* Mũi tên đẩy về cuối dòng tiêu đề — dấu hiệu "bấm được". */
+.ml-day-more { margin-left: auto; color: var(--primary); font-size: 13px; }
 
 .ml-days { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
 
@@ -334,30 +364,90 @@
   border-radius: var(--radius);
   border: 1px solid var(--border-soft);
   background: var(--surface);
-  padding: 16px 18px;
+  padding: 0 18px 14px;
+  box-shadow: var(--shadow-sm);
+  /* BẮT BUỘC: dải tiêu đề tràn ra hai mép thẻ bằng margin âm. Không clip thì
+     góc vuông của dải chìa ra ngoài góc bo của thẻ, nhìn như thẻ bị vỡ. */
+  overflow: hidden;
 }
-.ml-day-head {
-  display: flex; align-items: baseline; justify-content: space-between;
-  margin-bottom: 10px;
-}
-.ml-day-head b { font-size: 14.5px; font-weight: 800; color: var(--primary-deep); }
-.ml-day-head span { font-size: 13px; font-weight: 700; color: var(--primary); }
+.ml-day:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: var(--primary); }
 
-.ml-meal { margin-bottom: 10px; }
-.ml-meal-label {
-  font-size: 10.5px; font-weight: 700; letter-spacing: 1px;
-  text-transform: uppercase; color: var(--text-sub);
-  display: block; margin-bottom: 3px;
+/* Dải tiêu đề ngày: tràn hết bề ngang thẻ, tách hẳn khỏi phần món bên dưới. */
+.ml-day-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  margin: 0 -18px 13px;
+  padding: 13px 18px 11px;
+  background: var(--sage-50);
+  border-bottom: 1px solid var(--border-soft);
 }
-.ml-meal ul { margin: 0; padding-left: 16px; }
-.ml-meal li { font-size: 13px; color: var(--text-main); line-height: 1.55; }
-.ml-meal li small { color: var(--text-dim); }
+.ml-today .ml-day-head {
+  margin: 0 0 12px;
+  padding: 0 0 10px;
+  background: none;
+}
+.ml-day-head b { font-size: 19px; font-weight: 800; color: var(--primary-deep); }
+.ml-day-head span {
+  font-size: 14px; font-weight: 800; color: var(--primary-deep);
+  background: rgba(255, 255, 255, .75);
+  padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+}
+.ml-today .ml-day-head span { background: rgba(255, 255, 255, .9); }
+
+.ml-meal { margin-bottom: 13px; }
+.ml-meal-label {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--text-sub);
+  margin-bottom: 5px;
+}
+.ml-meal-label i { color: var(--primary); font-size: 13px; }
+.ml-meal ul { margin: 0; padding-left: 18px; }
+.ml-meal li { font-size: 15px; color: var(--text-main); line-height: 1.6; }
+.ml-meal li small { font-size: 13px; color: var(--text-dim); }
 /* Giá tiền: chip riêng để không lẫn với phần "· 450 kcal" ngay cạnh. */
 .ml-dish-price {
   display: inline-block; margin-left: 8px; padding: 1px 8px;
   background: var(--sage-50, #eef5f0); border-radius: 999px;
   color: var(--primary) !important; font-weight: 600; white-space: nowrap;
 }
+
+/* Lời mời bấm ở đáy thẻ — chỉ rõ trong thẻ còn nhiều thông tin hơn.
+   `margin-top: auto` đẩy nó xuống sát đáy, nên ở mọi thẻ trong cùng một hàng
+   dòng này nằm cùng một đường ngang dù nội dung dài ngắn khác nhau. */
+.ml-day-cta {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: auto; padding-top: 11px;
+  border-top: 1px dashed var(--border-soft);
+  font-size: 14px; font-weight: 700; color: var(--primary);
+}
+.ml-day:hover .ml-day-cta { color: var(--primary-deep); }
+
+/* ── modal chi tiết ngày ─────────────────────────────────────────────────── */
+
+/* Vi chất cả ngày — hàng chip gọn ở đầu modal. */
+.ml-day-micros { display: flex; gap: 10px; flex-wrap: wrap; }
+.ml-day-micros span {
+  padding: 6px 13px; border-radius: 999px;
+  background: var(--surface-2); border: 1px solid var(--border-soft);
+  font-size: 14px; color: var(--text-sub);
+}
+.ml-day-micros b { color: var(--text-main); font-weight: 800; }
+
+.ml-dish-range { font-size: 13px; color: var(--text-sub); }
+.ml-dish-range i { color: var(--primary); margin-right: 4px; }
+
+.ml-dish-ings { margin: 5px 0 0; padding-left: 18px; }
+.ml-dish-ings li { font-size: 13.5px; color: var(--text-sub); line-height: 1.6; }
+.ml-dish-ings em { font-style: normal; color: var(--text-dim); }
+
+.ml-modal-note {
+  display: flex; align-items: flex-start; gap: 9px;
+  margin: 0; padding: 11px 15px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  font-size: 13.5px; line-height: 1.65; color: var(--text-sub);
+}
+.ml-modal-note i { color: var(--primary); margin-top: 2px; flex-shrink: 0; }
 
 @media (max-width: 640px) {
   .ml-grid, .ml-days { grid-template-columns: 1fr; }
@@ -496,7 +586,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, .55) 0%, rgba(0, 0, 0, .12) 62%, transparent 100%);
+  background: linear-gradient(to bottom, #0000008c 6%, #0000001f 64%, #292020c7 100%);
 }
 .ml-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .ml-hero-body, .ml-hero-actions { position: relative; z-index: 1; }
@@ -729,131 +819,7 @@
 
 .ml-builder-day { display: flex; flex-direction: column; gap: 12px; }
 
-/* ── Nhập tay: chọn chế độ ───────────────────────────────────────────────── */
 
-.ml-mode-switch {
-  display: flex;
-  gap: 5px;
-  margin: 14px 0 10px;
-  padding: 4px;
-  border-radius: 12px;
-  background: var(--surface-2);
-  border: 1px solid var(--border-soft);
-  width: fit-content;
-  max-width: 100%;
-}
-.ml-mode-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 8px 15px;
-  border: none;
-  border-radius: 9px;
-  background: none;
-  color: var(--text-sub);
-  font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 600;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background .16s ease, color .16s ease;
-}
-.ml-mode-btn.active { background: var(--surface); color: var(--primary-deep); box-shadow: 0 1px 5px rgba(15,40,28,.1); }
-
-.ml-builder-meal { display: flex; flex-direction: column; gap: 6px; }
-.ml-builder-meal-name { font-size: 13px; font-weight: 700; color: var(--text-sub); }
-.ml-builder-meal textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--accent-gray);
-  background: var(--surface);
-  color: var(--text-main);
-  font-family: inherit;
-  font-size: 14px;
-  line-height: 1.55;
-  resize: vertical;
-}
-.ml-builder-meal textarea:focus { outline: none; border-color: var(--primary); }
-
-/* ── Xem trước nguyên liệu đã tách được ──────────────────────────────────── */
-
-.ml-parse-preview { list-style: none; margin: 2px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
-.ml-parse-preview li {
-  display: flex;
-  align-items: baseline;
-  gap: 7px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--text-sub);
-}
-.ml-parse-preview li b { color: var(--text-main); font-weight: 600; flex-shrink: 0; }
-.ml-parse-preview li.ok i { color: var(--primary); }
-.ml-parse-preview li.plain i { color: var(--text-dim); }
-.ml-parse-preview li span { min-width: 0; word-break: break-word; }
-
-/* ── Soạn thảo chi tiết từng nguyên liệu ─────────────────────────────────── */
-
-.ml-detail-editor { display: flex; flex-direction: column; gap: 10px; }
-.ml-detail-dish {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 12px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border-soft);
-  background: var(--surface-2);
-}
-.ml-detail-dish-head { display: flex; gap: 8px; }
-.ml-detail-dish-head input { flex: 1; font-weight: 600; }
-.ml-detail-ing { display: grid; grid-template-columns: 1fr 84px 74px 32px; gap: 6px; }
-.ml-detail-dish input {
-  min-width: 0;
-  padding: 8px 10px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--accent-gray);
-  background: var(--surface);
-  color: var(--text-main);
-  font-family: inherit;
-  font-size: 13.5px;
-}
-.ml-detail-dish input:focus { outline: none; border-color: var(--primary); }
-.ml-detail-dish-head button,
-.ml-detail-ing button {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  border: 1px solid var(--accent-gray);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--text-dim);
-  cursor: pointer;
-}
-.ml-detail-dish-head button:hover,
-.ml-detail-ing button:hover { border-color: var(--danger); color: var(--danger); }
-
-.ml-detail-add-ing,
-.ml-detail-add-dish {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  align-self: flex-start;
-  padding: 6px 12px;
-  border: 1px dashed var(--accent-gray);
-  border-radius: var(--radius-sm);
-  background: none;
-  color: var(--primary);
-  font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.ml-detail-add-ing:hover,
-.ml-detail-add-dish:hover { border-color: var(--primary); background: var(--sage-50); }
-
-@media (max-width: 560px) {
-  .ml-detail-ing { grid-template-columns: 1fr 68px 60px 30px; }
-}
 .ml-builder-count { font-size: 13px; font-weight: 700; color: var(--text-sub); }
 
 @media (max-width: 640px) {

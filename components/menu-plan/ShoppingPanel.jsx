@@ -31,7 +31,27 @@ export default function ShoppingPanel({ items, groups, totals, text, error, load
   }
 
   if (error) return <p style={{ color: 'var(--danger)' }}>{error}</p>;
-  if (loading) return <p className="mp-empty">{t('common.loading', 'Đang tải...')}</p>;
+  /* Dựng danh sách đi chợ phải gộp nguyên liệu + tra bảng giá nên mất vài giây.
+     Một dòng chữ "Đang tải..." trơ khiến người dùng tưởng trang hỏng — khung
+     xương + vòng xoay cho thấy hệ thống đang chạy và sắp ra cái gì. */
+  if (loading) {
+    return (
+      <div className="mp-shop-loading" role="status" aria-live="polite">
+        <div className="mp-shop-loading-head">
+          <span className="mp-spinner" aria-hidden="true" />
+          <span>{t('mp.shop_loading', 'Đang dựng danh sách đi chợ…')}</span>
+        </div>
+        <div className="mp-skeleton-list" aria-hidden="true">
+          {Array.from({ length: 5 }, (_, i) => (
+            <div className="mp-skeleton-row" key={i}>
+              <span className="mp-skeleton-bar" style={{ width: `${58 + ((i * 13) % 32)}%` }} />
+              <span className="mp-skeleton-bar sm" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   if (!items?.length) {
     return (
       <p className="mp-empty">

@@ -19,6 +19,10 @@ import '../../styles/menu-library.css';
 // TemplateDetail render <ShoppingPanel> — component dùng chung với /menu-plan,
 // nên phải nạp cả stylesheet của nó, không thì bảng đi chợ ở đây trần trụi.
 import '../../styles/shopping-panel.css';
+// Thanh macro dùng chung với modal chi tiết ngày (styles/macro-bar.css).
+import '../../styles/macro-bar.css';
+// Khối bữa ăn + danh sách món trong modal chi tiết ngày.
+import '../../styles/dish-list.css';
 import '../../styles/day-notes.css';
 
 /** Tên tiếng Việt của các bố cục mà bộ nhập nhận diện được. */

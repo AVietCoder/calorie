@@ -314,6 +314,8 @@ export async function GET(request) {
       const ranked = await recommendTemplates(household, members, {
         limit: Infinity,
         filters: { tag: url.searchParams.get('tag') || undefined },
+        // Lọc bỏ thực đơn của tài khoản khác — xem chú thích ở recommendTemplates.
+        userId: user.id,
       });
 
       // Kèm sẵn: đang dùng thực đơn nào, và quyền sửa từng thực đơn — để thư
@@ -510,6 +512,7 @@ export async function POST(request) {
           await generatePlan({
             household: await requireOwnedHousehold(user, body.household_id),
             templateId: body.template_id || undefined,
+            userId: user.id,
           })
         );
       case 'regenerate_plan':

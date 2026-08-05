@@ -160,31 +160,8 @@
 .mp-day-kcal { font-size: 19px; font-weight: 800; color: var(--d-ink); white-space: nowrap; }
 .mp-day-kcal small { font-size: 11px; font-weight: 700; color: var(--d-ink); opacity: .7; margin-left: 4px; }
 
-/* thanh macro — 3 đoạn theo % năng lượng (P×4, F×9, C×4) */
-.mp-macro-track {
-  display: flex;
-  height: 8px;
-  border-radius: 999px;
-  overflow: hidden;
-  background: var(--surface-2);
-}
-.mp-macro-seg { transition: width .5s cubic-bezier(.4, 0, .2, 1); }
-.mp-macro-seg.p { background: #5b9cf6; }
-.mp-macro-seg.f { background: #f5a623; }
-.mp-macro-seg.c { background: #7dc976; }
-
-.mp-macro-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--text-sub); }
-.mp-macro-legend b { color: var(--text-main); font-weight: 700; }
-.mp-macro-legend i {
-  display: inline-block;
-  width: 8px; height: 8px;
-  border-radius: 2px;
-  margin-right: 5px;
-  vertical-align: middle;
-}
-.mp-macro-legend .dot-p { background: #5b9cf6; }
-.mp-macro-legend .dot-f { background: #f5a623; }
-.mp-macro-legend .dot-c { background: #7dc976; }
+/* Thanh macro (.mp-macro-*) đã chuyển sang styles/macro-bar.css — dùng chung
+   với modal chi tiết ngày ở /menu-library. */
 
 .mp-day-dishes { display: flex; flex-direction: column; gap: 6px; }
 .mp-dish-chip {
@@ -202,59 +179,9 @@
 
 /* Vỏ modal (.mp-modal*) nằm ở styles/modal.css — /menu-library dùng chung. */
 
-.mp-meal-block { display: flex; flex-direction: column; gap: 8px; }
-.mp-meal-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--text-sub);
-}
-.mp-meal-head b { color: var(--primary); font-size: 12px; letter-spacing: 0; }
-
-.mp-dish-row {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 12px 14px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border-soft);
-  background: var(--surface-2);
-}
-.mp-dish-row.has-audit { border-left: 3px solid var(--warn); }
-.mp-dish-name { font-size: 14px; font-weight: 700; color: var(--text-main); }
-/* Giá tiền: chip nhỏ cạnh tên món, không đè lên dòng dinh dưỡng bên dưới. */
-.mp-dish-price {
-  display: inline-block; margin-left: 8px; padding: 1px 8px;
-  background: var(--sage-50, #eef5f0); border-radius: 999px;
-  color: var(--primary); font-size: 12px; font-weight: 600; white-space: nowrap;
-}
-.mp-dish-meta { font-size: 12px; color: var(--text-sub); }
-.mp-dish-micro { font-size: 11px; color: var(--text-dim); }
-.mp-dish-actions { display: flex; gap: 8px; margin-top: 6px; }
-.mp-dish-actions button {
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--accent-gray);
-  background: var(--surface);
-  color: var(--text-sub);
-  font-family: inherit;
-  font-size: 12px;
-  cursor: pointer;
-}
-.mp-dish-actions button:hover { border-color: var(--primary); color: var(--primary-deep); }
-
-.mp-audit-note {
-  font-size: 11px;
-  color: #9a6400;
-  background: rgba(243, 156, 18, .1);
-  padding: 5px 9px;
-  border-radius: var(--radius-sm);
-  margin-top: 4px;
-}
+/* Khối bữa ăn + danh sách món (.mp-meal-*, .mp-dish-*, .mp-audit-note) đã
+   chuyển sang styles/dish-list.css — dùng chung với modal chi tiết ngày ở
+   /menu-library. */
 
 /* Danh sách đi chợ + "Mua ở đâu" đã chuyển sang styles/shopping-panel.css
    (component dùng chung cho cả /menu-plan lẫn /menu-library). */

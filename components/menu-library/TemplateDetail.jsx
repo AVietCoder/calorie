@@ -6,26 +6,19 @@
  * sách. Nút áp dụng nằm ở trang cha vì nó cần hộp xác nhận khi đang dùng thực
  * đơn khác.
  */
-import { dayLabel, mealLabel, MEAL_ORDER } from '../../lib/excel/labels';
+import { useState } from 'react';
+import { dayLabel, mealLabel } from '../../lib/excel/labels';
 import { getCategory } from '../../lib/family-menu/menu-categories';
 import { sourceLogo } from '../../lib/family-menu/source-logos';
 import ShoppingPanel from '../menu-plan/ShoppingPanel';
 import DayNotes from '../menu-plan/DayNotes';
+import TemplateDayModal from './TemplateDayModal';
+import { MEAL_ICON, mealsOf, kcalOf, todayDayIndex } from './template-day-utils';
 
-/** day_index của HÔM NAY theo tuần Việt Nam (T2 = 1 … CN = 7). */
-export function todayDayIndex() {
-  const d = new Date().getDay();
-  return d === 0 ? 7 : d;
-}
+// Giữ lại lối export cũ cho nơi nào đang import từ file này.
+export { todayDayIndex };
 
-function mealsOf(day) {
-  return [...(day?.menu_template_meals || [])].sort(
-    (a, b) => (MEAL_ORDER[a.meal_type] || 99) - (MEAL_ORDER[b.meal_type] || 99)
-  );
-}
-
-const kcalOf = (dishes) => dishes.reduce((s, d) => s + (Number(d.calories) || 0), 0);
-
+/** Nội dung tóm tắt một ngày, dùng cho cả thẻ "hôm nay" lẫn lưới 7 thẻ. */
 function DayBlock({ day, t }) {
   const meals = mealsOf(day);
   const all = meals.flatMap((m) => m.menu_template_dishes || []);
@@ -42,7 +35,9 @@ function DayBlock({ day, t }) {
         if (!dishes.length) return null;
         return (
           <div className="ml-meal" key={m.id}>
-            <span className="ml-meal-label">{mealLabel(m.meal_type)}</span>
+            <span className="ml-meal-label">
+              <i className={`fa-solid ${MEAL_ICON[m.meal_type] || 'fa-utensils'}`} /> {mealLabel(m.meal_type)}
+            </span>
             <ul>
               {dishes.map((d) => (
                 <li key={d.id}>
@@ -77,6 +72,10 @@ export default function TemplateDetail({ template, inUse, onBack, actions, shopp
   const today = days.find((d) => d.day_index === todayDayIndex());
   const dishCount = days.reduce((s, d) => s + mealsOf(d).reduce((n, m) => n + (m.menu_template_dishes?.length || 0), 0), 0);
   const kcal = avgKcal(days);
+
+  /* Ngày đang mở chi tiết — null là đóng. Thẻ "hôm nay" và thẻ trong lưới 7
+     ngày mở CÙNG một modal, không tách hai luồng. */
+  const [openDay, setOpenDay] = useState(null);
 
   return (
     <div className="ml-detail">
@@ -136,22 +135,38 @@ export default function TemplateDetail({ template, inUse, onBack, actions, shopp
         <div className="ml-hero-actions">{actions}</div>
       </header>
 
+      {/* Cả thẻ "hôm nay" lẫn 7 thẻ trong lưới đều là <button>: bấm vào mở modal
+          chi tiết dinh dưỡng. Dùng <button> chứ không phải <div onClick> để bàn
+          phím và trình đọc màn hình dùng được. */}
       {today && (
-        <div className="ml-today">
-          <h3><i className="fa-solid fa-star" /> {t('ml.today', 'Thực đơn hôm nay')}</h3>
+        <button
+          type="button"
+          className="ml-today"
+          onClick={() => setOpenDay(today)}
+          aria-label={`${t('ml.today', 'Thực đơn hôm nay')} — ${t('ml.see_detail', 'Xem chi tiết dinh dưỡng')}`}
+        >
+          <h3>
+            <i className="fa-solid fa-star" /> {t('ml.today', 'Thực đơn hôm nay')}
+            <span className="ml-day-more"><i className="fa-solid fa-chevron-right" /></span>
+          </h3>
           <DayBlock day={today} t={t} />
-        </div>
+        </button>
       )}
 
       <div className="ml-days">
         {days.map((d) => (
-          <div className="ml-day" key={d.id}>
+          <button type="button" className="ml-day" key={d.id} onClick={() => setOpenDay(d)}>
             <DayBlock day={d} t={t} />
-          </div>
+            <span className="ml-day-cta">
+              {t('ml.see_detail', 'Xem chi tiết dinh dưỡng')} <i className="fa-solid fa-chevron-right" />
+            </span>
+          </button>
         ))}
       </div>
 
       {!days.length && <p className="mp-empty">{t('ml.detail_empty', 'Thực đơn này chưa có dữ liệu ngày nào.')}</p>}
+
+      <TemplateDayModal day={openDay} onClose={() => setOpenDay(null)} t={t} />
 
       {/* Checklist đi chợ — hiện KỂ CẢ khi chưa áp dụng thực đơn, để cân nhắc
           "mua những gì, hết bao nhiêu" trước khi thay kế hoạch đang chạy. */}

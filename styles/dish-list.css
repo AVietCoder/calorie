@@ -1,0 +1,71 @@
+/**
+ * styles/dish-list.css — khối "bữa ăn → danh sách món" trong modal chi tiết ngày.
+ *
+ * Tách khỏi menu-plan.css vì cùng bộ class này được dùng ở CẢ HAI trang:
+ *   • /menu-plan     — DayDetailModal (kế hoạch đã sinh)
+ *   • /menu-library  — TemplateDayModal (xem trước thực đơn mẫu)
+ * Để nguyên chỗ cũ thì modal bên thư viện mất sạch định dạng: tên món và dòng
+ * số liệu là hai <span> trong cùng một thẻ, thiếu `flex-direction: column` nên
+ * dính liền nhau thành "1 chén xôi đậu xanh115 g".
+ *
+ * Cùng cách làm với shopping-panel.css, macro-bar.css, day-notes.css.
+ * Giữ tiền tố .mp-* theo đúng tên cũ để không phải sửa markup đang chạy.
+ *
+ * Cỡ chữ đã tăng 2–3px so với bản đầu theo phản hồi kiểm thử: cỡ cũ đọc mỏi
+ * mắt trên màn hình lớn.
+ */
+
+.mp-meal-block { display: flex; flex-direction: column; gap: 8px; }
+.mp-meal-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+}
+.mp-meal-head b { color: var(--primary); font-size: 14px; letter-spacing: 0; }
+
+.mp-dish-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 13px 15px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-soft);
+  background: var(--surface-2);
+}
+.mp-dish-row.has-audit { border-left: 3px solid var(--warn); }
+.mp-dish-name { font-size: 16px; font-weight: 700; color: var(--text-main); }
+/* Giá tiền: chip nhỏ cạnh tên món, không đè lên dòng dinh dưỡng bên dưới. */
+.mp-dish-price {
+  display: inline-block; margin-left: 8px; padding: 2px 9px;
+  background: var(--sage-50, #eef5f0); border-radius: 999px;
+  color: var(--primary); font-size: 13px; font-weight: 600; white-space: nowrap;
+}
+.mp-dish-meta { font-size: 14px; color: var(--text-sub); }
+.mp-dish-micro { font-size: 13px; color: var(--text-dim); }
+
+.mp-dish-actions { display: flex; gap: 8px; margin-top: 6px; }
+.mp-dish-actions button {
+  padding: 7px 13px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent-gray);
+  background: var(--surface);
+  color: var(--text-sub);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.mp-dish-actions button:hover { border-color: var(--primary); color: var(--primary-deep); }
+
+.mp-audit-note {
+  font-size: 13px;
+  color: #9a6400;
+  background: rgba(243, 156, 18, .1);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  margin-top: 4px;
+}

@@ -34,7 +34,8 @@
     "backfill:dish-ingredients": "node scripts/backfill-dish-ingredients.mjs",
     "seed:sample-menus": "node scripts/seed-reference-menus.mjs",
     "backfill:menu-categories": "node scripts/backfill-menu-categories.mjs",
-    "verify:account-deletion": "node scripts/verify-account-deletion.mjs"
+    "verify:account-deletion": "node scripts/verify-account-deletion.mjs",
+    "backfill:source-name": "node scripts/backfill-source-name.mjs"
   },
   "keywords": [],
   "author": "",
