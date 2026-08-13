@@ -378,7 +378,7 @@ export default function HouseholdPage() {
 
       {!household ? (
         <>
-          <div className="card">
+          <div className="card card-household">
             <h3><i className="fa-solid fa-house" /> {t('hh.start', 'Bắt đầu')}</h3>
             <p style={{ color: 'var(--text-sub)', marginBottom: 18 }}>{t('hh.start_desc', 'Bạn chưa có hồ sơ gia đình. Chọn chế độ để bắt đầu:')}</p>
             <div className="mode-choice">
@@ -395,7 +395,7 @@ export default function HouseholdPage() {
             </div>
           </div>
 
-          <div className="card">
+          <div className="card card-household">
             <h3><i className="fa-solid fa-right-to-bracket" /> {t('hh.join_title_new', 'Đã có mã tham gia?')}</h3>
             <p className="join-hint">{t('hh.join_desc', 'Nhập mã 6 chữ số do chủ hộ chia sẻ (nếu chọn chế độ gia đình).')}</p>
             {joinPanel}
@@ -416,7 +416,7 @@ export default function HouseholdPage() {
           </div>
 
           {isFamily && isOwner && (
-            <div className="card">
+            <div className="card card-household">
               <h3><i className="fa-solid fa-hashtag" /> {t('hh.code_title', 'Mã tham gia gia đình')}</h3>
               <p className="join-hint">{t('hh.code_desc', 'Chia sẻ mã 6 chữ số này. Người nhập mã sẽ hiện ở mục "Yêu cầu tham gia" bên dưới để bạn duyệt.')}</p>
               <div className="join-code-box">
@@ -434,7 +434,7 @@ export default function HouseholdPage() {
           )}
 
           {isFamily && isOwner && (
-            <div className="card">
+            <div className="card card-household">
               <h3>
                 <i className="fa-solid fa-user-clock" /> {t('hh.requests_title', 'Yêu cầu tham gia')}
                 {joinRequests.length > 0 && <span className="req-count">{joinRequests.length}</span>}
@@ -475,7 +475,7 @@ export default function HouseholdPage() {
               hồ sơ cho một tổ chức, không ai tham gia bằng mã và cũng không rời
               đi được. Nên toàn bộ chữ nghĩa gia đình được thay bằng chữ tổ chức
               — KHÔNG ẩn cả thẻ, vì đây là lối duy nhất để xoá hồ sơ đã tạo. */}
-          <div className="card">
+          <div className="card card-household">
             <h3>
               <i className="fa-solid fa-right-from-bracket" />{' '}
               {!isFamily
@@ -553,7 +553,7 @@ export default function HouseholdPage() {
       )}
 
       <div className={`member-modal-overlay${modalOpen ? ' open' : ''}`}>
-        <div className="member-modal card">
+        <div className="member-modal card card-household">
           <h3><i className="fa-solid fa-user-plus" /> {editingId ? t('hh.edit_member', 'Sửa thành viên') : t('hh.add_member_title', 'Thêm thành viên')}</h3>
           <div className="form-grid">
             <label>{t('hh.f_display_name', 'Tên hiển thị')} <input type="text" value={memberForm.display_name} onChange={(e) => setMemberForm((f) => ({ ...f, display_name: e.target.value }))} /></label>
