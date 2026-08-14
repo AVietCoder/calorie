@@ -14,6 +14,7 @@ import ShoppingPanel from '../menu-plan/ShoppingPanel';
 import DayNotes from '../menu-plan/DayNotes';
 import TemplateDayModal from './TemplateDayModal';
 import { MEAL_ICON, mealsOf, kcalOf, todayDayIndex } from './template-day-utils';
+import DishName from './DishName';
 
 // Giữ lại lối export cũ cho nơi nào đang import từ file này.
 export { todayDayIndex };
@@ -41,7 +42,7 @@ function DayBlock({ day, t }) {
             <ul>
               {dishes.map((d) => (
                 <li key={d.id}>
-                  {d.name}
+                  <DishName name={d.name} />
                   {Number(d.calories) > 0 && <small> · {Math.round(d.calories)} kcal</small>}
                   {/* Giá tiền nhập từ Excel — in nguyên văn, không định dạng lại. */}
                   {String(d.price || '').trim() && <small className="ml-dish-price">{d.price}</small>}

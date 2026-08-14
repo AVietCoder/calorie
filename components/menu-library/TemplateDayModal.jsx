@@ -16,6 +16,7 @@
 import { dayLabel, mealLabel } from '../../lib/excel/labels';
 import { macroSplit } from '../menu-plan/DayCard';
 import { MEAL_ICON, mealsOf, kcalOf, templateDayTotals } from './template-day-utils';
+import DishName from './DishName';
 
 const num = (v) => (v == null || !Number.isFinite(Number(v)) ? null : Number(v));
 const vn = (v) => Number(v).toLocaleString('vi-VN');
@@ -109,7 +110,7 @@ export default function TemplateDayModal({ day, onClose, t }) {
                   return (
                     <div className="mp-dish-row" key={dish.id}>
                       <span className="mp-dish-name">
-                        {dish.name}
+                        <DishName name={dish.name} />
                         {String(dish.price || '').trim() && (
                           <small className="mp-dish-price">{dish.price}</small>
                         )}
