@@ -89,6 +89,28 @@ export function splitAmounts(text) {
 }
 
 /**
+ * Tên món ĐÃ BỎ định lượng — dùng cho thẻ tóm tắt 7 ngày.
+ *
+ *   "200 g cháo yến mạch nấu tôm"    → "Cháo yến mạch nấu tôm"
+ *   "1 quả táo và 10 g bơ đậu phộng" → "Táo và bơ đậu phộng"
+ *
+ * Thẻ ngày chỉ để liếc xem hôm đó ăn gì; con số làm dòng dài ra và đẩy tên món
+ * xuống dòng. Định lượng đầy đủ nằm trong modal chi tiết.
+ *
+ * Bỏ định lượng xong thường lộ ra chữ thường ("cháo…") nên viết hoa lại chữ
+ * đầu. Nếu bỏ hết mà rỗng (tên món vốn chỉ là "100 g") thì giữ nguyên bản gốc —
+ * thà hiện con số còn hơn hiện ô trống.
+ */
+export function stripAmounts(text) {
+  const s = String(text || '').trim();
+  if (!s) return '';
+
+  const out = s.replace(AMOUNT_RE, ' ').replace(/\s+/g, ' ').trim();
+  if (!out) return s;
+  return out.charAt(0).toUpperCase() + out.slice(1);
+}
+
+/**
  * Tổng dinh dưỡng của một ngày trong THƯ VIỆN (cây menu_template_*).
  * Khác plan-export: ở đây KHÔNG nhân theo số suất — thư viện là bản mẫu gốc.
  */

@@ -13,8 +13,7 @@ import { sourceLogo } from '../../lib/family-menu/source-logos';
 import ShoppingPanel from '../menu-plan/ShoppingPanel';
 import DayNotes from '../menu-plan/DayNotes';
 import TemplateDayModal from './TemplateDayModal';
-import { MEAL_ICON, mealsOf, kcalOf, todayDayIndex } from './template-day-utils';
-import DishName from './DishName';
+import { MEAL_ICON, mealsOf, kcalOf, todayDayIndex, stripAmounts } from './template-day-utils';
 
 // Giữ lại lối export cũ cho nơi nào đang import từ file này.
 export { todayDayIndex };
@@ -40,9 +39,11 @@ function DayBlock({ day, t }) {
               <i className={`fa-solid ${MEAL_ICON[m.meal_type] || 'fa-utensils'}`} /> {mealLabel(m.meal_type)}
             </span>
             <ul>
+              {/* Thẻ tóm tắt: chỉ TÊN MÓN, bỏ định lượng cho dòng ngắn và dễ
+                  liếc. Định lượng đầy đủ nằm trong modal chi tiết. */}
               {dishes.map((d) => (
                 <li key={d.id}>
-                  <DishName name={d.name} />
+                  {stripAmounts(d.name)}
                   {Number(d.calories) > 0 && <small> · {Math.round(d.calories)} kcal</small>}
                   {/* Giá tiền nhập từ Excel — in nguyên văn, không định dạng lại. */}
                   {String(d.price || '').trim() && <small className="ml-dish-price">{d.price}</small>}
