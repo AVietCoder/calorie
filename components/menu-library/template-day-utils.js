@@ -41,8 +41,20 @@ const UNITS = [
   'gram', 'gam', 'lít', 'lit', 'kg', 'ml', 'g', 'l',
   'chén', 'bát', 'tô', 'ly', 'cốc', 'hũ', 'hộp', 'chai', 'lon', 'gói', 'vỉ', 'bìa',
   'quả', 'trái', 'củ', 'bó', 'con', 'miếng', 'lát', 'múi', 'nhánh', 'bắp', 'ổ',
-  'thìa', 'muỗng', 'suất', 'phần',
+  'thìa', 'muỗng', 'suất', 'phần', 'chiếc',
 ];
+
+/*
+ * CỐ Ý KHÔNG đưa vào UNITS: "trứng", "ngô", "sữa", "hạt", "ức", "bánh", "tép".
+ * Chúng là TÊN THỰC PHẨM chứ không phải đơn vị đếm, coi là đơn vị thì cắt mất
+ * cả tên món:
+ *     "1 trứng ốp la"        → "Ốp la"
+ *     "1 ngô luộc"           → "Luộc"
+ *     "1 sữa chua ít đường"  → "Chua ít đường"
+ *     "5–6 hạt óc chó"       → "Óc chó"
+ * Những trường hợp đó do LEAD_COUNT_RE bên dưới xử lý: chỉ bỏ con số, giữ
+ * nguyên danh từ.
+ */
 
 /*
  * Bắt cụm "SỐ + ĐƠN VỊ" ở bất kỳ đâu trong tên món:
@@ -61,6 +73,15 @@ const AMOUNT_RE = new RegExp(
   'giu'
 );
 
+/*
+ * Số đếm đứng ĐẦU tên món mà không kèm đơn vị: "1 trứng ốp la", "5–6 hạt óc
+ * chó", "2 quýt". Đây vẫn là định lượng, chỉ là tiếng Việt lược mất đơn vị.
+ *
+ * CHỈ bắt ở đầu chuỗi. Số nằm giữa tên món mà không có đơn vị thì gần như luôn
+ * là một phần của tên ("Cá kho tộ 2 lửa"), cắt đi là hỏng nghĩa.
+ */
+const LEAD_COUNT_RE = /^\s*(\d+(?:[.,]\d+)?(?:\s*[–—-]\s*\d+(?:[.,]\d+)?)?|[½¼¾⅓⅔⅛⅕])\s+(?=\p{L})/u;
+
 /**
  * Tách tên món thành các đoạn để tô đậm phần định lượng.
  *
@@ -78,6 +99,20 @@ export function splitAmounts(text) {
   let last = 0;
   // Regex có cờ /g → phải reset lastIndex, nếu không lần gọi sau bắt đầu lệch.
   AMOUNT_RE.lastIndex = 0;
+
+  /* Số đếm trần ở đầu chuỗi — chỉ khi CHÍNH vị trí 0 không phải cụm số+đơn vị,
+     nếu không "1 chén cơm" bị tính hai lần. */
+  const first = AMOUNT_RE.exec(s);
+  AMOUNT_RE.lastIndex = 0;
+  if (!(first && first.index === 0)) {
+    const lead = s.match(LEAD_COUNT_RE);
+    if (lead) {
+      out.push({ text: lead[0], amount: true });
+      last = lead[0].length;
+      AMOUNT_RE.lastIndex = last;
+    }
+  }
+
   let m;
   while ((m = AMOUNT_RE.exec(s)) !== null) {
     if (m.index > last) out.push({ text: s.slice(last, m.index), amount: false });
@@ -105,7 +140,13 @@ export function stripAmounts(text) {
   const s = String(text || '').trim();
   if (!s) return '';
 
-  const out = s.replace(AMOUNT_RE, ' ').replace(/\s+/g, ' ').trim();
+  const out = s
+    .replace(AMOUNT_RE, ' ')
+    // Bỏ số đếm trần còn sót ở đầu ("1 trứng ốp la" → "trứng ốp la"). Chạy SAU
+    // AMOUNT_RE vì "1 chén cơm" phải được cụm số+đơn vị xử lý trước.
+    .replace(LEAD_COUNT_RE, '')
+    .replace(/\s+/g, ' ')
+    .trim();
   if (!out) return s;
   return out.charAt(0).toUpperCase() + out.slice(1);
 }

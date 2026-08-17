@@ -1,9 +1,9 @@
 /**
- * scripts/build-sample-menus.mjs — sinh knowledge/sample-menus.json từ final_sample/.
+ * scripts/build-sample-menus.mjs — sinh knowledge/sample-menus.json từ "Thực đơn mẫu"/.
  *
  *   npm run build:sample-menus
  *
- * Vì sao phải sinh ra JSON rồi commit: final_sample/*.xlsx bị .gitignore nên
+ * Vì sao phải sinh ra JSON rồi commit: "Thực đơn mẫu"/*.xlsx bị .gitignore nên
  * KHÔNG tồn tại trên Vercel. App đọc JSON đã commit, không đọc xlsx lúc chạy.
  *
  * Dùng lại đúng importer deterministic của tính năng upload (useAI:false), nên
@@ -18,7 +18,7 @@ loadEnv(path.join(ROOT, '.env.local'));
 const { importMenuWorkbook } = await import('../lib/excel/import/index.js');
 
 const args = process.argv.slice(2);
-const SRC = valueOf('--src') || path.join(ROOT, 'final_sample');
+const SRC = valueOf('--src') || path.join(ROOT, 'Thực đơn mẫu');
 const OUT = valueOf('--out') || path.join(ROOT, 'knowledge', 'sample-menus.json');
 const LIMIT = Number(valueOf('--limit') || 8);
 const MAX_BYTES = Number(valueOf('--max-bytes') || 180_000);
@@ -86,7 +86,7 @@ const payload = {
   _generatedBy: 'scripts/build-sample-menus.mjs',
   _generatedAt: new Date().toISOString(),
   _sourceCount: files.length,
-  _note: 'Sinh tự động từ final_sample/. KHÔNG sửa tay — chạy lại npm run build:sample-menus.',
+  _note: 'Sinh tự động từ "Thực đơn mẫu"/. KHÔNG sửa tay — chạy lại npm run build:sample-menus.',
   menus,
 };
 

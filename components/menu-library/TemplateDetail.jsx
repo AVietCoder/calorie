@@ -58,6 +58,11 @@ function DayBlock({ day, t }) {
   );
 }
 
+/** jsonb hỏng không được làm sập cả trang chi tiết — nó chỉ là siêu dữ liệu. */
+function safeJson(s) {
+  try { return JSON.parse(s); } catch { return null; }
+}
+
 /** Tổng calo trung bình mỗi ngày — chỉ tính ngày thực sự có số. */
 function avgKcal(days) {
   const perDay = days
@@ -74,6 +79,10 @@ export default function TemplateDetail({ template, inUse, onBack, actions, shopp
   const today = days.find((d) => d.day_index === todayDayIndex());
   const dishCount = days.reduce((s, d) => s + mealsOf(d).reduce((n, m) => n + (m.menu_template_dishes?.length || 0), 0), 0);
   const kcal = avgKcal(days);
+  // Xuất xứ số liệu; jsonb nên có thể về dạng chuỗi nếu tầng nào đó serialize.
+  const sm = typeof template.source_meta === 'string'
+    ? safeJson(template.source_meta)
+    : template.source_meta;
 
   /* Ngày đang mở chi tiết — null là đóng. Thẻ "hôm nay" và thẻ trong lưới 7
      ngày mở CÙNG một modal, không tách hai luồng. */
@@ -167,6 +176,42 @@ export default function TemplateDetail({ template, inUse, onBack, actions, shopp
       </div>
 
       {!days.length && <p className="mp-empty">{t('ml.detail_empty', 'Thực đơn này chưa có dữ liệu ngày nào.')}</p>}
+
+      {/* Xuất xứ số liệu — đọc từ sheet "THÔNG TIN XỬ LÝ" của file nguồn. Thực
+          đơn y tế mà không nói số liệu tra ở đâu thì người dùng không có cách
+          nào kiểm chứng. */}
+      {sm && (sm.nutritionSource || sm.priceSource || sm.processedAt) && (
+        <section className="ml-provenance">
+          <h4><i className="fa-solid fa-book-open-reader" /> {t('ml.provenance', 'Nguồn số liệu')}</h4>
+          <dl>
+            {sm.nutritionSource && (
+              <>
+                <dt>{t('ml.prov_nutrition', 'Dinh dưỡng')}</dt>
+                <dd><a href={sm.nutritionSource} target="_blank" rel="noreferrer noopener">{sm.nutritionSource}</a></dd>
+              </>
+            )}
+            {sm.priceSource && (
+              <>
+                <dt>{t('ml.prov_price', 'Giá tham khảo')}</dt>
+                <dd><a href={sm.priceSource} target="_blank" rel="noreferrer noopener">{sm.priceSource}</a></dd>
+              </>
+            )}
+            {sm.processedAt && (
+              <>
+                <dt>{t('ml.prov_date', 'Ngày xử lý')}</dt>
+                <dd>{sm.processedAt}</dd>
+              </>
+            )}
+            {sm.sourceFile && (
+              <>
+                <dt>{t('ml.prov_file', 'Tệp gốc')}</dt>
+                <dd>{sm.sourceFile}</dd>
+              </>
+            )}
+          </dl>
+          {sm.status && <p className="ml-prov-status">{sm.status}</p>}
+        </section>
+      )}
 
       <TemplateDayModal day={openDay} onClose={() => setOpenDay(null)} t={t} />
 

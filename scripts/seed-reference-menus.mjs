@@ -1,5 +1,5 @@
 /**
- * scripts/seed-reference-menus.mjs — nạp final_sample/*.xlsx vào menu_templates.
+ * scripts/seed-reference-menus.mjs — nạp "Thực đơn mẫu"/*.xlsx vào menu_templates.
  *
  *   node scripts/seed-reference-menus.mjs              # dry-run (mặc định)
  *   node scripts/seed-reference-menus.mjs --apply
@@ -29,7 +29,7 @@ const { categoryFromName, getCategory } = await import('../lib/family-menu/menu-
 const args = process.argv.slice(2);
 const APPLY = args.includes('--apply');
 const FORCE = args.includes('--force');
-const SRC = valueOf('--src') || path.join(ROOT, 'final_sample');
+const SRC = valueOf('--src') || path.join(ROOT, 'Thực đơn mẫu');
 const LIMIT = Number(valueOf('--limit') || 0);
 
 const MIN_DAYS = 5;
@@ -56,9 +56,9 @@ for (const file of files) {
   const source = `reference:${slug(file)}`;
   if (existing.has(source) && !FORCE) { skipped++; continue; }
 
-  let days; let report;
+  let days; let report; let srcMeta;
   try {
-    ({ days, report } = await importMenuWorkbook(fs.readFileSync(path.join(SRC, file)), { useAI: false }));
+    ({ days, report, meta: srcMeta } = await importMenuWorkbook(fs.readFileSync(path.join(SRC, file)), { useAI: false }));
   } catch (e) {
     failed++;
     console.log(`  BỎ  ${pad(file, 46)} ${e.message.slice(0, 46)}`);
@@ -93,6 +93,8 @@ for (const file of files) {
     is_system: true,
     source,
     source_name: meta.sourceName,
+    // Xuất xứ số liệu (USDA, nguồn giá…) từ sheet "THÔNG TIN XỬ LÝ".
+    source_meta: srcMeta || null,
   }).select().single();
   if (error) fail(`Chèn "${meta.title}" lỗi: ${error.message}`);
 
@@ -113,7 +115,12 @@ async function persistDays(templateId, days) {
 
     for (const meal of day.meals) {
       const { data: mealRow, error: mErr } = await sb.from('menu_template_meals')
-        .insert({ template_day_id: dayRow.id, meal_type: meal.meal_type }).select().single();
+        .insert({
+          template_day_id: dayRow.id,
+          meal_type: meal.meal_type,
+          note: String(meal.note || '').slice(0, 500),
+          needs_review: !!meal.needs_review,
+        }).select().single();
       if (mErr) fail(`menu_template_meals: ${mErr.message}`);
 
       for (const dish of meal.dishes) {
@@ -162,7 +169,14 @@ function normalizeDays(days) {
     .map((d) => ({
       day_index: d.day_index,
       meals: (d.meals || [])
-        .map((m) => ({ meal_type: m.meal_type, dishes: (m.dishes || []).filter((x) => x?.name?.trim()) }))
+        // GIỮ note/needs_review: dựng lại object mà quên hai trường này thì
+        // ghi chú của nguồn rơi mất im lặng ngay trước bước ghi DB.
+        .map((m) => ({
+          meal_type: m.meal_type,
+          note: m.note || '',
+          needs_review: !!m.needs_review,
+          dishes: (m.dishes || []).filter((x) => x?.name?.trim()),
+        }))
         .filter((m) => m.dishes.length),
     }))
     .filter((d) => d.meals.length);

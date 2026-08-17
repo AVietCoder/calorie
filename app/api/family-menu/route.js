@@ -188,7 +188,13 @@ async function persistTemplateDays(templateId, days) {
     for (const meal of day.meals) {
       const { data: mealRow, error: mErr } = await supabaseAdmin
         .from('menu_template_meals')
-        .insert({ template_day_id: dayRow.id, meal_type: meal.meal_type })
+        // Ghi chú + cờ rà soát từ sheet "THỰC ĐƠN" của bộ thực đơn chuẩn.
+        .insert({
+          template_day_id: dayRow.id,
+          meal_type: meal.meal_type,
+          note: asText(meal.note).slice(0, 500),
+          needs_review: !!meal.needs_review,
+        })
         .select()
         .single();
       if (mErr) throw mErr;

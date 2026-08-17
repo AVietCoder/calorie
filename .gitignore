@@ -9,6 +9,8 @@ coverage/
 
 # Bộ thực đơn chuẩn (tài liệu bên thứ ba, không commit). App đọc bản đã trích
 # ra knowledge/sample-menus.json chứ không đọc xlsx lúc chạy.
+Thực đơn mẫu/*.xlsx
+Thực đơn mẫu/*.xlsm
 final_sample/*.xlsx
 final_sample/*.xlsm
 reference-menus/*.xlsx

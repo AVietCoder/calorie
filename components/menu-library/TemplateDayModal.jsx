@@ -102,6 +102,22 @@ export default function TemplateDayModal({ day, onClose, t }) {
                   {mealKcal > 0 && <b>{vn(Math.round(mealKcal))} kcal</b>}
                 </div>
 
+                {/* Nguồn tự đánh dấu bữa này là số liệu CHƯA ĐẦY ĐỦ. Đây là ứng
+                    dụng sức khoẻ — không được hiện con số ước tính y như con số
+                    đã kiểm chứng. */}
+                {meal.needs_review && (
+                  <p className="ml-review-flag">
+                    <i className="fa-solid fa-triangle-exclamation" />
+                    <span>{t('ml.needs_review', 'Nguồn ghi nhận số liệu dinh dưỡng của bữa này chưa đầy đủ — hãy xem như tham khảo.')}</span>
+                  </p>
+                )}
+
+                {/* Ghi chú xử lý: nói rõ món nào đã được chuẩn hoá tên so với
+                    tài liệu gốc, để người dùng đối chiếu được. */}
+                {String(meal.note || '').trim() && !meal.needs_review && (
+                  <p className="ml-meal-note">{meal.note}</p>
+                )}
+
                 {dishes.map((dish) => {
                   const micro = microLine(dish, t);
                   const grams = num(dish.base_grams);
