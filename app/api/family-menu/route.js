@@ -236,10 +236,6 @@ async function persistTemplateDays(templateId, days) {
               unit: i.unit ?? null,
               // Giá nguyên liệu: nguyên văn, '' nếu trống.
               price: asPriceText(i.price),
-              // Lượng/tiền THỰC PHẢI MUA — khác lượng dùng trong món.
-              buy_grams: i.buy_grams ?? null,
-              buy_unit: asText(i.buy_unit).slice(0, 60),
-              buy_price: i.buy_price ?? null,
               tags: i.tags || [],
             })));
           if (ingErr) throw ingErr;

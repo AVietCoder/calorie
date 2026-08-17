@@ -150,9 +150,6 @@ async function persistDays(templateId, days) {
             dish.ingredients.map((i) => ({
               dish_id: dishRow.id, name: i.name, grams: i.grams ?? null, unit: i.unit ?? null,
               price: i.price || '', tags: i.tags || [],
-              buy_grams: i.buy_grams ?? null,
-              buy_unit: String(i.buy_unit || '').slice(0, 60),
-              buy_price: i.buy_price ?? null,
             }))
           );
           if (iErr) fail(`menu_template_dish_ingredients: ${iErr.message}`);

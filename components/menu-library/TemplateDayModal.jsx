@@ -16,13 +16,14 @@
 import { dayLabel, mealLabel } from '../../lib/excel/labels';
 import { macroSplit } from '../menu-plan/DayCard';
 import { MEAL_ICON, mealsOf, kcalOf, templateDayTotals } from './template-day-utils';
+import { analyseIngredients } from '../../lib/family-menu/ingredient-analysis';
 import DishName from './DishName';
 
 const num = (v) => (v == null || !Number.isFinite(Number(v)) ? null : Number(v));
 const vn = (v) => Number(v).toLocaleString('vi-VN');
 
 const same = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
-const hasNum = (i) => i.grams != null || i.buy_grams != null || i.buy_price != null || String(i.price || '').trim();
+const hasNum = (i) => i.grams != null || String(i.price || '').trim();
 
 /**
  * Nguyên liệu ĐÁNG hiển thị.
@@ -56,6 +57,13 @@ export default function TemplateDayModal({ day, onClose, t }) {
     : { calories: 0, protein: 0, fat: 0, carbs: 0, fiber: 0, sugar: 0, sodium: 0 };
   const split = macroSplit({ protein, fat, carbs });
   const meals = day ? mealsOf(day) : [];
+
+  /* Phân tích nguyên liệu cả ngày. Macro trả lời "bao nhiêu đạm/béo/bột", còn
+     cái này trả lời "ăn những NHÓM thực phẩm nào" — hai câu hỏi khác nhau: một
+     ngày đủ đạm vẫn có thể không có lấy một cọng rau. */
+  const analysis = analyseIngredients(
+    meals.flatMap((m) => (m.menu_template_dishes || []).flatMap(usefulIngredients)),
+  );
 
   /* Nhiều thực đơn nguồn chỉ liệt kê tên món, không kèm số liệu. Khi đó hiện
      "0 kcal" và một thanh macro xám trơn trông như hỏng — thà nói thẳng là
@@ -102,6 +110,52 @@ export default function TemplateDayModal({ day, onClose, t }) {
               {sugar > 0 && <span><b>{Math.round(sugar)}</b>g {t('mp.sugar', 'Đường')}</span>}
               {sodium > 0 && <span><b>{vn(Math.round(sodium))}</b>mg {t('mp.sodium', 'Natri')}</span>}
             </div>
+          )}
+
+          {/* Phân tích nguyên liệu — cần ít nhất 2 nhóm mới có gì để so sánh. */}
+          {analysis.groups.length > 1 && (
+            <section className="ml-an">
+              <h4 className="ml-an-title">
+                <i className="fa-solid fa-chart-pie" />{' '}
+                {t('ml.an_title', 'Phân tích nguyên liệu')}
+                <small>{vn(analysis.totalGrams)} g · {analysis.counted} {t('ml.an_items', 'nguyên liệu')}</small>
+              </h4>
+
+              <div className="ml-an-track" aria-hidden="true">
+                {analysis.groups.map((g) => (
+                  <span key={g.id} style={{ width: `${g.percent}%`, background: g.color }} />
+                ))}
+              </div>
+
+              <ul className="ml-an-legend">
+                {analysis.groups.map((g) => (
+                  <li key={g.id}>
+                    <i style={{ background: g.color }} />
+                    <span className="ml-an-label">{t(`ml.an_g_${g.id}`, g.label)}</span>
+                    <b>{Math.round(g.percent)}%</b>
+                    <small>{vn(Math.round(g.grams))} g</small>
+                  </li>
+                ))}
+              </ul>
+
+              {/* Thuộc tính dinh dưỡng: ĐẾM nguyên liệu, không cộng gram — một
+                  nguyên liệu mang nhiều thuộc tính cùng lúc. */}
+              {analysis.highlights.length > 0 && (
+                <div className="ml-an-tags">
+                  {analysis.highlights.map((h) => (
+                    <span className={`ml-an-tag ${h.tone}`} key={h.id}>
+                      <i className={`fa-solid ${h.tone === 'good' ? 'fa-circle-check' : 'fa-circle-exclamation'}`} />
+                      {t(`ml.an_h_${h.id}`, h.label)}
+                      <b>{h.count}</b>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <p className="ml-an-note">
+                {t('ml.an_note', 'Tỉ lệ tính theo khối lượng nguyên liệu, không phải theo năng lượng.')}
+              </p>
+            </section>
           )}
 
           {meals.map((meal) => {
@@ -175,9 +229,6 @@ export default function TemplateDayModal({ day, onClose, t }) {
                         </span>
                       )}
 
-                      {/* Nguyên liệu đầy đủ: LƯỢNG DÙNG trong món, LƯỢNG PHẢI
-                          MUA ngoài chợ (chợ không bán lẻ 150 g gạo), giá phần
-                          dùng và tiền thực phải trả. */}
                       {/* Có tên nguyên liệu nhưng chưa có số nào — liệt kê một
                           dòng, không dựng bảng rỗng. */}
                       {ings.length > 0 && !ingsHaveNumbers && (
@@ -191,9 +242,7 @@ export default function TemplateDayModal({ day, onClose, t }) {
                           <thead>
                             <tr>
                               <th>{t('ml.ing', 'Nguyên liệu')}</th>
-                              <th>{t('ml.ing_use', 'Dùng')}</th>
-                              <th>{t('ml.ing_buy', 'Cần mua')}</th>
-                              <th>{t('ml.ing_cost', 'Tiền mua')}</th>
+                              <th>{t('ml.ing_use', 'Định lượng')}</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -209,10 +258,6 @@ export default function TemplateDayModal({ day, onClose, t }) {
                                   {i.grams != null ? `${vn(i.grams)} ${i.unit || 'g'}` : '—'}
                                   {String(i.price || '').trim() && <small>{i.price}</small>}
                                 </td>
-                                <td>
-                                  {i.buy_grams != null ? `${vn(i.buy_grams)} ${i.buy_unit || i.unit || 'g'}` : '—'}
-                                </td>
-                                <td>{i.buy_price != null ? `${vn(Math.round(i.buy_price))} đ` : '—'}</td>
                               </tr>
                             ))}
                           </tbody>
