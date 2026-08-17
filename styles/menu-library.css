@@ -440,6 +440,10 @@
 .ml-dish-range { font-size: 13px; color: var(--text-sub); }
 .ml-dish-range i { color: var(--primary); margin-right: 4px; }
 
+/* Nguyên liệu chỉ có tên, chưa có số nào — một dòng gọn thay cho bảng rỗng. */
+.ml-ing-plain { font-size: 13px; color: var(--text-sub); line-height: 1.6; }
+.ml-ing-plain i { color: var(--primary); margin-right: 6px; }
+
 /* Bảng nguyên liệu: Dùng / Cần mua / Tiền mua.
    table-layout: fixed để mọi món trong modal dùng chung một khung cột — không
    thì mỗi bảng tự co theo nội dung và các món xô lệch nhau. */

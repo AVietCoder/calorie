@@ -180,10 +180,42 @@ export default function TemplateDetail({ template, inUse, onBack, actions, shopp
       {/* Xuất xứ số liệu — đọc từ sheet "THÔNG TIN XỬ LÝ" của file nguồn. Thực
           đơn y tế mà không nói số liệu tra ở đâu thì người dùng không có cách
           nào kiểm chứng. */}
-      {sm && (sm.nutritionSource || sm.priceSource || sm.processedAt) && (
+      {sm && (sm.url || sm.nutritionSource || sm.priceSource || sm.processedAt) && (
         <section className="ml-provenance">
           <h4><i className="fa-solid fa-book-open-reader" /> {t('ml.provenance', 'Nguồn số liệu')}</h4>
           <dl>
+            {/* Bài gốc của bệnh viện/nhà thuốc — đặt TRƯỚC nguồn tra cứu, vì đây
+                mới là thứ người dùng cần mở ra đối chiếu. */}
+            {sm.url && (
+              <>
+                <dt>{t('ml.prov_article', 'Bài gốc')}</dt>
+                <dd><a href={sm.url} target="_blank" rel="noreferrer noopener">{sm.publisher || sm.url}</a></dd>
+              </>
+            )}
+            {sm.publishedAt && (
+              <>
+                <dt>{t('ml.prov_published', 'Ngày đăng')}</dt>
+                <dd>{sm.publishedAt}</dd>
+              </>
+            )}
+            {sm.reviewer && (
+              <>
+                <dt>{t('ml.prov_reviewer', 'Tham vấn y khoa')}</dt>
+                <dd>{sm.reviewer}{sm.reviewerOrg ? ` — ${sm.reviewerOrg}` : ''}</dd>
+              </>
+            )}
+            {sm.audience && (
+              <>
+                <dt>{t('ml.prov_audience', 'Đối tượng')}</dt>
+                <dd>{sm.audience}</dd>
+              </>
+            )}
+            {(sm.calorieTarget || sm.macroRatio) && (
+              <>
+                <dt>{t('ml.prov_target', 'Khẩu phần mẫu')}</dt>
+                <dd>{[sm.calorieTarget, sm.macroRatio && `G–P–L ${sm.macroRatio}`].filter(Boolean).join(' · ')}</dd>
+              </>
+            )}
             {sm.nutritionSource && (
               <>
                 <dt>{t('ml.prov_nutrition', 'Dinh dưỡng')}</dt>

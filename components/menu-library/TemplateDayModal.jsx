@@ -21,6 +21,22 @@ import DishName from './DishName';
 const num = (v) => (v == null || !Number.isFinite(Number(v)) ? null : Number(v));
 const vn = (v) => Number(v).toLocaleString('vi-VN');
 
+const same = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+const hasNum = (i) => i.grams != null || i.buy_grams != null || i.buy_price != null || String(i.price || '').trim();
+
+/**
+ * Nguyên liệu ĐÁNG hiển thị.
+ *
+ * Bộ nhập tự do sinh một "nguyên liệu giả" trùng y hệt tên món cho những món
+ * không khai định lượng ("Sữa đậu nành không đường" → nguyên liệu "Sữa đậu nành
+ * không đường", không số nào). Hiện nó ra là lặp lại tên món kèm một hàng toàn
+ * dấu "—" — nhiễu thuần tuý, không thêm thông tin gì.
+ */
+function usefulIngredients(dish) {
+  const list = dish.menu_template_dish_ingredients || [];
+  return list.filter((i) => hasNum(i) || !same(i.name, dish.name));
+}
+
 /** "Xơ 4g · Đường 6g · Natri 520mg" — bỏ qua trường không có số, KHÔNG điền 0. */
 function microLine(dish, t) {
   const bits = [];
@@ -122,7 +138,10 @@ export default function TemplateDayModal({ day, onClose, t }) {
                   const micro = microLine(dish, t);
                   const grams = num(dish.base_grams);
                   const dishKcal = num(dish.calories);
-                  const ings = dish.menu_template_dish_ingredients || [];
+                  const ings = usefulIngredients(dish);
+                  // Chỉ dựng bảng 4 cột khi có ít nhất MỘT con số; không thì
+                  // bảng chỉ toàn dấu "—", tệ hơn là liệt kê một dòng.
+                  const ingsHaveNumbers = ings.some(hasNum);
                   return (
                     <div className="mp-dish-row" key={dish.id}>
                       <span className="mp-dish-name">
@@ -159,7 +178,15 @@ export default function TemplateDayModal({ day, onClose, t }) {
                       {/* Nguyên liệu đầy đủ: LƯỢNG DÙNG trong món, LƯỢNG PHẢI
                           MUA ngoài chợ (chợ không bán lẻ 150 g gạo), giá phần
                           dùng và tiền thực phải trả. */}
-                      {ings.length > 0 && (
+                      {/* Có tên nguyên liệu nhưng chưa có số nào — liệt kê một
+                          dòng, không dựng bảng rỗng. */}
+                      {ings.length > 0 && !ingsHaveNumbers && (
+                        <span className="ml-ing-plain">
+                          <i className="fa-solid fa-basket-shopping" /> {ings.map((i) => i.name).join(' · ')}
+                        </span>
+                      )}
+
+                      {ings.length > 0 && ingsHaveNumbers && (
                         <table className="ml-ing-table">
                           <thead>
                             <tr>
