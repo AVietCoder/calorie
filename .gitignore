@@ -11,10 +11,6 @@ coverage/
 # ra knowledge/sample-menus.json chứ không đọc xlsx lúc chạy.
 Thực đơn mẫu/*.xlsx
 Thực đơn mẫu/*.xlsm
-final_sample/*.xlsx
-final_sample/*.xlsm
-reference-menus/*.xlsx
-reference-menus/*.xlsm
 tmp-verify/
 tmp-excel-verify/
 

@@ -39,3 +39,21 @@ alter table public.menu_templates
 create index if not exists idx_menu_template_meals_review
   on public.menu_template_meals (template_day_id)
   where needs_review;
+
+-- 3) menu_template_dish_ingredients.buy_* — từ sheet "CHI TIẾT NGUYÊN LIỆU"
+--
+--    Khoảng cách giữa "cần bao nhiêu" và "phải mua bao nhiêu":
+--      dùng   150 g gạo lứt  (grams / unit — đã có)
+--      mua  1.000 g gạo sống, hết 22.000đ  (buy_grams / buy_unit / buy_price)
+--
+--    Chợ không bán lẻ 150 g gạo. Không có cặp số này thì người dùng không biết
+--    thực tế phải bỏ ra bao nhiêu tiền cho lần đi chợ đầu tiên.
+--
+--    buy_price là numeric (không phải text như `price`): nguồn ghi sẵn một con
+--    số sạch, không phải chuỗi khoảng giá do người dùng gõ.
+alter table public.menu_template_dish_ingredients
+  add column if not exists buy_grams numeric;
+alter table public.menu_template_dish_ingredients
+  add column if not exists buy_unit text not null default '';
+alter table public.menu_template_dish_ingredients
+  add column if not exists buy_price numeric;

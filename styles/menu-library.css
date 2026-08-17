@@ -440,9 +440,43 @@
 .ml-dish-range { font-size: 13px; color: var(--text-sub); }
 .ml-dish-range i { color: var(--primary); margin-right: 4px; }
 
-.ml-dish-ings { margin: 5px 0 0; padding-left: 18px; }
-.ml-dish-ings li { font-size: 13.5px; color: var(--text-sub); line-height: 1.6; }
-.ml-dish-ings em { font-style: normal; color: var(--text-dim); }
+/* Bảng nguyên liệu: Dùng / Cần mua / Tiền mua.
+   table-layout: fixed để mọi món trong modal dùng chung một khung cột — không
+   thì mỗi bảng tự co theo nội dung và các món xô lệch nhau. */
+.ml-ing-table {
+  width: 100%; margin-top: 6px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 13px;
+}
+.ml-ing-table th {
+  padding: 5px 8px;
+  text-align: left;
+  font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border-soft);
+}
+.ml-ing-table th:not(:first-child),
+.ml-ing-table td:not(:first-child) { text-align: right; width: 23%; }
+.ml-ing-table td {
+  padding: 7px 8px;
+  color: var(--text-sub);
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: top;
+  word-break: break-word;
+}
+.ml-ing-table tr:last-child td { border-bottom: none; }
+.ml-ing-table td:first-child { color: var(--text-main); font-weight: 500; }
+/* Nhãn nhóm và giá phần dùng xuống dòng riêng, chữ nhạt hơn. */
+.ml-ing-table small { display: block; font-size: 11.5px; color: var(--text-dim); font-weight: 400; }
+.ml-ing-tag { text-transform: lowercase; }
+
+@media (max-width: 560px) {
+  .ml-ing-table { font-size: 12px; }
+  .ml-ing-table th, .ml-ing-table td { padding: 6px 5px; }
+  .ml-ing-table th:not(:first-child),
+  .ml-ing-table td:not(:first-child) { width: 25%; }
+}
 
 /* Cờ "số liệu chưa đầy đủ" — màu cảnh báo, không phải xám như ghi chú thường. */
 .ml-review-flag {

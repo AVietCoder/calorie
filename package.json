@@ -28,7 +28,7 @@
     "test:nutrition": "node scripts/test-nutrition.mjs",
     "seed:kb-base": "node scripts/seed-base-knowledge.mjs",
     "verify:excel": "node scripts/verify-excel-export.mjs",
-    "build:excel-templates": "python3 scripts/extract-excel-templates.py --src ./final_sample",
+    "build:excel-templates": "python3 scripts/extract-excel-templates.py --src ./Thực đơn mẫu",
     "verify:shopping": "node scripts/verify-shopping-parse.mjs",
     "build:sample-menus": "node scripts/build-sample-menus.mjs",
     "backfill:dish-ingredients": "node scripts/backfill-dish-ingredients.mjs",

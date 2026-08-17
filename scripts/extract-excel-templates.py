@@ -13,7 +13,7 @@ derives the RAG corpus from the source PDFs.
 Re-run it whenever new reference files are added:
 
     pip install -r scripts/requirements.txt
-    python3 scripts/extract-excel-templates.py --src ./final_sample
+    python3 scripts/extract-excel-templates.py --src "./Thực đơn mẫu"
 
 What it extracts per file
 -------------------------

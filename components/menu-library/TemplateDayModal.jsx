@@ -156,16 +156,40 @@ export default function TemplateDayModal({ day, onClose, t }) {
                         </span>
                       )}
 
+                      {/* Nguyên liệu đầy đủ: LƯỢNG DÙNG trong món, LƯỢNG PHẢI
+                          MUA ngoài chợ (chợ không bán lẻ 150 g gạo), giá phần
+                          dùng và tiền thực phải trả. */}
                       {ings.length > 0 && (
-                        <ul className="ml-dish-ings">
-                          {ings.map((i) => (
-                            <li key={i.id}>
-                              {i.name}
-                              {i.grams != null && <em> · {vn(i.grams)} {i.unit || 'g'}</em>}
-                              {String(i.price || '').trim() && <em> · {i.price}</em>}
-                            </li>
-                          ))}
-                        </ul>
+                        <table className="ml-ing-table">
+                          <thead>
+                            <tr>
+                              <th>{t('ml.ing', 'Nguyên liệu')}</th>
+                              <th>{t('ml.ing_use', 'Dùng')}</th>
+                              <th>{t('ml.ing_buy', 'Cần mua')}</th>
+                              <th>{t('ml.ing_cost', 'Tiền mua')}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {ings.map((i) => (
+                              <tr key={i.id}>
+                                <td>
+                                  {i.name}
+                                  {(i.tags || []).length > 0 && (
+                                    <small className="ml-ing-tag">{i.tags.join(', ')}</small>
+                                  )}
+                                </td>
+                                <td>
+                                  {i.grams != null ? `${vn(i.grams)} ${i.unit || 'g'}` : '—'}
+                                  {String(i.price || '').trim() && <small>{i.price}</small>}
+                                </td>
+                                <td>
+                                  {i.buy_grams != null ? `${vn(i.buy_grams)} ${i.buy_unit || i.unit || 'g'}` : '—'}
+                                </td>
+                                <td>{i.buy_price != null ? `${vn(Math.round(i.buy_price))} đ` : '—'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       )}
                     </div>
                   );
