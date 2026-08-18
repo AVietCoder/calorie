@@ -29,7 +29,12 @@ const { categoryFromName, getCategory } = await import('../lib/family-menu/menu-
 const args = process.argv.slice(2);
 const APPLY = args.includes('--apply');
 const FORCE = args.includes('--force');
-const SRC = valueOf('--src') || path.join(ROOT, 'Thực đơn mẫu');
+/* Bộ nguồn nằm ở "Thực đơn mẫu/" hay "reference-menus/" tuỳ lúc — hai thư mục
+   là bản sao của nhau. Lấy cái nào đang tồn tại thay vì cắm cứng một tên rồi
+   chết khi thư mục kia bị xoá. */
+const SRC = valueOf('--src')
+  || [path.join(ROOT, 'Thực đơn mẫu'), path.join(ROOT, 'reference-menus')].find((p) => fs.existsSync(p))
+  || path.join(ROOT, 'reference-menus');
 const LIMIT = Number(valueOf('--limit') || 0);
 
 const MIN_DAYS = 5;
@@ -44,16 +49,24 @@ await requireColumn('menu_templates', 'is_system', 'migrations/menu_template_met
 
 console.log(APPLY ? '\n*** CHẾ ĐỘ GHI (--apply) ***\n' : '\n--- DRY RUN: không ghi gì. Thêm --apply để thực thi. ---\n');
 
-const { data: existingRows } = await sb.from('menu_templates').select('id, source').eq('is_system', true);
+/* Không nuốt lỗi ở đây: nếu truy vấn hỏng thì `existing` rỗng, mọi thực đơn bị
+   coi là mới và lần chạy --apply sẽ nhân đôi toàn bộ thư viện. */
+const { data: existingRows, error: exErr } = await sb
+  .from('menu_templates').select('id, source').eq('is_system', true);
+if (exErr) fail(`Không đọc được thực đơn đã seed: ${exErr.message}`);
 const existing = new Map((existingRows || []).map((r) => [r.source, r.id]));
 
-let files = fs.readdirSync(SRC).filter((f) => /\.xlsx?m?$/i.test(f)).sort();
+/* Bỏ file tạm Excel (~$…) — mở file trong Excel là sinh ra, không phải thực đơn. */
+let files = fs.readdirSync(SRC)
+  .filter((f) => /\.xlsx?m?$/i.test(f) && !f.startsWith('~$'))
+  .sort();
 if (LIMIT) files = files.slice(0, LIMIT);
+const sourceKeys = buildSourceKeys(files);
 
 let added = 0; let skipped = 0; let failed = 0; let totalDishes = 0;
 
 for (const file of files) {
-  const source = `reference:${slug(file)}`;
+  const source = sourceKeys.get(file);
   if (existing.has(source) && !FORCE) { skipped++; continue; }
 
   let days; let report; let srcMeta;
@@ -80,7 +93,14 @@ for (const file of files) {
 
   if (!APPLY) continue;
 
-  if (existing.has(source)) await sb.from('menu_templates').delete().eq('id', existing.get(source));
+  /* Xoá theo `source`, KHÔNG theo id: DB đang có những khoá xuất hiện hai lần
+     (di sản của lần seed trước), mà Map chỉ giữ được một id — xoá theo id thì
+     bản trùng còn lại nằm nguyên trong thư viện. */
+  if (existing.has(source)) {
+    const { error: delErr } = await sb.from('menu_templates')
+      .delete().eq('source', source).eq('is_system', true);
+    if (delErr) fail(`Xoá bản cũ "${source}" lỗi: ${delErr.message}`);
+  }
 
   const { data: tpl, error } = await sb.from('menu_templates').insert({
     title: meta.title,
@@ -209,10 +229,42 @@ function titleCase(s) {
   return t ? t.charAt(0).toUpperCase() + t.slice(1) : 'Thực đơn';
 }
 
+/**
+ * Khoá định danh ổn định của một file nguồn (`source` trong menu_templates).
+ *
+ * PHẢI cắt hậu tố "_formatted" y như describe(): bộ thực đơn gắn hậu tố này vào
+ * mọi tên file, nên nếu giữ lại thì cùng một thực đơn trước và sau khi chuẩn hoá
+ * ra hai khoá khác nhau — lần seed sau không nhận ra bản cũ và đẻ ra bản trùng
+ * thay vì ghi đè. Đúng lỗi đó đã xảy ra: 38 bản ghi cũ mang khoá không hậu tố.
+ */
 function slug(file) {
-  return file.replace(/\.xlsx?m?$/i, '')
+  return file.replace(/\.xlsx?m?$/i, '').replace(/[_\s-]*formatted$/i, '')
     .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd')
     .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+}
+
+/**
+ * Khoá cho TỪNG file, đã khử trùng lặp.
+ *
+ * Bỏ dấu khiến hai file khác nhau có thể ra cùng một khoá — "[GOUT] Long
+ * Chau__formatted" và "[GOUT] Long Châu_formatted" đều thành "gout-long-chau".
+ * Lần seed trước đã im lặng ghi đè lẫn nhau và để lại hai dòng cùng khoá trong
+ * DB. Ở đây gắn hậu tố -2, -3… theo thứ tự tên file đã sort (nên ổn định giữa
+ * các lần chạy) và báo rõ ra màn hình thay vì nuốt.
+ */
+function buildSourceKeys(files) {
+  const keys = new Map();
+  const used = new Map();
+  for (const file of files) {
+    const base = slug(file);
+    const n = (used.get(base) || 0) + 1;
+    used.set(base, n);
+    if (n > 1) {
+      console.log(`  ! Trùng khoá "${base}" — "${file}" dùng khoá "${base}-${n}".`);
+    }
+    keys.set(file, `reference:${n === 1 ? base : `${base}-${n}`}`);
+  }
+  return keys;
 }
 
 /* ───────────────────────── tiện ích ───────────────────────── */
