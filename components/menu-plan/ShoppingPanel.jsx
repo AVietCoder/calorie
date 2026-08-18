@@ -67,10 +67,11 @@ export default function ShoppingPanel({ items, groups, totals, text, error, load
    * "Đơn giá"/"Thành tiền" chỉ toàn dấu "-" trải dài, vừa chiếm chỗ vừa làm
    * bảng trông như bị hỏng. Chỉ giấu khi TOÀN BỘ danh sách không có giá; còn
    * một mục có giá thì vẫn giữ cột để không mất thông tin.
+   *
+   * KHÔNG xét manual_price: nó đã chuyển xuống dòng phụ dưới tên nguyên liệu,
+   * nên nếu chỉ có mình nó thì hai cột tiền vẫn rỗng và không đáng dựng.
    */
-  const hasAnyPrice = items.some(
-    (i) => i.unit_price != null || i.line_total != null || i.manual_price
-  );
+  const hasAnyPrice = items.some((i) => i.unit_price != null || i.line_total != null);
 
   return (
     <>
@@ -162,20 +163,30 @@ export default function ShoppingPanel({ items, groups, totals, text, error, load
                     {it.aliases?.length > 0 && (
                       <span className="mp-shop-alias">{t('mp.merged_from', 'Gộp từ')}: {it.aliases.join(', ')}</span>
                     )}
+                    {/* Giá khai trong Excel: NGUYÊN VĂN, có thể là một khoảng
+                        ("12.000đ -> 15.000đ") và không nói rõ tính trên đơn vị
+                        nào. Nó KHÔNG sinh ra Thành tiền, nên phải nằm ngoài hai
+                        cột tiền — để trong cột "Đơn giá" là mời người đọc nhân
+                        nó với Số lượng rồi thấy lệch. */}
+                    {it.manual_price && (
+                      <span className="mp-shop-alias">
+                        {t('mp.price_in_file', 'Giá ghi trong file')}: {it.manual_price}
+                      </span>
+                    )}
                   </td>
                   <td>
                     {it.qty == null
                       ? <span className="mp-est-chip">{t('mp.need_estimate', 'cần ước lượng')}</span>
                       : `${qty(it.qty)} ${it.unit || ''}`}
                   </td>
-                  {/* Giá khai trong Excel hiện NGUYÊN VĂN (có thể là một khoảng
-                      như "12.000đ -> 15.000đ"); không có thì lùi về giá tra bảng
-                      đã định dạng. */}
+                  {/* Đơn giá × Số lượng = Thành tiền. Cả hai cột cùng lấy từ
+                      bảng giá tự động nên phép nhân này luôn khớp; kèm đơn vị
+                      vì "18đ" trơ trọi không nói lên là trên mỗi gram. */}
                   {hasAnyPrice && (
                     <td>
-                      {it.manual_price
-                        ? <span className="mp-shop-manual-price" title={t('mp.price_from_excel', 'Giá khai trong file Excel')}>{it.manual_price}</span>
-                        : money(it.unit_price)}
+                      {it.unit_price == null
+                        ? '-'
+                        : <>{money(it.unit_price)}<span className="mp-shop-per">/{it.unit || 'g'}</span></>}
                     </td>
                   )}
                   {hasAnyPrice && <td>{money(it.line_total)}</td>}

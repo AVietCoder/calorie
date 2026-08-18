@@ -178,16 +178,9 @@
    thành "Bắp cảiGộp từ: Canh bắp cải cuộn thịt". */
 .mp-shop-alias { display: block; font-size: 11px; color: var(--text-dim); margin-top: 2px; }
 
-/* Giá khai tay trong Excel — phân biệt với giá tra bảng tự động. */
-.mp-shop-manual-price {
-  display: inline-block;
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: var(--sage-50);
-  color: var(--primary-deep);
-  font-weight: 600;
-  white-space: nowrap;
-}
+/* Đơn vị của đơn giá ("/g", "/bó") — nhạt và nhỏ hơn con số, để mắt đọc ra
+   "18đ/g × 150 g = 2.700đ" thay vì chỉ thấy một con số 18 lơ lửng. */
+.mp-shop-per { font-size: 11px; color: var(--text-dim); font-weight: 400; }
 
 .mp-est-chip {
   display: inline-block;

@@ -253,26 +253,42 @@
   background-image: var(--ml-grad);
   background-size: cover;
   background-position: center;
+  /* Chốt chặn cuối: bìa cao cố định, nên bất cứ thứ gì bên trong lỡ to hơn
+     cũng bị cắt tại đây thay vì đè lên tiêu đề thẻ ở dưới. */
+  overflow: hidden;
 }
 .ml-cover i { font-size: 34px; color: rgba(255,255,255,.92); }
-.ml-cover img { width: 100%; height: 100%; object-fit: cover; }
 
-/* Logo đơn vị phát hành: đặt trên tấm nền trắng bo góc.
+/* Ảnh bìa tràn viền — CHỈ con trực tiếp.
+   Viết ".ml-cover img" thì nó cũng trúng luôn ảnh logo nằm trong
+   .ml-source-logo, mà hai bộ chọn có độ ưu tiên BẰNG NHAU (1 class + 1 tag),
+   nên ai thắng chỉ còn phụ thuộc thứ tự dòng sau khi bundler gộp file. Thắng
+   nhầm là logo bị object-fit:cover phóng to cắt cụt. Dùng ">" để hai bộ chọn
+   không bao giờ giẫm chân nhau nữa. */
+.ml-cover > img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Logo đơn vị phát hành: tấm nền trắng bo góc đặt trên gradient.
    Logo nguồn có đủ kiểu nền (trong suốt, trắng, màu) nên thả thẳng lên gradient
    sẽ chỗ chìm chỗ chói. `contain` để không cắt mất chữ trong logo. */
 .ml-source-logo {
   display: grid;
   place-items: center;
-  width: 76%;
-  max-width: 190px;
-  height: 62px;
-  padding: 8px 14px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, .94);
-  box-shadow: 0 4px 14px rgba(15, 40, 28, .16);
+  /* Bó theo CHIỀU CAO bìa (104px) chứ không đặt số tuyệt đối: luôn còn lề trên
+     dưới, logo không bao giờ chạm mép bìa dù bìa có đổi kích thước. */
+  width: min(74%, 172px);
+  height: 60px;
+  padding: 7px 13px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(15, 40, 28, .14);
 }
+/* max-* thay vì width/height 100%: logo nhỏ giữ nguyên kích thước thật, logo to
+   mới bị thu lại. Ép 100% khiến logo vuông bị kéo căng lấp đầy ô chữ nhật. */
 .ml-source-logo img {
-  width: 100%; height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
   object-fit: contain;
 }
 

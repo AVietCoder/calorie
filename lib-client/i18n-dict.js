@@ -877,7 +877,7 @@ export const DICT = {
     "mp.copied": "Copied",
     "mp.expand": "Show all",
     "mp.collapse": "Show less",
-    "mp.price_from_excel": "Price declared in the Excel file",
+    "mp.price_in_file": "Price in the source file",
     "ml.tab_browse": "Library",
     "ml.tab_add": "Add a menu",
     "ml.search": "Search menus",
