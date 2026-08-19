@@ -75,6 +75,8 @@ function avgKcal(days) {
 export default function TemplateDetail({ template, inUse, onBack, actions, shopping, t }) {
   const cat = getCategory(template.category);
   const logo = sourceLogo(template.source_name);
+  /* Ảnh nền hero: ưu tiên ảnh admin tải lên, không có thì lấy logo đơn vị. */
+  const heroBg = template.image_url || logo;
   const days = [...(template.days || [])].sort((a, b) => a.day_index - b.day_index);
   const today = days.find((d) => d.day_index === todayDayIndex());
   const dishCount = days.reduce((s, d) => s + mealsOf(d).reduce((n, m) => n + (m.menu_template_dishes?.length || 0), 0), 0);
@@ -94,17 +96,32 @@ export default function TemplateDetail({ template, inUse, onBack, actions, shopp
         <i className="fa-solid fa-arrow-left" /> {t('ml.back', 'Tất cả thực đơn')}
       </button>
 
-      {/* Đầu trang dạng banner theo màu danh mục — thay cho một dòng tiêu đề trơ. */}
+      {/* Đầu trang dạng hero banner: ảnh phủ kín nền, mọi nội dung nằm đè lên. */}
       <header
         className="ml-hero"
         style={{ '--ml-grad': `linear-gradient(135deg, ${cat.from}, ${cat.to})` }}
       >
-        {template.image_url && <img className="ml-hero-img" src={template.image_url} alt="" />}
+        {/*
+         * Nền hero. Ảnh admin tải lên là ẢNH THẬT nên để nguyên nét; logo đơn vị
+         * thì phủ bản đã làm mờ (class is-logo) — xem ghi chú ở .ml-hero-bg
+         * trong styles/menu-library.css. Dùng <span> nền thay cho <img> vì đây
+         * là trang trí, không mang thông tin: trình đọc màn hình bỏ qua, và
+         * background-size/position lo phần phủ kín mà không kéo méo ảnh.
+         */}
+        {heroBg && (
+          <span
+            className={`ml-hero-bg${template.image_url ? '' : ' is-logo'}`}
+            style={{ backgroundImage: `url("${heroBg}")` }}
+            aria-hidden="true"
+          />
+        )}
+
         <div className="ml-hero-body">
           <div className="ml-hero-top">
             <span className="ml-hero-cat"><i className={`fa-solid ${cat.icon}`} /> {cat.label}</span>
-            {/* Logo đơn vị phát hành — ghi nhận nguồn ngay ở đầu trang. */}
-            {!template.image_url && logo && (
+            {/* Logo đơn vị phát hành — ghi nhận nguồn ngay ở đầu trang. Nền hero
+                là bản làm mờ nên vẫn cần một bản NÉT ở đây mới đọc ra đơn vị. */}
+            {logo && (
               <span className="ml-hero-logo" title={template.source_name || ''}>
                 <img src={logo} alt={template.source_name || ''} loading="lazy" />
               </span>
@@ -122,7 +139,7 @@ export default function TemplateDetail({ template, inUse, onBack, actions, shopp
           </div>
 
           <h2>{template.title}</h2>
-          {template.description && <p className="ml-hero-desc" style={{ color: 'white' }}>{template.description}</p>}
+          {template.description && <p className="ml-hero-desc">{template.description}</p>}
 
           <div className="ml-hero-stats">
             <span><b>{days.length}</b> {t('ml.days', 'ngày')}</span>
@@ -135,12 +152,6 @@ export default function TemplateDetail({ template, inUse, onBack, actions, shopp
             )}
           </div>
 
-          {shopping?.totals?.estimatedCost > 0 && (
-            <p className="ml-hero-price-note">
-              <i className="fa-solid fa-circle-info" />{' '}
-              {t('ml.price_note_short', 'Ước tính cho một người — thay đổi theo nơi mua nguyên liệu.')}
-            </p>
-          )}
         </div>
 
         <div className="ml-hero-actions">{actions}</div>

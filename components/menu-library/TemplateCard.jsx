@@ -23,6 +23,8 @@ export default function TemplateCard({ item, onOpen, onEdit, t }) {
    * logo khác là ghi sai đơn vị phát hành.
    */
   const logo = tpl.image_url ? null : sourceLogo(tpl.source_name);
+  /** Ảnh nền bìa: ảnh admin tải lên trước, không có thì logo đơn vị. */
+  const cover = tpl.image_url || logo;
 
   return (
     // Lớp bọc tồn tại vì nút Sửa KHÔNG được nằm trong <button> của thẻ —
@@ -37,13 +39,17 @@ export default function TemplateCard({ item, onOpen, onEdit, t }) {
         className="ml-cover"
         style={{ '--ml-grad': `linear-gradient(135deg, ${cat.from}, ${cat.to})` }}
       >
-        {tpl.image_url && <img src={tpl.image_url} alt="" />}
-        {!tpl.image_url && logo && (
-          <span className="ml-source-logo">
-            <img src={logo} alt={tpl.source_name || ''} loading="lazy" />
-          </span>
+        {/* Ảnh phủ kín bìa thay cho tấm nền trắng cũ — cùng cách làm với hero ở
+            TemplateDetail. Logo phủ ở dạng làm mờ (is-logo); lý do đầy đủ nằm ở
+            .ml-cover-bg trong styles/menu-library.css. */}
+        {cover && (
+          <span
+            className={`ml-cover-bg${tpl.image_url ? '' : ' is-logo'}`}
+            style={{ backgroundImage: `url("${cover}")` }}
+            aria-hidden="true"
+          />
         )}
-        {!tpl.image_url && !logo && <i className={`fa-solid ${cat.icon}`} aria-hidden="true" />}
+        {!cover && <i className={`fa-solid ${cat.icon}`} aria-hidden="true" />}
 
         {item.in_use && (
           <span className="ml-badge">
