@@ -8,7 +8,7 @@ import { useTranslation } from '../../lib-client/I18nContext';
 import { openNearbySearch } from '../../lib-client/nearby';
 import {
   todayPlanDay, getTodayIntake, computeTodayTotals, isEaten, setEaten,
-  isSkipped, setSkipped, addExtraFood, removeExtraFood, parseMacro,
+  isSkipped, setSkipped, addExtraFood, removeExtraFood, parseMacro, getWeekExtras,
 } from '../../lib-client/todayIntake';
 import '../../styles/schedule.css';
 
@@ -587,6 +587,10 @@ export default function SchedulePage() {
   const ringC = 2 * Math.PI * 52;
   const ringPct = target > 0 ? Math.min(1, consumed / target) : 0;
   const extras = clientReady ? (getTodayIntake().day.extras || []) : [];
+  /* Món thêm của cả tuần, để bảng 7 ngày xếp vào đúng cột. Cùng lý do
+     `clientReady` như trên: đọc localStorage lúc prerender là lệch máy chủ. */
+  const weekExtras = clientReady ? getWeekExtras() : {};
+  const hasWeekExtras = Object.keys(weekExtras).length > 0;
 
   function toggleEaten(item, checked) {
     setEaten(todayPlanDay(), item.meal, checked, item);
@@ -1014,6 +1018,43 @@ export default function SchedulePage() {
                   })}
                 </Fragment>
               ))}
+
+              {/*
+                Hàng "Món thêm" — món người dùng tự nhập, xếp vào đúng cột ngày.
+
+                Trước đây bảng chỉ vẽ thực đơn do AI sinh, nên món tự thêm không
+                xuất hiện ở bất kỳ đâu trong bảng: nhìn vào tưởng hôm đó chưa ăn
+                gì ngoài kế hoạch, dù vòng calo và trang phân tích đều đã tính.
+
+                Chỉ dựng hàng này khi trong tuần thực sự có món thêm — không thì
+                mọi người đều phải nhìn thêm một hàng trống suốt.
+              */}
+              {hasWeekExtras && (
+                <Fragment key="extras">
+                  <div className="time-label">{t('extra.row', 'Món thêm')}</div>
+                  {[1, 2, 3, 4, 5, 6, 7].map((day) => {
+                    const list = weekExtras[day] || [];
+                    if (!list.length) return <div key={`x-${day}`} className="meal-cell">-</div>;
+                    return (
+                      <div
+                        key={`x-${day}`}
+                        className={`meal-cell has-data extra-cell${day === pday ? ' today-cell' : ''}`}
+                      >
+                        <div className="cell-inner extra-cell-inner">
+                          {list.map((ex) => (
+                            <div key={ex.id} className="extra-cell-item">
+                              <span className="extra-cell-name">{ex.name}</span>
+                              <span className="extra-cell-kcal">
+                                {Math.round(parseMacro(ex.calories)).toLocaleString()} {kcalLabel}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </Fragment>
+              )}
             </div>
 
             {deadlinePassed && (

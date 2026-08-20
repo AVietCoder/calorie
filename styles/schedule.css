@@ -909,6 +909,28 @@
 .plan-incomplete > i { flex: 0 0 auto; color: var(--warning, #f39c12); }
 .plan-incomplete .btn { flex: 0 0 auto; padding: 7px 14px; font-size: 12.5px; }
 
+/* Hàng "Món thêm" trong bảng 7 ngày.
+   Viền đứt + nền kem để phân biệt ngay với món do AI xếp: đây là thứ người dùng
+   tự nhập, không phải một phần của lộ trình. */
+.meal-cell.extra-cell
+{
+    border: 1.5px dashed var(--primary) !important;
+    background: var(--cream, #fbf7ee) !important;
+    cursor: default;
+}
+.meal-cell.extra-cell:hover { transform: none; box-shadow: none; }
+.extra-cell-inner { gap: 6px !important; }
+.extra-cell-item
+{
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 3px 0;
+}
+.extra-cell-item + .extra-cell-item { border-top: 1px dashed var(--border-soft); }
+.extra-cell-name { font-weight: 700; color: var(--primary-deep); font-size: 12px; line-height: 1.3; }
+.extra-cell-kcal { font-weight: 800; color: var(--primary); font-size: 11px; }
+
 /* Ô đang chờ AI soạn — nhịp thở nhẹ, KHÔNG dùng dấu "-" vì bảng nửa đầy nửa
    gạch ngang trông như đang hỏng chứ không phải đang chạy. */
 .meal-cell.is-pending { background: var(--surface-2); border-style: dashed; }

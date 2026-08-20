@@ -6,6 +6,7 @@ import PageShell from '../../components/PageShell';
 import ActionButton from '../../components/ActionButton';
 import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
+import { dateKeyOf } from '../../lib-client/todayIntake';
 import '../../styles/diet-details.css';
 
 const PALETTE = {
@@ -36,7 +37,10 @@ function loadWeeklyIntake() {
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    const key = d.toISOString().slice(0, 10);
+    /* Khoá ngày theo GIỜ MÁY, y như lib-client/todayIntake.js ghi vào.
+       Dùng toISOString() ở đây là lấy ngày UTC: từ 0h–7h giờ Việt Nam nó lệch
+       một ngày so với chỗ ghi, nên trang này đọc trượt sang bản ghi hôm trước. */
+    const key = dateKeyOf(d);
     const rec = all[key] || {};
     const tot = { date: key, calories: 0, protein: 0, fat: 0, carbs: 0, dishes: [] };
     Object.values(rec.eatenInfo || {}).forEach((m) => {

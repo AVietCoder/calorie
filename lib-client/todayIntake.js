@@ -7,8 +7,24 @@ export function intakeKey() {
   const uid = typeof window !== 'undefined' ? window.localStorage.getItem('user_id') || 'anon' : 'anon';
   return `calorie_ai_intake_${uid}`;
 }
+/**
+ * Khoá ngày "YYYY-MM-DD" theo GIỜ MÁY, không phải UTC.
+ *
+ * `toISOString()` trả ngày theo UTC. Ở Việt Nam (UTC+7) thì từ 00:00 đến 07:00
+ * sáng, ngày UTC vẫn là HÔM QUA — trong khi `todayPlanDay()` lại lấy thứ theo
+ * giờ máy. Hai hàm này chỉ cùng chỉ về một ngày trong 17/24 giờ.
+ *
+ * Hậu quả trong khoảng 0h–7h: tick "Đã ăn" cho các bữa của hôm nay lại được ghi
+ * vào bản ghi của hôm qua, và món thêm cũng vậy; tới 7h sáng khoá ngày nhảy
+ * sang hôm nay thì mọi thứ vừa nhập "biến mất". Đây cũng là lý do món thêm rơi
+ * sai cột khi đối chiếu ngày với thứ trong tuần.
+ */
+export function dateKeyOf(d) {
+  const p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
 export function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  return dateKeyOf(new Date());
 }
 // JS: 0=CN..6=T7 -> plan day 1=T2..7=CN
 export function todayPlanDay() {
@@ -110,4 +126,32 @@ export function removeExtraFood(id) {
   const { all, day } = getTodayIntake();
   day.extras = (day.extras || []).filter((x) => x.id !== id);
   saveTodayIntake(all);
+}
+
+/**
+ * Món thêm của CẢ TUẦN hiện tại, gom theo day_index (1 = T2 … 7 = CN).
+ *
+ * Bảng lộ trình 7 ngày trước đây chỉ vẽ thực đơn do AI sinh, nên món người dùng
+ * tự thêm không xuất hiện ở đâu trong bảng — nhìn vào tưởng chưa ăn gì thêm.
+ * Kho intake vốn đã lưu theo từng ngày, nên chỉ cần soi đúng 7 ngày của tuần
+ * này rồi xếp vào cột tương ứng.
+ *
+ * Duyệt theo NGÀY LỊCH rồi suy ra thứ, chứ không đọc day_index đã lưu: các bản
+ * ghi cũ không có trường đó, mà ngày thì luôn nằm ngay ở khoá.
+ *
+ * @returns {Record<number, Array>} vd { 4: [{...}], 5: [{...}] }
+ */
+export function getWeekExtras() {
+  const all = loadIntakeAll();
+  const out = {};
+  const today = new Date();
+  const todayIdx = todayPlanDay();
+  for (let idx = 1; idx <= 7; idx++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() + (idx - todayIdx));   // lùi/tiến về đúng thứ trong tuần này
+    const rec = all[dateKeyOf(d)];
+    const list = rec?.extras || [];
+    if (list.length) out[idx] = list;
+  }
+  return out;
 }
