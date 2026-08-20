@@ -19,7 +19,42 @@ const MEAL_ROWS = [
   { id: 'evening', label: 'Tối', key: 'sch.dinner' },
   { id: 'snack', label: 'Phụ', key: 'sch.snack' },
 ];
-const MEAL_LABEL_TO_ID = { Sáng: 'morning', Trưa: 'lunch', Tối: 'evening', Phụ: 'snack' };
+/**
+ * Nhãn bữa (do LLM sinh) → id hàng trong bảng.
+ *
+ * Trước đây là một object tra khớp CHÍNH XÁC `{ Sáng:'morning', … }`. Nhãn lại
+ * do model sinh ra nên thỉnh thoảng lệch chuẩn, và mỗi lần lệch là ô đó hiện
+ * dấu "-" dù dữ liệu vẫn nằm nguyên trong thực đơn. Quét dữ liệu thật: có bữa
+ * lưu là `"**Tối**"` (lọt cú pháp in đậm của markdown), có bữa `undefined`, có
+ * bữa bị bọc thành mảng `["Phụ"]`.
+ *
+ * Nguy hiểm hơn cái "-" là nó TỰ DUY TRÌ: phía API đối chiếu bữa bằng
+ * `String(m.meal).trim().toLowerCase()` (xem slotKey trong coach-dynamic), nên
+ * server coi tuần đó ĐÃ ĐỦ bữa và không bao giờ chạy bù — còn client thì mãi
+ * mãi hiện ô trống. Nới cho client khoan dung đúng bằng server là hết.
+ */
+const MEAL_ID_BY_KEYWORD = [
+  ['sáng', 'morning'],
+  ['trưa', 'lunch'],
+  ['tối', 'evening'],
+  ['phụ', 'snack'],
+  // Biến thể model hay dùng thay cho "Phụ".
+  ['xế', 'snack'],
+  ['nhẹ', 'snack'],
+];
+
+function mealRowId(meal) {
+  // Mảng một phần tử vẫn xuất hiện trong dữ liệu đã lưu — lấy phần tử đầu.
+  const raw = Array.isArray(meal) ? meal[0] : meal;
+  const s = String(raw ?? '')
+    .replace(/[*_`#]/g, '')   // rác markdown model để lọt: "**Tối**"
+    .trim()
+    .toLowerCase();
+  if (!s) return null;
+  // Khớp CHỨA chứ không bằng, để nuốt luôn "bữa sáng", "sáng sớm", "bữa phụ 1".
+  for (const [kw, id] of MEAL_ID_BY_KEYWORD) if (s.includes(kw)) return id;
+  return null;
+}
 /** Đã thử bù bữa thiếu trong phiên này chưa (chống gọi AI lại ở mọi lần mở trang). */
 const HEAL_TRIED_KEY = 'calorie_sched_heal_tried';
 
@@ -245,6 +280,22 @@ export default function SchedulePage() {
   const [generating, setGenerating] = useState(false);
   const [modalItem, setModalItem] = useState(null);
   const [intakeVersion, setIntakeVersion] = useState(0);
+  /**
+   * Thứ trong tuần (1..7), 0 = CHƯA biết vì còn ở phía máy chủ.
+   *
+   * Không được tính bằng `todayPlanDay()` ngay trong thân render. Trang này
+   * được Next prerender TĨNH lúc build, nên `new Date()` khi đó là ngày của máy
+   * build: file .next/server/app/schedule.html đóng cứng class `today-col` vào
+   * đúng cái thứ hôm build, và mọi người vào trang đều thấy highlight sai cột
+   * cho tới khi React hydrate xong. Kiểm chứng thực tế: bản build hôm thứ Tư
+   * sinh ra `day-header today-col">T4` nằm sẵn trong HTML, trong khi hôm sau
+   * các ô "Đã ăn" lại nằm ở cột T5.
+   *
+   * Để 0 lúc dựng ở máy chủ ⇒ HTML tĩnh không gắn `today-col` vào cột nào, cũng
+   * không dựng ô tick "Đã ăn" (chúng đều bám theo pday) ⇒ không còn lệch giữa
+   * máy chủ và trình duyệt, và cột sáng lên luôn là hôm nay THẬT của người xem.
+   */
+  const [pday, setPday] = useState(0);
   const [extraForm, setExtraForm] = useState({ name: '', kcal: '', p: '', f: '', c: '' });
   const [extraPhotoPreview, setExtraPhotoPreview] = useState(null);
   const [extraAnalyzing, setExtraAnalyzing] = useState(false);
@@ -257,7 +308,7 @@ export default function SchedulePage() {
   const [dragOver, setDragOver] = useState(false);
 
   const showToast = useToast();
-  const { t, localizeFood } = useTranslation();
+  const { t, tn, localizeFood } = useTranslation();
   const router = useRouter();
 
   const bumpIntake = useCallback(() => setIntakeVersion((v) => v + 1), []);
@@ -366,6 +417,38 @@ export default function SchedulePage() {
     }
   }
 
+  /*
+   * Chốt "hôm nay" ở phía trình duyệt, và tự chỉnh lại khi sang ngày mới.
+   *
+   * Hẹn đúng thời điểm nửa đêm chứ không lặp mỗi phút: trang này hay bị mở
+   * xuyên đêm (đặt trên bàn bếp, tab ghim), mà không chỉnh lại thì cột sáng và
+   * hàng tick "Đã ăn" vẫn nằm ở ngày hôm qua — người dùng tick vào ô của ngày
+   * đã trôi qua.
+   *
+   * `visibilitychange` bù cho trường hợp trình duyệt bóp hẹn giờ ở tab nền
+   * (máy ngủ, tab bị đóng băng) khiến hẹn giờ nửa đêm bắn muộn hoặc không bắn.
+   */
+  useEffect(() => {
+    let timer;
+    const sync = () => {
+      setPday(todayPlanDay());
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0);
+      clearTimeout(timer);
+      // +1s để chắc chắn đã bước hẳn sang ngày mới khi hàm chạy lại.
+      timer = setTimeout(sync, midnight.getTime() - now.getTime() + 1000);
+    };
+    const onWake = () => { if (!document.hidden) sync(); };
+
+    sync();
+    document.addEventListener('visibilitychange', onWake);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('visibilitychange', onWake);
+    };
+  }, []);
+
   useEffect(() => {
     function onVisible() { if (!document.hidden) refreshIfDirty(); }
     function onFocus() { refreshIfDirty(); }
@@ -457,16 +540,53 @@ export default function SchedulePage() {
 
   const hasPendingChanges = modifiedMap.size > 0;
 
-  /* ── Today intake (recomputed from localStorage on every intakeVersion bump) ── */
-  const totals = computeTodayTotals(tempPlan);
+  /* ── Today intake (recomputed from localStorage on every intakeVersion bump) ──
+   *
+   * `pday > 0` nghĩa là đã chạy ở trình duyệt (xem chú thích chỗ khai báo pday).
+   * Hai hàm dưới đều đọc localStorage, mà lúc prerender tĩnh thì không có
+   * localStorage nên chúng trả về rỗng — dựng thẳng ra HTML sẽ lệch với lần
+   * render đầu ở trình duyệt: vòng calo và danh sách "món ngoài thực đơn" nhấp
+   * nháy đổi số. Chờ tới khi ở trình duyệt rồi mới đọc.
+   */
+  /**
+   * Số ô trống trong bảng 7 ngày × 4 bữa.
+   *
+   * Đếm theo ĐÚNG cách bảng dựng ô (cùng mealRowId) chứ không đếm phần tử trong
+   * tempPlan: một bữa có nhãn lạ mà mealRowId không nhận vẫn nằm trong mảng
+   * nhưng không lên được bảng — đếm kiểu kia sẽ báo "đủ" trong khi mắt người
+   * dùng thấy ô trống.
+   */
+  const missingCount = (() => {
+    if (!tempPlan.length) return 0;   // chưa có thực đơn thì không phải "thiếu"
+    let n = 0;
+    for (let d = 1; d <= 7; d++) {
+      for (const row of MEAL_ROWS) {
+        if (!tempPlan.some((p2) => Number(p2.day) === d && mealRowId(p2.meal) === row.id)) n++;
+      }
+    }
+    return n;
+  })();
+
+  /** Bù bữa thiếu theo yêu cầu của người dùng — dùng lại đúng lượt sinh nền. */
+  async function fillMissingMeals() {
+    const token = window.localStorage.getItem('calorie_ai_token');
+    if (!token) return;
+    // Người dùng tự bấm thì bỏ chốt "mỗi phiên một lần" — chốt đó chỉ để chặn
+    // việc TỰ ĐỘNG gọi lại ở mọi lần mở trang.
+    try { window.sessionStorage.removeItem(HEAL_TRIED_KEY); } catch {}
+    await generatePlanInBackground(token);
+  }
+
+  const clientReady = pday > 0;
+  const EMPTY_TOTALS = { calories: 0, protein: 0, fat: 0, carbs: 0, count: 0 };
+  const totals = clientReady ? computeTodayTotals(tempPlan) : EMPTY_TOTALS;
   const target = dailyTarget.calories || 0;
   const tMac = dailyTarget.macros || { protein: 0, fat: 0, carbs: 0 };
   const consumed = Math.round(totals.calories);
   const diff = target - consumed;
   const ringC = 2 * Math.PI * 52;
   const ringPct = target > 0 ? Math.min(1, consumed / target) : 0;
-  const { day: todayDay } = getTodayIntake();
-  const extras = todayDay.extras || [];
+  const extras = clientReady ? (getTodayIntake().day.extras || []) : [];
 
   function toggleEaten(item, checked) {
     setEaten(todayPlanDay(), item.meal, checked, item);
@@ -610,7 +730,6 @@ export default function SchedulePage() {
   }, [extraFormOpen, extraForm.name, extraNameFromAI]);
 
   /* ── Render ─────────────────────────────────────────────────────── */
-  const pday = todayPlanDay();
   const kcalLabel = t('common.kcal', 'kcal');
 
   return (
@@ -808,6 +927,31 @@ export default function SchedulePage() {
               </div>
             )}
 
+            {/*
+              Thực đơn thiếu bữa mà AI KHÔNG còn tự bù.
+              Lượt bù chỉ chạy MỘT lần mỗi phiên (xem HEAL_TRIED_KEY) để không
+              bắn request sinh plan ở mọi lần mở trang — mặt trái là nếu lượt đó
+              hụt thì bảng cứ thủng lỗ chỗ mãi, không nói vì sao và cũng không
+              có cách nào thử lại. Nói thẳng còn thiếu bao nhiêu bữa và cho một
+              nút bấm.
+            */}
+            {!generating && !deadlinePassed && missingCount > 0 && tempPlan.length > 0 && (
+              <div className="plan-incomplete" role="status">
+                <i className="fa-solid fa-circle-exclamation" />
+                <span>
+                  {tn('sch.incomplete', { n: missingCount },
+                    `Thực đơn tuần còn thiếu ${missingCount} bữa nên bảng có ô để trống.`)}
+                </span>
+                <ActionButton
+                  className="btn btn-secondary btn-sm"
+                  onClick={fillMissingMeals}
+                  loadingText={t('sch.filling', 'Đang bù…')}
+                >
+                  <i className="fa-solid fa-wand-magic-sparkles" /> {t('sch.fill_missing', 'Bù bữa còn thiếu')}
+                </ActionButton>
+              </div>
+            )}
+
             <div className={`timetable-grid${deadlinePassed ? ' blur-content' : ''}`}>
               <div className="time-header">{t('sch.meal', 'Bữa')}</div>
               {DAY_HEADERS.map((d, i) => (
@@ -818,9 +962,24 @@ export default function SchedulePage() {
                 <Fragment key={row.id}>
                   <div className="time-label">{t(row.key, row.label)}</div>
                   {[1, 2, 3, 4, 5, 6, 7].map((day) => {
-                    const item = tempPlan.find((p2) => Number(p2.day) === day && MEAL_LABEL_TO_ID[p2.meal] === row.id);
+                    const item = tempPlan.find((p2) => Number(p2.day) === day && mealRowId(p2.meal) === row.id);
                     const isToday = day === pday;
-                    if (!item) return <div key={`${day}-${row.id}`} className="meal-cell">-</div>;
+                    /* Ô chưa có món. Lúc AI đang soạn thì hiện ô chờ có nhịp
+                       nhấp nháy thay vì dấu "-" trơ: bảng nửa đầy nửa gạch
+                       ngang trông như hỏng, còn ô chờ nói rõ là đang chạy. */
+                    if (!item) {
+                      return (
+                        <div
+                          key={`${day}-${row.id}`}
+                          className={`meal-cell${generating ? ' is-pending' : ''}`}
+                          aria-label={generating
+                            ? t('sch.cell_pending', 'Đang soạn bữa này')
+                            : t('sch.cell_empty', 'Chưa có món')}
+                        >
+                          {generating ? <span className="cell-pending-bar" aria-hidden="true" /> : '-'}
+                        </div>
+                      );
+                    }
                     const skipped = isToday && isSkipped(pday, item.meal);
                     const eaten = isToday && !skipped && isEaten(pday, item.meal);
                     return (
