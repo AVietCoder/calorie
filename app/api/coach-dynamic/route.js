@@ -38,13 +38,36 @@ const TOTAL_DAYS = 7;
 
 /** Ngân sách thời gian cho TOÀN BỘ các lượt gọi LLM của một request sinh plan.
  *
- *  Các vòng retry lồng nhau (callAIForPlan 2 lượt × completeJsonWithRetry 3 lượt,
- *  rồi fillMissingMeals 3 vòng × 3 lượt) có thể lên tới 15 lượt gọi tuần tự;
- *  ở ~22s/lượt là ~330s, VƯỢT maxDuration=300 → request bị cắt giữa chừng và
- *  KHÔNG kịp lưu gì cả. Chốt ngân sách thấp hơn maxDuration để luôn còn thời gian
- *  lưu "plan tốt nhất có thể" và trả lời tử tế. */
+ *  Từ khi chuyển sang sinh SONG SONG theo ngày (xem generatePlanByDays), một
+ *  lượt sinh đầy đủ đo được ~10s nên ngân sách này gần như không bao giờ chạm
+ *  tới. Vẫn giữ làm phanh cuối: nếu server LLM chậm bất thường hay vài ngày
+ *  phải bù lại, ngân sách bảo đảm còn thời gian LƯU "plan tốt nhất có thể" và
+ *  trả lời tử tế, thay vì bị maxDuration=300 cắt ngang và mất trắng. */
 const AI_BUDGET_MS = 210_000;
 const outOfBudget = (deadline) => Number.isFinite(deadline) && Date.now() >= deadline;
+
+/**
+ * Chống sinh trùng: mỗi user chỉ có MỘT lượt sinh plan đang chạy.
+ *
+ * Bấm hai lần, hoặc mở app rồi mở luôn web, là hai request cùng vào nhánh sinh
+ * và cùng gọi 7 lượt LLM — gấp đôi tải, hai kết quả ghi đè nhau, và người dùng
+ * nhận về thực đơn của lượt nào tới sau. Ở đây request thứ hai KHÔNG sinh mới
+ * mà chờ chính lượt đang chạy rồi dùng chung kết quả.
+ *
+ * GIỚI HẠN đã biết: Map nằm trong bộ nhớ của MỘT instance serverless, nên hai
+ * request rơi vào hai instance khác nhau vẫn lọt. Nó chặn được đúng ca phổ biến
+ * nhất (double-tap, cùng phiên, instance đang ấm). Muốn chặn tuyệt đối thì phải
+ * có khoá trong DB — việc đó cần thêm cột nên để riêng.
+ */
+const inFlightPlans = new Map();
+
+function dedupePlanRun(userId, run) {
+  const existing = inFlightPlans.get(userId);
+  if (existing) return { promise: existing, deduped: true };
+  const p = run().finally(() => inFlightPlans.delete(userId));
+  inFlightPlans.set(userId, p);
+  return { promise: p, deduped: false };
+}
 
 /* =========================================================
  * 0. DEBUG / LOGGER
@@ -551,6 +574,20 @@ Ví dụ 1 ngày (PHẢI đủ 4 bữa NHƯ VẦY cho CẢ ${TOTAL_DAYS} ngày):
 Chỉ trả về JSON hợp lệ, không markdown, không giải thích.
 `;
 
+/** Ghi chú điều chỉnh calo dựa trên tuần trước — tách riêng để cả prompt cả
+ *  tuần lẫn prompt từng ngày dùng chung, không chép hai bản dễ lệch nhau. */
+const buildDeviationNote = (profile, calorieDeviation) => {
+  if (!calorieDeviation || Math.abs(calorieDeviation.deviation) <= 100) return "";
+  const over = calorieDeviation.deviation > 0;
+  return `
+LƯU Ý QUAN TRỌNG — ĐIỀU CHỈNH DỰA TRÊN LỊCH SỬ THỰC TẾ:
+Tuần trước người dùng ăn thực tế trung bình ${calorieDeviation.avgActualPerDay} kcal/ngày,
+${over ? "vượt" : "thấp hơn"} mục tiêu ${Math.abs(calorieDeviation.deviation)} kcal/ngày.
+Hãy ${over ? "GIẢM nhẹ calo của thực đơn tuần này" : "TĂNG nhẹ khẩu phần tuần này"} để bù lại,
+nhưng vẫn hướng về mục tiêu ${profile.target_calories || "1500-1800"} kcal/ngày.
+`;
+};
+
 const buildCreatePlanPrompt = (profile, foodsDB, knowledgeBlock = "", calorieDeviation = null) => {
   let deviationNote = "";
   if (calorieDeviation && Math.abs(calorieDeviation.deviation) > 100) {
@@ -668,81 +705,139 @@ ${PLAN_FORMAT_SPEC}
 `;
 
 /* =========================================================
- * 5. AI CALL WRAPPER
+ * 4b. SINH PLAN THEO NGÀY — SONG SONG
+ *
+ * Vì sao đổi cách sinh (đo thật trên chính server vLLM đang dùng):
+ *
+ *   Hỏi cả 28 bữa trong MỘT lượt: 48,3s/lượt, tốc độ 47 token/s, và model
+ *   thường dừng sớm — lượt đo được chỉ ra 2/7 ngày (6/28 bữa) với
+ *   finish_reason "stop", tức nó tự kết thúc chứ không phải bị cắt. Coverage
+ *   không đạt ⇒ bản cũ thử lượt 2 ⇒ fillMissingMeals chạy tiếp 3 vòng
+ *   để bù 22 ô. Tổng cộng tới 15 lượt tuần tự ≈ 724s, vượt maxDuration 300s
+ *   ⇒ 504, và vì hết ngân sách nên không kịp lưu gì ⇒ 503 plan_generate_retry.
+ *
+ *   Hỏi TỪNG NGÀY (4 bữa) rồi chạy 7 lượt SONG SONG: 9,4s tổng, phủ đủ 28/28.
+ *   Server batch tốt — cộng dồn tuần tự là 54,2s nên song song nhanh gấp 5,8×.
+ *
+ * Mỗi lượt chỉ sinh ~350 token thay vì ~8000 nên model không "đuối" giữa chừng,
+ * và một ngày hỏng chỉ mất đúng ngày đó thay vì kéo đổ cả tuần.
  * ========================================================= */
-const callAIForPlan = async ({ systemPrompt, userPayload, traceId, deadline = Infinity }) => {
-  const t0 = Date.now();
-  const messages = [{ role: "system", content: systemPrompt }];
-  if (userPayload) {
-    messages.push({
-      role: "user",
-      content:
-        typeof userPayload === "string" ? userPayload : JSON.stringify(userPayload),
-    });
-  }
-  log.info(`${traceId} | AI request`, {
-    model: MODEL,
-    promptChars: systemPrompt.length,
-    payloadChars: userPayload ? JSON.stringify(userPayload).length : 0,
-  });
 
-  // RCA "menu chỉ hiện 1-2 món": JSON 28 bữa dễ bị model cắt cụt/lặp giữa chừng;
-  // repairer vá lại thành plan CỤT (vd 1 ngày × 2 bữa) mà bản cũ vẫn NHẬN vì chỉ
-  // kiểm tra length>0 → lưu + render thiếu. Nay ĐẾM ĐỘ PHỦ và CHẶN plan cụt: thử
-  // lại (khác seed/nhiệt độ) cho tới khi đủ 7 ngày & gần đủ bữa; nếu không, dùng
-  // plan phủ NHIỀU bữa nhất trong các lần thử.
-  const REQUIRED_MEALS = TOTAL_DAYS * MEALS_PER_DAY.length; // 28
-  const MIN_ACCEPT_MEALS = REQUIRED_MEALS - 4;              // cho phép hụt tối đa 4 bữa
-  const MIN_SNACKS = TOTAL_DAYS - 2;                        // bữa "Phụ" phải có ở ≥5/7 ngày
-  const coverage = (planArr) => {
-    const flat = toFlatMeals(planArr);
-    const days = new Set(flat.map((m) => Number(m.day)).filter((d) => d >= 1 && d <= TOTAL_DAYS)).size;
-    // Đếm riêng bữa "Phụ" (snack) — model hay BỎ QUÊN bữa này khiến hàng Phụ trống.
-    const snacks = flat.filter((m) => /ph[uụ]|snack/i.test(String(m.meal || ""))).length;
-    return { flat, days, meals: flat.length, snacks };
+/** Prompt cho ĐÚNG một ngày. `avoid` là các món đã giao cho ngày khác. */
+const buildOneDayPrompt = (profile, dayIndex, suggestions, avoid, knowledgeBlock, deviationNote) => `
+Bạn là chuyên gia dinh dưỡng, am hiểu ẩm thực Việt Nam 3 miền và các món quốc tế phổ biến.
+
+${buildProfileSection(profile)}
+${knowledgeBlock ? "\n" + knowledgeBlock + "\n" : ""}
+NHIỆM VỤ: soạn thực đơn cho ĐÚNG MỘT NGÀY (ngày ${dayIndex}), gồm ĐỦ 4 bữa theo thứ tự: ${MEALS_PER_DAY.join(", ")}.
+Bữa "Phụ" là bữa nhẹ (sữa chua, trái cây, các loại hạt, sinh tố, khoai lang...) — KHÔNG được bỏ.
+
+YÊU CẦU:
+- Dùng MÓN ĂN VIỆT NAM thực tế, đúng tên gọi quen thuộc (phở bò, bún chả, cơm tấm sườn bì chả, cháo gà, canh chua cá...).
+- Tên món cụ thể, kèm thành phần chính; tránh tên chung chung như "cơm" hay "món mặn".
+- Cân đối tinh bột – đạm – rau, bám mục tiêu ${profile.target_calories || "1500-1800"} kcal/ngày.
+- Tránh món ảnh hưởng bệnh lý (nếu có), ưu tiên món hỗ trợ theo tài liệu chuyên môn ở trên (nếu có).
+${suggestions ? `\nGỢI Ý ƯU TIÊN CHO NGÀY NÀY (chọn từ đây khi hợp lý, dùng ĐÚNG số liệu kèm theo):\n${suggestions}\n` : ""}${avoid ? `\n⚠️ CÁC MÓN ĐÃ DÙNG Ở NGÀY KHÁC — TUYỆT ĐỐI KHÔNG lặp lại:\n${avoid}\n` : ""}
+⚠️ field "food" CHỈ chứa TÊN MÓN thuần (vd "Phở gà"), KHÔNG kèm số liệu calo/macro, KHÔNG dùng ký hiệu "|". Các con số nằm ĐÚNG field riêng.
+
+Trả về DUY NHẤT JSON: {"day":${dayIndex},"meals":[{"meal":"<${MEALS_PER_DAY.join("|")}>","food":"<chỉ tên món>","amount":"1 phần","calories":<số>,"protein":"Xg","fat":"Xg","carbs":"Xg","fiber":"Xg","sugar":"Xg","sodium":"Xmg"}]}
+ĐỦ 4 bữa, mỗi bữa ĐỦ 10 trường. Không markdown, không giải thích.
+${deviationNote || ""}`.trim() + "\n";
+
+/**
+ * Chia kho món thành 7 rổ RỜI NHAU, mỗi ngày một rổ.
+ *
+ * Bảy lượt chạy song song nên không lượt nào biết lượt kia chọn gì — để tự do
+ * thì 2–3 ngày cùng ăn phở sáng. Thay vì thêm một vòng gọi nữa để khử trùng
+ * (mất gấp đôi thời gian), chia sẵn danh sách gợi ý rời nhau và nói thẳng cho
+ * mỗi ngày biết những món KHÔNG được đụng. Không tốn thêm lượt gọi nào.
+ *
+ * Chia xen kẽ (món 0→ngày 1, món 1→ngày 2, …) chứ không cắt khối liên tiếp:
+ * bảng `foods` sắp theo tên nên cắt khối sẽ dồn hết món cùng vần vào một ngày.
+ */
+const splitFoodsAcrossDays = (foodsDB) => {
+  const seen = new Set();
+  const uniq = [];
+  for (const f of foodsDB || []) {
+    const name = cleanFoodName(f.description);
+    if (!name) continue;
+    const key = normalizeFoodName(name);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    uniq.push({ name, f });
+    if (uniq.length >= MAX_FOODS_IN_PROMPT) break;
+  }
+  const buckets = Array.from({ length: TOTAL_DAYS }, () => []);
+  uniq.forEach((item, i) => buckets[i % TOTAL_DAYS].push(item));
+  return buckets;
+};
+
+const fmtSuggestion = ({ name, f }) =>
+  `- ${name} | ${f.calories ?? "?"}kcal | P:${f.protein ?? "?"} | F:${f.fat ?? "?"} | C:${f.carbs ?? "?"} | Fi:${f.fiber ?? "?"} | Su:${f.sugar ?? "?"} | Na:${f.sodium ?? "?"}`;
+
+/**
+ * Sinh plan 7 ngày bằng 7 lượt gọi SONG SONG.
+ *
+ * `allSettled` chứ không `all`: một ngày hỏng thì 6 ngày kia vẫn dùng được, và
+ * ô còn thiếu để fillMissingMeals bù — thay vì ném bỏ toàn bộ công đã làm.
+ */
+const generatePlanByDays = async ({ profile, foodsDB, knowledgeBlock = "", deviationNote = "", traceId = "", deadline = Infinity }) => {
+  const t0 = Date.now();
+  const buckets = splitFoodsAcrossDays(foodsDB);
+
+  const oneDay = async (dayIndex) => {
+    const mine = buckets[dayIndex - 1] || [];
+    // "Tránh" = món của các ngày khác, cắt bớt cho prompt khỏi phình.
+    const others = buckets
+      .filter((_, i) => i !== dayIndex - 1)
+      .flat()
+      .slice(0, 40)
+      .map((x) => x.name);
+
+    const { parsed } = await completeJsonWithRetry({
+      messages: [{
+        role: "system",
+        content: buildOneDayPrompt(
+          profile, dayIndex,
+          mine.map(fmtSuggestion).join("\n"),
+          others.join(", "),
+          knowledgeBlock, deviationNote
+        ),
+      }],
+      temperature: 0.3,
+      // ~350 token là đủ cho 4 bữa (đo thật); nới gấp ~3 để có biên an toàn.
+      max_tokens: 1200,
+      traceId,
+      tag: `day#${dayIndex}`,
+      deadline,
+    });
+    // Chấp nhận cả {day,meals} lẫn {plan:[{day,meals}]} — model trả cả hai kiểu.
+    const arr = extractPlanArray(parsed);
+    const flat = toFlatMeals(arr.length ? arr : [parsed]);
+    // Ép đúng ngày: model đôi khi ghi "day" khác với ngày được yêu cầu.
+    return flat.map((m) => ({ ...m, day: dayIndex }));
   };
 
-  let best = null, bestScore = -1, lastErr = null;
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    if (attempt > 1 && outOfBudget(deadline)) {
-      log.warn(`${traceId} | hết ngân sách thời gian trước lượt sinh plan #${attempt}`);
-      break;
-    }
-    let parsed, raw;
-    try {
-      ({ parsed, raw } = await completeJsonWithRetry({
-        messages,
-        temperature: attempt === 1 ? 0.2 : 0.4,
-        max_tokens: 8000, // 28 bữa × 10 trường — nới rộng để KHÔNG bị cụt
-        seed: attempt === 1 ? null : 20240607,
-        traceId,
-        tag: `create_plan#${attempt}`,
-        deadline,
-      }));
-    } catch (err) {
-      lastErr = err;
-      log.warn(`${traceId} | plan attempt ${attempt} lỗi: ${err.message}`);
-      continue;
-    }
-    const planArr = extractPlanArray(parsed);
-    const { days, meals, snacks } = coverage(planArr);
-    log.info(`${traceId} | AI response#${attempt}`, {
-      ms: Date.now() - t0, chars: raw.length, days, meals, snacks, preview: raw.slice(0, 160),
-    });
-    // Điểm ưu tiên plan NHIỀU bữa + CÓ bữa phụ (snack đếm gấp đôi để không bỏ quên).
-    const score = meals + snacks;
-    if (score > bestScore) { best = planArr; bestScore = score; }
-    // ĐỦ → dùng ngay (7 ngày, gần đủ 28 bữa, VÀ có đủ bữa Phụ)
-    if (days >= TOTAL_DAYS && meals >= MIN_ACCEPT_MEALS && snacks >= MIN_SNACKS) return planArr;
-    log.warn(`${traceId} | plan CHƯA ĐỦ (lần ${attempt}): ${days}/${TOTAL_DAYS} ngày, ${meals}/${REQUIRED_MEALS} bữa, ${snacks} bữa phụ — thử lại`);
-  }
+  const results = await Promise.allSettled(
+    Array.from({ length: TOTAL_DAYS }, (_, i) => oneDay(i + 1))
+  );
 
-  if (best && bestScore > 0) {
-    log.warn(`${traceId} | dùng plan tốt-nhất-có-thể (score=${bestScore})`);
-    return best;
-  }
-  log.error(`${traceId} | OpenAI/plan`, lastErr || new Error("no plan"));
-  throw new Error("AI không trả về plan hợp lệ sau 2 lần thử." + (lastErr ? ` (${lastErr.message})` : ""));
+  const out = [];
+  const failed = [];
+  results.forEach((r, i) => {
+    if (r.status === "fulfilled") out.push(...r.value);
+    else failed.push({ day: i + 1, err: r.reason?.message || String(r.reason) });
+  });
+
+  log.info(`${traceId} | plan song song`, {
+    ms: Date.now() - t0,
+    days: new Set(out.map((m) => m.day)).size,
+    meals: out.length,
+    failedDays: failed.length,
+    ...(failed.length ? { failures: failed } : {}),
+  });
+
+  return out;
 };
 
 const slotKey = (m) => `${Number(m.day)}|${String(m.meal || "").trim().toLowerCase()}`;
@@ -1215,10 +1310,13 @@ export async function POST(request) {
      * ========================================================= */
     log.step(`${traceId} | FLOW=get_or_generate`, { isQueryOnly: !!isQueryOnly });
 
+    const tFetch = Date.now();
     const [{ data: profile, error: profileErr }, foodsDB] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", user.id).single(),
       fetchFoodsDB(),
     ]);
+    const fetchMs = Date.now() - tFetch;
+    let knowledgeMs = 0;
 
     if (profileErr || !profile) {
       return sendError(res, 404, "fetch_profile", "Không tìm thấy profile", {
@@ -1309,11 +1407,13 @@ export async function POST(request) {
 
     if (needsNewPlan) {
       // ── RAG: nạp kiến thức dinh dưỡng theo bệnh lý để xây thực đơn phù hợp ──
+      const tKnow = Date.now();
       const knowledge = await retrieveKnowledge({
         disease: profile.disease,
         message: "",
         topK: 8,
       });
+      knowledgeMs = Date.now() - tKnow;
       const knowledgeBlock = buildKnowledgeSection(knowledge);
       if (knowledge.chunks.length) {
         log.info(`${traceId} | knowledge`, {
@@ -1337,12 +1437,21 @@ export async function POST(request) {
       const aiDeadline = startedAt + AI_BUDGET_MS;
 
       let newFlatPlan;
+      const tLlm = Date.now();
       try {
-        newFlatPlan = await callAIForPlan({
-          systemPrompt: buildCreatePlanPrompt(profile, foodsDB, knowledgeBlock, calorieDeviation),
+        const { promise, deduped } = dedupePlanRun(user.id, () => generatePlanByDays({
+          profile,
+          foodsDB,
+          knowledgeBlock,
+          deviationNote: buildDeviationNote(profile, calorieDeviation),
           traceId,
           deadline: aiDeadline,
-        });
+        }));
+        if (deduped) log.warn(`${traceId} | đã có lượt sinh đang chạy cho user này — dùng chung kết quả`);
+        newFlatPlan = await promise;
+        // Cả 7 ngày đều hỏng thì coi như sinh thất bại, đi tiếp cũng chỉ ra
+        // bảng trống — rơi xuống nhánh catch để giữ plan cũ / báo tử tế.
+        if (!newFlatPlan.length) throw new Error("cả 7 ngày đều không sinh được");
       } catch (planErr) {
         // AI dựng plan hỏng (kể cả sau retry). KHÔNG bắn JSON rác ra người dùng:
         // còn plan cũ thì giữ nguyên + báo nhẹ; chưa có plan thì báo lỗi thân thiện.
@@ -1360,11 +1469,18 @@ export async function POST(request) {
       }
       // "Tạo lại đến khi ĐẦY ĐỦ": tự bổ sung các bữa còn thiếu (nhất là bữa Phụ)
       // bằng các lượt gọi nhỏ cho tới khi đủ 7 ngày × 4 bữa (hoặc model chịu thua).
+      const llmMs = Date.now() - tLlm;
+
+      /* Lưới an toàn: sinh song song thường đã phủ đủ 28/28 nên vòng bù hiếm
+         khi chạy. Giữ lại cho trường hợp vài ngày lỗi mạng. */
+      const tVal = Date.now();
       let filledFlat = toFlatMeals(newFlatPlan);
       filledFlat = await fillMissingMeals(filledFlat, { profile, foodsDB, knowledgeBlock, traceId, deadline: aiDeadline });
       currentPlan = groupPlanByDay(filledFlat);
       const stillMissing = findMissingSlots(filledFlat).length;
-      log.info(`${traceId} | plan hoàn tất: ${filledFlat.length}/${TOTAL_DAYS * MEALS_PER_DAY.length} bữa (còn thiếu ${stillMissing})`);
+      const validationMs = Date.now() - tVal;
+
+      const tSave = Date.now();
       foodsInserted = await syncMissingFoodsToDB(currentPlan, foodsDB);
 
       const { error: updateErr } = await supabase
@@ -1374,6 +1490,21 @@ export async function POST(request) {
           plan_updated_at: now.toISOString(),
         })
         .eq("id", user.id);
+      const saveMs = Date.now() - tSave;
+
+      /* Log thời gian TỪNG BƯỚC, một dòng có cấu trúc.
+         Không có nó thì lần sau chậm lại chỉ biết "tổng 300s" mà không biết
+         khâu nào ăn thời gian — đúng tình cảnh vừa phải đo tay để tìm ra. */
+      log.info(`${traceId} | timings_ms`, {
+        fetch_data: fetchMs,
+        knowledge: knowledgeMs,
+        llm_generation: llmMs,
+        validation: validationMs,
+        supabase_save: saveMs,
+        total: Date.now() - startedAt,
+        meals: `${filledFlat.length}/${TOTAL_DAYS * MEALS_PER_DAY.length}`,
+        still_missing: stillMissing,
+      });
 
       if (updateErr) {
         return sendError(res, 500, "save_plan", "Lưu plan thất bại", {
