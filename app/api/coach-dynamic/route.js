@@ -324,6 +324,10 @@ const cleanFoodName = (raw) => {
   if (!s) return "";
   s = s.split("|")[0].trim();                 // bỏ mọi thứ từ "|" trở đi
   s = s.replace(/^['"«»‹›“”‘’]+|['"«»‹›“”‘’]+$/g, "").trim(); // bỏ nháy bao ngoài
+  // Cú pháp in đậm/nghiêng của markdown mà model hay để lọt: "**Bún cá** (cá
+  // lóc...)". Lưu nguyên thì tên món hiện ra kèm luôn dấu sao trên bảng lộ
+  // trình, và còn bị ghi vào bảng `foods` rồi tái sinh ở các tuần sau.
+  s = s.replace(/\*+/g, "").replace(/(^|\s)_{1,2}(\S)/g, "$1$2").replace(/(\S)_{1,2}(\s|$)/g, "$1$2").trim();
   s = s.replace(/\s*[-–—]?\s*\d+\s*kcal\b.*$/i, "").trim();   // bỏ đuôi "- 420kcal ..."
   return s.replace(/\s+/g, " ");
 };

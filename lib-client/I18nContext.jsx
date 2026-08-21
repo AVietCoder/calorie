@@ -65,7 +65,13 @@ export function I18nProvider({ children }) {
 
   const localizeFood = useCallback(
     (name) => {
-      const raw = String(name || '').trim();
+      /* Bỏ cú pháp in đậm của markdown trước mọi việc khác.
+         Model đôi khi trả tên món kèm dấu sao ("**Bún cá** (cá lóc, đậu hũ...)")
+         và nó đã nằm sẵn trong các thực đơn đã lưu. Backend nay đã lọc ở
+         cleanFoodName, nhưng dữ liệu cũ chỉ sạch khi sinh lại thực đơn — nên
+         vẫn phải gột ở đây. Gột TRƯỚC khi tra từ điển cũng làm khớp tốt hơn:
+         "**Bún cá**" không bao giờ khớp khoá nào. */
+      const raw = String(name || '').replace(/\*+/g, '').trim();
       if (!raw || lang !== 'en') return raw;
       const key = raw.toLowerCase().replace(/\s+/g, ' ');
       if (FOOD_EN[key]) return FOOD_EN[key];
