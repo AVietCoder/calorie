@@ -2,6 +2,7 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PageShell from '../../components/PageShell';
+import PageLoading from '../../components/PageLoading';
 import ActionButton from '../../components/ActionButton';
 import GenerationProgress from '../../components/GenerationProgress';
 import { useToast } from '../../lib-client/ToastContext';
@@ -761,9 +762,12 @@ export default function SchedulePage() {
 
       {saving && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(251,250,246,0.96)', backdropFilter: 'blur(6px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18 }}>
-          <div className="typing-indicator" style={{ display: 'flex', gap: 6 }}><div className="typing-dot" /><div className="typing-dot" /><div className="typing-dot" /></div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--primary-deep)' }}>{saving}</div>
-          <div style={{ fontSize: 12, color: 'var(--text-sub)' }}>Vui lòng không đóng trang…</div>
+          {/* Đổi món phải chờ backend tính lại dinh dưỡng — cũng dùng thanh
+              tiến trình thay cho ba chấm, cho đồng bộ với các màn chờ khác. */}
+          <div className="page-loading-box">
+            <GenerationProgress running done={false} showSteps={false} expectedMs={5000} title={saving} t={t} />
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--text-sub)' }}>{t('sch.dont_close', 'Vui lòng không đóng trang…')}</div>
         </div>
       )}
 
@@ -1093,9 +1097,7 @@ export default function SchedulePage() {
       </div>
 
       {loading && (
-        <div className="loading-overlay" style={{ position: 'fixed' }}>
-          <div className="typing-indicator"><div className="typing-dot" /><div className="typing-dot" /><div className="typing-dot" /></div>
-        </div>
+        <PageLoading t={t} />
       )}
     </PageShell>
   );

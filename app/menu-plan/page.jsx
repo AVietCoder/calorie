@@ -302,9 +302,14 @@ function MenuPlanInner() {
       )}
 
       {!plan && !busy && (
-        <div className="card">
-          <p className="mp-empty">{t('mp.loading_plan', 'Đang tải thực đơn...')}</p>
-        </div>
+        <GenerationProgress
+          running
+          done={false}
+          showSteps={false}
+          expectedMs={3500}
+          title={t('mp.loading_plan', 'Đang tải thực đơn...')}
+          t={t}
+        />
       )}
 
       {plan && tab === 'menu' && (

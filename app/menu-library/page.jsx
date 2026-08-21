@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import PageShell from '../../components/PageShell';
+import PageLoading from '../../components/PageLoading';
 import ActionButton from '../../components/ActionButton';
 import { useApi } from '../../lib-client/useApi';
 import { useToast } from '../../lib-client/ToastContext';
@@ -283,9 +284,7 @@ export default function MenuLibraryPage() {
   if (loading) {
     return (
       <PageShell>
-        <div className="loading-overlay" style={{ position: 'fixed' }}>
-          <div className="typing-indicator"><div className="typing-dot" /><div className="typing-dot" /><div className="typing-dot" /></div>
-        </div>
+        <PageLoading t={t} />
       </PageShell>
     );
   }

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Chart } from 'chart.js/auto';
 import PageShell from '../../components/PageShell';
+import PageLoading from '../../components/PageLoading';
 import ActionButton from '../../components/ActionButton';
 import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
@@ -364,9 +365,7 @@ export default function DietDetailsPage() {
   if (!data) {
     return (
       <PageShell>
-        <div className="loading-overlay" style={{ position: 'fixed' }}>
-          <div className="typing-indicator"><div className="typing-dot" /><div className="typing-dot" /><div className="typing-dot" /></div>
-        </div>
+        <PageLoading t={t} />
       </PageShell>
     );
   }
@@ -384,9 +383,7 @@ export default function DietDetailsPage() {
   return (
     <PageShell>
       {loading && (
-        <div className="loading-overlay" style={{ position: 'fixed' }}>
-          <div className="typing-indicator"><div className="typing-dot" /><div className="typing-dot" /><div className="typing-dot" /></div>
-        </div>
+        <PageLoading t={t} />
       )}
       <div className="roadmap-container">
         <div id="overview-content">

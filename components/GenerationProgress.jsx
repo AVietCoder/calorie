@@ -41,7 +41,13 @@ const SLOW_AFTER_MS = 60_000;
 /** Trần của phần ước lượng. Không chạm 100% khi chưa có kết quả thật. */
 const CAP = 96;
 
-export default function GenerationProgress({ running, done, title, expectedMs = 12_000, t }) {
+export default function GenerationProgress({
+  running, done, title, expectedMs = 12_000, t,
+  /* Bốn bước là chuyện của luồng SINH thực đơn. Trang chỉ đang tải dữ liệu thì
+     tắt đi — hiện "Đang kiểm tra dinh dưỡng" lúc mở trang Hồ sơ là nói sai
+     việc hệ thống đang làm. */
+  showSteps = true,
+}) {
   const [pct, setPct] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const startedAt = useRef(null);
@@ -91,6 +97,7 @@ export default function GenerationProgress({ running, done, title, expectedMs = 
         <span className="gp-fill" style={{ width: `${shown}%` }} />
       </div>
 
+      {showSteps && (
       <ul className="gp-steps">
         {STEPS.map((s) => {
           const passed = done || shown > s.at + 4;
@@ -103,6 +110,7 @@ export default function GenerationProgress({ running, done, title, expectedMs = 
           );
         })}
       </ul>
+      )}
 
       {!done && slow && (
         <p className="gp-slow">

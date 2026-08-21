@@ -2,6 +2,7 @@
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import PageShell from '../../components/PageShell';
+import GenerationProgress from '../../components/GenerationProgress';
 import { useApi } from '../../lib-client/useApi';
 import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
@@ -193,7 +194,9 @@ function SetupInner() {
     return (
       <PageShell variant="setup">
         <div className="setup-card" style={{ minHeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="typing-indicator"><div className="typing-dot" /><div className="typing-dot" /><div className="typing-dot" /></div>
+          <div className="page-loading-box">
+            <GenerationProgress running done={false} showSteps={false} expectedMs={3000} t={t} />
+          </div>
         </div>
       </PageShell>
     );

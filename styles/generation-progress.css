@@ -75,6 +75,16 @@
 }
 .gp-slow i { color: var(--warning, #f39c12); margin-top: 2px; }
 
+/* Hộp chứa thanh tiến trình khi dùng làm màn chờ phủ toàn trang (PageLoading).
+   Giới hạn bề ngang để trên màn rộng thanh không kéo dài cả mét. */
+.page-loading-box {
+  width: min(420px, calc(100vw - 40px));
+}
+.page-loading-box .gp {
+  margin-bottom: 0;
+  box-shadow: 0 12px 40px rgba(15, 40, 28, .18);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gp-fill { transition: none; }
 }
