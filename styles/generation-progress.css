@@ -1,0 +1,80 @@
+/* generation-progress.css — thanh tiến trình dùng chung cho các tác vụ chạy lâu.
+   Đi kèm components/GenerationProgress.jsx; trang nào dùng component thì import
+   file này (Next gom CSS theo route nên không nạp thừa ở trang không dùng). */
+
+.gp {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  border-radius: var(--radius-lg, 16px);
+  background: var(--surface, #fff);
+  border: 1px solid var(--border-soft, #e8ebe9);
+  box-shadow: 0 2px 10px rgba(15, 40, 28, .05);
+}
+
+.gp-head { display: flex; align-items: center; gap: 9px; }
+.gp-head > i { color: var(--primary); font-size: 15px; }
+.gp-title {
+  flex: 1;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.gp-pct { font-size: 14.5px; font-weight: 800; color: var(--primary); }
+
+.gp-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--divider, #eef1ef);
+  overflow: hidden;
+}
+.gp-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary), var(--primary-deep, #3d7353));
+  /* Chuyển mượt giữa các nhịp cập nhật 250ms để thanh không giật từng nấc. */
+  transition: width .28s ease-out;
+}
+
+.gp-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gp-steps li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--text-dim, #9aa1a9);
+}
+.gp-steps li i { font-size: 10px; }
+.gp-steps li.passed { color: var(--text-sub); }
+.gp-steps li.passed i { color: var(--primary); }
+.gp-steps li.active { color: var(--primary-deep, #3d7353); font-weight: 700; }
+.gp-steps li.active i { color: var(--primary); }
+
+.gp-note { margin: 0; font-size: 12px; color: var(--text-sub); line-height: 1.5; }
+.gp-slow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(243, 156, 18, .1);
+  color: #8a5a12;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.gp-slow i { color: var(--warning, #f39c12); margin-top: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gp-fill { transition: none; }
+}

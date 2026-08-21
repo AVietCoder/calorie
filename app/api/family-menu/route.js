@@ -556,8 +556,12 @@ function parseServings(url) {
   const raw = url.searchParams.get('servings');
   if (raw == null || raw === '') return undefined;
   const n = Number(raw);
-  if (!Number.isFinite(n) || n < 1 || n > 50) {
-    throw httpError(400, 'servings phải là số từ 1 đến 50.');
+  /* Trần 1000 thay vì 50: bếp trường học / bệnh viện nấu vài trăm suất là bình
+     thường, mà 50 thì chặn ngay từ con số thật của họ. Nhân suất chỉ là phép
+     nhân tuyến tính trên định lượng nên không có chi phí gì thêm; giữ một trần
+     để tránh số vô lý làm phình danh sách đi chợ. */
+  if (!Number.isFinite(n) || n < 1 || n > 1000) {
+    throw httpError(400, 'Số suất phải là số từ 1 đến 1000.');
   }
   return n;
 }

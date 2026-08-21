@@ -160,12 +160,13 @@ async function backfillPlans() {
 
     // Cùng phép tính hệ số mà persistMeal dùng — không nhân đôi công thức.
     const aggregated = aggregateDishForHousehold(tpl, ctx.members, ctx.mealsPerDay);
-    const factor = aggregated.perMember?.[0]?.factor || 1;
+    // totalFactor đã gồm cả số người — không nhân thêm members.length nữa.
+    const totalFactor = aggregated.totalFactor || 1;
 
     const rows = (tpl.menu_template_dish_ingredients || []).map((ing) => ({
       dish_id: pd.id,
       name: ing.name,
-      grams: ing.grams != null ? Math.round(ing.grams * factor * ctx.members.length) : null,
+      grams: ing.grams != null ? Math.round(ing.grams * totalFactor) : null,
       unit: ing.unit ?? null,
       tags: ing.tags || [],
     }));

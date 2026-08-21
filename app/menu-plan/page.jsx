@@ -18,6 +18,7 @@ import DayCard from '../../components/menu-plan/DayCard';
 import DayDetailModal from '../../components/menu-plan/DayDetailModal';
 import ShoppingPanel from '../../components/menu-plan/ShoppingPanel';
 import DayNotes from '../../components/menu-plan/DayNotes';
+import GenerationProgress from '../../components/GenerationProgress';
 import { useApi } from '../../lib-client/useApi';
 import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
@@ -49,6 +50,8 @@ function MenuPlanInner() {
   const [sampleId, setSampleId] = useState(null);
 
   const [tab, setTab] = useState('menu');
+  /** null | 'regen' (đang chạy) | 'done' (đã xong, cho thanh chạy nốt 100%). */
+  const [busy, setBusy] = useState(null);
   const [shopping, setShopping] = useState({ items: null, groups: null, totals: null, text: '', error: null });
   const [cost, setCost] = useState(null);          // { byDay, byMeal, total }
   const [servings, setServings] = useState(null);
@@ -158,11 +161,19 @@ function MenuPlanInner() {
 
   async function regenerateWeek() {
     if (!window.confirm(t('mp.confirm_regen', 'Làm lại toàn bộ thực đơn tuần này?'))) return;
+    setBusy('regen');
     try {
       await post('/api/family-menu', { action: 'regenerate_plan', plan_id: plan.id, scope: 'week' });
-      showToast(t('mp.toast_regen', 'Đã tạo lại thực đơn tuần!'), 'success');
       await loadPlan(householdId);
-    } catch (e) { showToast(e.message, 'error'); }
+      /* Bật `done` để thanh chạy nốt lên 100% rồi mới tắt — trước đây làm xong
+         không có dấu hiệu gì trên màn, người dùng không biết đã xong hay chưa. */
+      setBusy('done');
+      showToast(t('mp.toast_regen', 'Đã tạo lại thực đơn tuần!'), 'success');
+      setTimeout(() => setBusy(null), 900);
+    } catch (e) {
+      setBusy(null);
+      showToast(e.message, 'error');
+    }
   }
 
   async function swapDish(dish) {
@@ -253,7 +264,7 @@ function MenuPlanInner() {
             <label className="mp-servings">
               <span>{t('mp.servings', 'Số suất')}</span>
               <input
-                type="number" min="1" max="50"
+                type="number" min="1" max="1000"
                 value={servings ?? ''}
                 placeholder={t('mp.servings_auto', 'Tự động')}
                 onChange={(e) => changeServings(e.target.value)}
@@ -278,7 +289,19 @@ function MenuPlanInner() {
         </div>
       )}
 
-      {!plan && (
+      {/* Dựng lại cả tuần chạy khá lâu — có thanh tiến trình thì người dùng
+          biết hệ thống đang làm, và biết lúc nào xong. */}
+      {busy && (
+        <GenerationProgress
+          running={busy === 'regen'}
+          done={busy === 'done'}
+          expectedMs={9_000}
+          title={busy === 'done' ? null : t('mp.regenerating', 'Đang dựng lại thực đơn tuần…')}
+          t={t}
+        />
+      )}
+
+      {!plan && !busy && (
         <div className="card">
           <p className="mp-empty">{t('mp.loading_plan', 'Đang tải thực đơn...')}</p>
         </div>

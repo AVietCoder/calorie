@@ -417,8 +417,38 @@ const syncMissingFoodsToDB = async (plan, foodsDB) => {
 // F:8 | C:50 | Fi:5 | Su:4 | Na:50" hoặc dấu nháy vào field "food". Bóc TÊN thuần,
 // và CỨU số liệu vào đúng field nếu field đó đang trống. Chạy ở toFlatMeals nên
 // dọn cho MỌI đường (fill/group/flatten/hiển thị + cả plan cũ đã lưu bị bẩn).
+/**
+ * Ép một trường dinh dưỡng về SCALAR hiển thị được.
+ *
+ * Model không phải lúc nào cũng trả chuỗi "30g": quét dữ liệu đã lưu thấy cùng
+ * một trường `protein` có 174 chuỗi, 15 MẢNG, 6 số và 3 OBJECT dạng
+ * `{"unit":"","value":30}`. Object/mảng được lưu thẳng vào weekly_plan, rồi khi
+ * giao diện render `<Text>P: {m.protein}</Text>` là React ném
+ * "Objects are not valid as a React child (found: object with keys {unit, value})"
+ * và sập cả màn Kế hoạch.
+ *
+ * Gộp {value, unit} lại thành "30g"; mảng thì lấy phần tử đầu; số giữ nguyên số.
+ */
+const scalarNutrient = (v) => {
+  if (v == null) return v;
+  if (Array.isArray(v)) return scalarNutrient(v[0]);
+  if (typeof v === "object") {
+    const val = v.value ?? v.amount ?? v.qty ?? null;
+    if (val == null) return null;
+    const unit = String(v.unit ?? "").trim();
+    return unit ? `${val}${unit}` : val;
+  }
+  return v;
+};
+
+const NUTRIENT_FIELDS = ["calories", "protein", "fat", "carbs", "fiber", "sugar", "sodium", "amount"];
+
 const cleanMealFields = (meal) => {
   if (!meal || typeof meal !== "object") return meal;
+  // Chuẩn hoá TRƯỚC mọi bước khác — các nhánh dưới đều giả định đây là scalar.
+  for (const f of NUTRIENT_FIELDS) {
+    if (f in meal) meal = { ...meal, [f]: scalarNutrient(meal[f]) };
+  }
   let food = String(meal.food || "").replace(/^\s*['"]+|['"]+\s*$/g, "").trim();
   const salv = { kcal: null, p: null, f: null, c: null, fi: null, su: null, na: null };
   if (food.includes("|")) {

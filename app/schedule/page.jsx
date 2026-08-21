@@ -3,6 +3,7 @@ import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PageShell from '../../components/PageShell';
 import ActionButton from '../../components/ActionButton';
+import GenerationProgress from '../../components/GenerationProgress';
 import { useToast } from '../../lib-client/ToastContext';
 import { useTranslation } from '../../lib-client/I18nContext';
 import { openNearbySearch } from '../../lib-client/nearby';
@@ -401,6 +402,7 @@ export default function SchedulePage() {
       const result = await res.json();
       if (!result.success) {
         showToast(result.error || t('toast.coach_gen_err', 'Chưa tạo được thực đơn, bạn thử lại sau nhé!'), 'error');
+        setGenerating(false);   // không có finally nữa — phải tự tắt ở mọi lối ra
         return;
       }
       if (result.newPlan && result.newPlan.length > 0) {
@@ -408,13 +410,17 @@ export default function SchedulePage() {
         setModifiedMap(new Map());
         setAiReplyHtml(result.reply || '');
         showToast(t('toast.menu_updated', 'Đã cập nhật thực đơn mới từ AI!'), 'success');
+        /* 'done' để thanh chạy nốt lên 100% rồi mới biến mất — tắt phụt ngay
+           thì người dùng không biết là đã xong hay bị lỗi giữa chừng. */
+        setGenerating('done');
+        setTimeout(() => setGenerating(false), 900);
+        return;
       }
     } catch (err) {
       console.error('Lỗi tạo thực đơn nền:', err);
       showToast(t('toast.coach_net_err', 'Lỗi kết nối HLV AI'), 'error');
-    } finally {
-      setGenerating(false);
     }
+    setGenerating(false);
   }
 
   /*
@@ -928,10 +934,15 @@ export default function SchedulePage() {
             {aiReplyHtml && <div id="ai-response-text"><div className="ai-reply-text"><i className="fa-solid fa-quote-left" /> {aiReplyHtml}</div></div>}
 
             {generating && (
-              <div className="plan-generating" role="status" aria-live="polite">
-                <span className="btn-spinner" aria-hidden="true" />
-                <span>{t('sch.generating', 'HLV AI đang soạn thực đơn tuần — bạn cứ dùng trang bình thường, bảng sẽ tự cập nhật khi xong.')}</span>
-              </div>
+              <GenerationProgress
+                running={generating === true}
+                done={generating === 'done'}
+                expectedMs={14_000}
+                title={generating === 'done'
+                  ? null
+                  : t('sch.generating', 'HLV AI đang soạn thực đơn tuần — bạn cứ dùng trang bình thường, bảng sẽ tự cập nhật khi xong.')}
+                t={t}
+              />
             )}
 
             {/*
