@@ -53,12 +53,49 @@ export function parseMacro(v) {
   const n = parseFloat(String(v).replace(/[^0-9.]/g, ''));
   return isNaN(n) ? 0 : n;
 }
+/**
+ * Khoá ngày của day_index (1 = T2 … 7 = CN) TRONG TUẦN HIỆN TẠI.
+ *
+ * Bảng lộ trình đánh số theo THỨ, còn kho intake lưu theo NGÀY LỊCH. Muốn đọc
+ * lại "thứ 5 đã ăn gì" thì phải quy thứ về đúng ngày rồi mới tra.
+ */
+export function dateKeyForPlanDay(dayIndex) {
+  const d = new Date();
+  d.setDate(d.getDate() + (Number(dayIndex) - todayPlanDay()));
+  return dateKeyOf(d);
+}
+
+/**
+ * Bản ghi intake của MỘT ngày trong tuần, tạo rỗng nếu chưa có.
+ *
+ * Đây là chỗ sửa lỗi "qua ngày là mất hết món đã ăn". Bản cũ dùng
+ * getTodayIntake() cho MỌI thao tác: `isEaten(day, meal)` có nhận tham số
+ * `day` nhưng lại bỏ qua nó khi chọn bản ghi, luôn tra trong bản ghi HÔM NAY.
+ *
+ * Hệ quả: tick vào thứ 5 được ghi đúng vào bản ghi ngày thứ 5, nhưng sang thứ 6
+ * thì getTodayIntake() trả bản ghi thứ 6 (rỗng) nên tra không thấy gì. Dữ liệu
+ * KHÔNG mất — nó vẫn nằm nguyên trên đĩa — chỉ là không còn đường nào đọc lại.
+ * Kiểm chứng bằng đồng hồ giả: sau khi nhảy sang hôm sau, localStorage vẫn giữ
+ * `"2026-08-20": { eaten: ["4-Sáng","4-Trưa"] }` trong khi mọi hàm đọc đều
+ * trả false.
+ */
+function dayRecord(all, dayIndex) {
+  const k = dateKeyForPlanDay(dayIndex);
+  if (!all[k]) all[k] = { eaten: {}, extras: [] };
+  if (!all[k].eaten) all[k].eaten = {};
+  if (!all[k].extras) all[k].extras = [];
+  if (!all[k].skipped) all[k].skipped = {};
+  if (!all[k].eatenInfo) all[k].eatenInfo = {};
+  return all[k];
+}
+
 export function isEaten(day, meal) {
-  const { day: d } = getTodayIntake();
-  return !!d.eaten[`${day}-${meal}`];
+  const all = loadIntakeAll();
+  return !!dayRecord(all, day).eaten[`${day}-${meal}`];
 }
 export function setEaten(day, meal, val, item) {
-  const { all, day: d } = getTodayIntake();
+  const all = loadIntakeAll();
+  const d = dayRecord(all, day);
   const key = `${day}-${meal}`;
   if (val) {
     d.eaten[key] = true;
@@ -79,11 +116,12 @@ export function setEaten(day, meal, val, item) {
   saveTodayIntake(all);
 }
 export function isSkipped(day, meal) {
-  const { day: d } = getTodayIntake();
-  return !!(d.skipped && d.skipped[`${day}-${meal}`]);
+  const all = loadIntakeAll();
+  return !!dayRecord(all, day).skipped[`${day}-${meal}`];
 }
 export function setSkipped(day, meal, val) {
-  const { all, day: d } = getTodayIntake();
+  const all = loadIntakeAll();
+  const d = dayRecord(all, day);
   const key = `${day}-${meal}`;
   if (!d.skipped) d.skipped = {};
   if (val) {

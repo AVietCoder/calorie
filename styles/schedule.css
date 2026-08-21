@@ -797,9 +797,12 @@
  * Chỉ áp cho .today-cell vì hai huy hiệu này chỉ render ở cột hôm nay — các ô
  * còn lại giữ nguyên cách canh giữa cũ.
  */
-.meal-cell.today-cell{box-shadow:0 0 0 2px var(--primary) inset;flex-direction:column;gap:6px;}
-.meal-cell.today-cell>.eaten-check,
-.meal-cell.today-cell>.skipped-badge{position:static;order:-1;flex:none;}
+.meal-cell.today-cell{box-shadow:0 0 0 2px var(--primary) inset;}
+/* Bám .has-mark (ô CÓ huy hiệu) chứ không bám .today-cell: từ khi ô của những
+   ngày ĐÃ QUA cũng đánh dấu được, huy hiệu không còn là độc quyền của hôm nay. */
+.meal-cell.has-mark{flex-direction:column;gap:6px;}
+.meal-cell.has-mark>.eaten-check,
+.meal-cell.has-mark>.skipped-badge{position:static;order:-1;flex:none;}
 .cell-inner.is-eaten>div:first-child{text-decoration:line-through;opacity:.7;}
 .eaten-check{position:absolute;top:5px;left:5px;display:inline-flex;align-items:center;gap:4px;
   background:rgba(255,255,255,.92);border:1px solid var(--border);border-radius:999px;

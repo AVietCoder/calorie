@@ -593,7 +593,10 @@ export default function SchedulePage() {
   const hasWeekExtras = Object.keys(weekExtras).length > 0;
 
   function toggleEaten(item, checked) {
-    setEaten(todayPlanDay(), item.meal, checked, item);
+    /* Ghi vào NGÀY CỦA CHÍNH Ô ĐÓ, không phải hôm nay.
+       Trước đây luôn dùng todayPlanDay() nên tick vào ô ngày khác sẽ ghi nhầm
+       sang hôm nay — giờ ô của những ngày đã qua cũng tick được. */
+    setEaten(Number(item.day) || todayPlanDay(), item.meal, checked, item);
     bumpIntake();
   }
 
@@ -984,12 +987,19 @@ export default function SchedulePage() {
                         </div>
                       );
                     }
-                    const skipped = isToday && isSkipped(pday, item.meal);
-                    const eaten = isToday && !skipped && isEaten(pday, item.meal);
+                    /* Ngày đã qua và hôm nay đều đọc/sửa được trạng thái đã ăn;
+                       ngày TƯƠNG LAI thì không, vì chưa ăn thì không có gì để
+                       đánh dấu. `pday > 0` là cờ "đã chạy ở trình duyệt". */
+                    const trackable = pday > 0 && day <= pday;
+                    const skipped = trackable && isSkipped(day, item.meal);
+                    const eaten = trackable && !skipped && isEaten(day, item.meal);
                     return (
                       <div
                         key={`${day}-${row.id}`}
-                        className={`meal-cell has-data${isToday ? ' today-cell' : ''}`}
+                        /* has-mark = ô CÓ huy hiệu (đã ăn / bỏ bữa). CSS xếp dọc
+                           bám vào class này chứ không bám .today-cell nữa, vì
+                           huy hiệu giờ xuất hiện ở cả những ngày đã qua. */
+                        className={`meal-cell has-data${isToday ? ' today-cell' : ''}${trackable ? ' has-mark' : ''}`}
                         style={{ border: '1.5px solid var(--primary-green)', background: 'linear-gradient(180deg, #ffffff, var(--sage-50))', position: 'relative', cursor: 'pointer' }}
                         onClick={(e) => { if (e.target.closest('.eaten-check') || e.target.closest('button[data-search]')) return; openModal(item); }}
                       >
@@ -999,7 +1009,7 @@ export default function SchedulePage() {
                           <div style={{ marginTop: 2, fontWeight: 800, color: 'var(--primary)', fontSize: 11 }}>{item.calories != null && item.calories !== '' ? item.calories : '—'} kcal</div>
                         </div>
                         {skipped && <span className="skipped-badge"><i className="fa-solid fa-ban" />{t('sch.skipped_badge', 'Đã bỏ bữa')}</span>}
-                        {isToday && !skipped && (
+                        {trackable && !skipped && (
                           <label className={`eaten-check${eaten ? ' on' : ''}`} title={t('sch.eaten', 'Đã ăn')} onClick={(e) => e.stopPropagation()}>
                             <input type="checkbox" checked={eaten} onChange={(e) => toggleEaten(item, e.target.checked)} />
                             <i className="fa-solid fa-check" /><span>{t('sch.eaten', 'Đã ăn')}</span>
