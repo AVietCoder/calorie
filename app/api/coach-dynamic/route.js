@@ -443,11 +443,45 @@ const scalarNutrient = (v) => {
 
 const NUTRIENT_FIELDS = ["calories", "protein", "fat", "carbs", "fiber", "sugar", "sodium", "amount"];
 
+/* Nhãn bữa model hay viết lệch. Xét theo THỨ TỰ, khớp CHỨA. */
+const MEAL_ALIASES = [
+  ["sáng", "Sáng"], ["trưa", "Trưa"], ["tối", "Tối"],
+  ["phụ", "Phụ"], ["xế", "Phụ"], ["nhẹ", "Phụ"],
+];
+
+/**
+ * Đưa nhãn bữa về đúng một trong 4 giá trị chuẩn.
+ *
+ * Model không phải lúc nào cũng trả chuỗi "Trưa": dữ liệu đã lưu có bữa bọc
+ * thành MẢNG `["Trưa"]`, có bữa dính markdown `"**Tối**"`, có bữa `undefined`.
+ *
+ * Mảng là ca nguy hiểm nhất vì nó phá phép so sánh: applyModificationsToPlan
+ * đối chiếu bằng `m.meal === mod.meal`, mà `["Trưa"] === ["Trưa"]` luôn FALSE
+ * (so tham chiếu). Không khớp thì nhánh else PUSH THÊM một bữa mới thay vì thay
+ * thế, còn bảng thì `find()` lấy bữa đầu tiên — nên người dùng đổi món bao
+ * nhiêu lần cũng không thấy gì đổi. Quét thật: một ngày có tới 6 bữa "Trưa",
+ * trong đó "bún bò huế" bị nhân thành 5 bản.
+ */
+const canonicalMeal = (v) => {
+  const raw = Array.isArray(v) ? v[0] : v;
+  const s = String(raw ?? "").replace(/[*_`#]/g, "").trim();
+  if (!s) return "";
+  const low = s.toLowerCase();
+  for (const [kw, label] of MEAL_ALIASES) if (low.includes(kw)) return label;
+  return s;
+};
+
 const cleanMealFields = (meal) => {
   if (!meal || typeof meal !== "object") return meal;
   // Chuẩn hoá TRƯỚC mọi bước khác — các nhánh dưới đều giả định đây là scalar.
   for (const f of NUTRIENT_FIELDS) {
     if (f in meal) meal = { ...meal, [f]: scalarNutrient(meal[f]) };
+  }
+  // Nhãn bữa cũng phải là CHUỖI chuẩn, không thì mọi phép đối chiếu bữa về sau
+  // đều lệch (xem chú thích ở canonicalMeal).
+  if ("meal" in meal) {
+    const canon = canonicalMeal(meal.meal);
+    if (canon) meal = { ...meal, meal: canon };
   }
   let food = String(meal.food || "").replace(/^\s*['"]+|['"]+\s*$/g, "").trim();
   const salv = { kcal: null, p: null, f: null, c: null, fi: null, su: null, na: null };
@@ -555,16 +589,31 @@ const applyModificationsToPlan = (groupedPlan, modifiedMeals) => {
     day: d.day,
     meals: (d.meals || []).map((m) => ({ ...m })),
   }));
+  /* Dọn bữa trùng TRƯỚC khi áp thay đổi.
+     Phải làm trước chứ không phải sau: nếu gộp sau, phép thay thế ở dưới rơi
+     vào bản trùng ĐẦU TIÊN còn bước gộp lại giữ bản CUỐI — đúng món vừa đổi bị
+     đè mất. Giữ bản cuối vì đó là lần chỉnh gần nhất của người dùng. */
+  for (const d of next) {
+    const byLabel = new Map();
+    for (const m of d.meals || []) byLabel.set(canonicalMeal(m.meal) || String(m.meal), m);
+    d.meals = [...byLabel.values()];
+  }
+
   for (const mod of modifiedMeals) {
     const dayEntry = next.find((d) => Number(d.day) === Number(mod.day));
     if (!dayEntry) continue;
-    const idx = dayEntry.meals.findIndex((m) => m.meal === mod.meal);
+    /* So theo NHÃN ĐÃ CHUẨN HOÁ, không so thẳng `===`: nhãn đã lưu có thể là
+       mảng `["Trưa"]`, và `["Trưa"] === "Trưa"` luôn false nên trước đây mọi
+       lần đổi món đều rơi xuống nhánh push, đẻ ra bữa trùng thay vì thay thế. */
+    const want = canonicalMeal(mod.meal);
+    const idx = dayEntry.meals.findIndex((m) => canonicalMeal(m.meal) === want);
     if (idx === -1) {
-      dayEntry.meals.push({ ...mod, isModified: true });
+      dayEntry.meals.push({ ...mod, meal: want || mod.meal, isModified: true });
     } else {
-      dayEntry.meals[idx] = { ...dayEntry.meals[idx], ...mod, isModified: true };
+      dayEntry.meals[idx] = { ...dayEntry.meals[idx], ...mod, meal: want || mod.meal, isModified: true };
     }
   }
+
   return next;
 };
 
