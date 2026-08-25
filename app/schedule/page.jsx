@@ -10,7 +10,7 @@ import { useTranslation } from '../../lib-client/I18nContext';
 import { openNearbySearch } from '../../lib-client/nearby';
 import {
   todayPlanDay, getTodayIntake, computeTodayTotals, isEaten, setEaten,
-  isSkipped, setSkipped, addExtraFood, removeExtraFood, parseMacro, getWeekExtras,
+  isSkipped, setSkipped, addExtraFood, removeExtraFood, parseMacro, getWeekExtras, pullIntake,
 } from '../../lib-client/todayIntake';
 import '../../styles/schedule.css';
 
@@ -314,6 +314,13 @@ export default function SchedulePage() {
   const router = useRouter();
 
   const bumpIntake = useCallback(() => setIntakeVersion((v) => v + 1), []);
+
+  /* Kéo "đã ăn / bỏ bữa / món thêm" từ máy chủ về khi mở trang, để những gì
+     tick trên app hiện ra ở đây. Chạy nền: giao diện vẫn dựng ngay từ kho cục
+     bộ, có dữ liệu mới thì vẽ lại. */
+  useEffect(() => {
+    pullIntake().then((merged) => { if (merged) bumpIntake(); });
+  }, [bumpIntake]);
 
   /* ── Load ───────────────────────────────────────────────────────── */
   useEffect(() => {

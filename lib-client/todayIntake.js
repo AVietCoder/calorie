@@ -46,7 +46,80 @@ export function getTodayIntake() {
   return { all, day: all[k] };
 }
 export function saveTodayIntake(all) {
+  /* Đóng dấu thời gian cho NGÀY HÔM NAY trước khi lưu.
+     Máy chủ trộn dữ liệu của hai thiết bị theo từng ngày, bản `_ts` mới hơn
+     thắng — không có dấu này thì không phân biệt được ai sửa sau. */
+  const k = todayStr();
+  if (all && all[k]) all[k]._ts = Date.now();
   window.localStorage.setItem(intakeKey(), JSON.stringify(all));
+  schedulePush();
+}
+
+/* ── Đồng bộ web ↔ app ──────────────────────────────────────────────────────
+ *
+ * Trước đây "đã ăn / bỏ bữa / món thêm" chỉ nằm trong localStorage của trình
+ * duyệt, còn app ghi vào AsyncStorage của máy — hai bên không hề biết nhau. Tick
+ * trên điện thoại rồi mở web ra là trắng trơn, và đổi máy là mất sạch.
+ *
+ * Cả hai nay cùng đọc/ghi /api/intake. Kho cục bộ vẫn là nguồn hiển thị (giao
+ * diện không phải chờ mạng), việc đồng bộ chạy nền.
+ */
+let _pushTimer = null;
+
+/** Gộp nhiều thao tác liên tiếp thành MỘT lần gửi — tick nhanh 4 bữa thì chỉ
+ *  tốn một request thay vì bốn. */
+function schedulePush() {
+  clearTimeout(_pushTimer);
+  _pushTimer = setTimeout(() => { pushIntake().catch(() => {}); }, 1200);
+}
+
+function authToken() {
+  try { return window.localStorage.getItem('calorie_ai_token'); } catch { return null; }
+}
+
+/**
+ * Đẩy kho cục bộ lên máy chủ rồi ghi đè lại bằng bản ĐÃ TRỘN.
+ *
+ * Nuốt mọi lỗi: chưa chạy migration, mất mạng, token hết hạn — đều không được
+ * phép làm hỏng thao tác đang diễn ra. Dữ liệu vẫn nằm nguyên trong máy và lần
+ * đẩy sau sẽ mang đi.
+ */
+export async function pushIntake() {
+  const token = authToken();
+  if (!token) return null;
+  try {
+    const res = await fetch('/api/intake', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ intake: loadIntakeAll() }),
+    });
+    const data = await res.json();
+    if (!data?.success || !data.intake) return null;
+    window.localStorage.setItem(intakeKey(), JSON.stringify(data.intake));
+    return data.intake;
+  } catch { return null; }
+}
+
+/** Kéo bản trên máy chủ về và trộn với bản cục bộ. Gọi lúc mở trang. */
+export async function pullIntake() {
+  const token = authToken();
+  if (!token) return null;
+  try {
+    const res = await fetch('/api/intake', { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    if (!data?.success || !data.intake) return null;
+
+    const local = loadIntakeAll();
+    const merged = { ...data.intake };
+    // Cùng luật với máy chủ: mỗi NGÀY lấy bản có _ts mới hơn.
+    for (const [day, rec] of Object.entries(local)) {
+      const mine = Number(rec?._ts) || 0;
+      const theirs = Number(merged[day]?._ts) || 0;
+      if (!merged[day] || mine > theirs) merged[day] = rec;
+    }
+    window.localStorage.setItem(intakeKey(), JSON.stringify(merged));
+    return merged;
+  } catch { return null; }
 }
 export function parseMacro(v) {
   if (v == null) return 0;
