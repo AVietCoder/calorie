@@ -478,7 +478,36 @@ const findFoodInDB = (foods, name = "") => {
 
 // ─── INTENT DETECTION ────────────────────────────────────────────────────────
 
-const FOOD_MENTION_RE = /\b(ăn|uống|món|tô|bát|đĩa|ly|cốc|miếng|phần|gram|kg|kcal|calo|bữa|phở|bún|cơm|bánh|thịt|cá|rau|trái|quả|sữa|trứng|đậu|gà|heo|bò|tôm|mực|ốc|canh|lẩu|xôi|cháo|mì|hủ tiếu|pizza|burger|kfc|sandwich|salad|yogurt|yến mạch|oats|protein|smoothie|sinh tố)\b/i;
+// Từ chỉ ĐƠN VỊ / HÀNH ĐỘNG ăn uống — KHÔNG nêu tên món nào.
+const FOOD_GENERIC_WORDS =
+  "ăn|uống|món|tô|bát|đĩa|ly|cốc|miếng|phần|gram|kg|kcal|calo|bữa|protein";
+// Từ NÊU ĐÍCH DANH một món / nguyên liệu.
+const FOOD_DISH_WORDS =
+  "phở|bún|cơm|bánh|thịt|cá|rau|trái|quả|sữa|trứng|đậu|gà|heo|bò|tôm|mực|ốc|canh|lẩu|xôi|cháo|mì|hủ tiếu|pizza|burger|kfc|sandwich|salad|yogurt|yến mạch|oats|smoothie|sinh tố";
+
+// PHẢI dùng (?<!\p{L}) … (?!\p{L}) với cờ 'u', KHÔNG được dùng \b.
+//
+// \b của JS chỉ biết [A-Za-z0-9_], nên chữ có dấu bị coi là KHÔNG phải chữ và
+// sinh ra ranh giới giả ngay giữa từ. Hậu quả đo được: /\btô\b/ KHỚP vào chữ
+// "tôi" (ranh giới giả nằm giữa "ô" và "i"). Mà gần như mọi câu tiếng Việt đều
+// bắt đầu bằng "tôi", nên MỌI tin nhắn đều bị xếp là "có nhắc tới món ăn":
+// "tôi bị gan nhiễm mỡ" cũng bị đưa vào nhánh phân tích món, rồi cả câu đó bị
+// đem đi tra dinh dưỡng và hiện thẻ calo + bảng xác nhận bữa ăn.
+const FOOD_MENTION_RE = new RegExp(
+  `(?<!\\p{L})(?:${FOOD_GENERIC_WORDS}|${FOOD_DISH_WORDS})(?!\\p{L})`, "iu");
+const FOOD_DISH_RE = new RegExp(`(?<!\\p{L})(?:${FOOD_DISH_WORDS})(?!\\p{L})`, "iu");
+
+// Câu XIN LỜI KHUYÊN / khai bệnh — KHÔNG phải câu khai báo một món vừa ăn.
+// "tôi bị tiểu đường thì nên ăn gì" có chữ "ăn" nhưng không nêu món nào; đem cả
+// câu đi tra dinh dưỡng thì ra một thẻ calo vô nghĩa.
+const ADVICE_QUESTION_RE = new RegExp(
+  "(?<!\\p{L})(?:" +
+  "(?:nên|không nên|có nên|được|có được|nên tránh|kiêng)\\s+(?:ăn|uống)|" +
+  "(?:ăn|uống)\\s+(?:gì|j|thế nào|như thế nào|sao|được không|đc không)|" +
+  "(?:tôi|mình|em|con|cháu|bố|mẹ|ba|má)\\s+(?:bị|mắc|đang bị|hay bị)|" +
+  "mắc bệnh|bệnh lý|tiểu đường|đái tháo đường|gan nhiễm mỡ|mỡ máu|" +
+  "huyết áp|dạ dày|gout|gút|suy thận|tim mạch|cholesterol" +
+  ")(?!\\p{L})", "iu");
 // Chỉ những câu THỰC SỰ muốn đổi thực đơn mới vào nhánh coach (nặng). Các câu kiểu
 // "lỡ ăn / vừa ăn" là GHI NHẬN món -> để nhánh analyze (nhanh) xử lý + hỏi lại bữa.
 const UPDATE_RE = /\b(đổi|sửa|thay|cập nhật|thứ [2-7]|chủ nhật|ngày mai|thực đơn|kế hoạch ăn)\b/i;
@@ -490,6 +519,11 @@ const CASUAL_RE = /\b(thời tiết|bóng đá|phim|nhạc|code|lập trình|ch�
 const detectIntent = (message = "") => {
   const msg = String(message);
   if (UPDATE_RE.test(msg)) return "coach";
+  // Hỏi nên ăn gì / khai bệnh → câu hỏi DINH DƯỠNG, cho vào nhánh analyze.
+  // Để rơi xuống "coach" (mặc định cuối hàm) thì vừa nặng hơn (2500 token) vừa
+  // là nhánh DUY NHẤT được phép ghi đè weekly_plan — không đáng rủi ro cho một
+  // câu hỏi kiến thức.
+  if (ADVICE_QUESTION_RE.test(msg)) return "analyze";
   if (FOOD_MENTION_RE.test(msg)) return "analyze";
   if (CASUAL_RE.test(msg)) return "casual";
   return "coach";
@@ -1808,7 +1842,18 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
     // FAST PATH: Với câu hỏi phân tích món/định lượng rõ ràng, resolveNutrition đã cho số
     // deterministic (log: [nutrition] scale ...). Không cần gọi LLM chỉ để viết 1 câu,
     // tránh lỗi provider Qwen trả content rỗng hoặc lặp toàn dấu "!".
-    if (!isMealFollowup && intent === "analyze" && FOOD_MENTION_RE.test(finalMessage)) {
+    // Điều kiện vào fast path phải CHẶT, vì nhánh này lấy NGUYÊN VĂN tin nhắn làm
+    // tên món (`description: finalMessage`) rồi tra dinh dưỡng cho nó. Chỉ cần
+    // câu không thực sự nêu tên món là ra một thẻ calo bịa cho chính câu hỏi của
+    // người dùng, kèm bảng "Xác nhận bữa ăn" — đúng lỗi đang thấy.
+    //   • FOOD_DISH_RE: phải nêu ĐÍCH DANH một món/nguyên liệu. Chỉ có "ăn",
+    //     "bữa", "phần"… thì chẳng có món nào để tra.
+    //   • !ADVICE_QUESTION_RE: câu xin lời khuyên / khai bệnh thì để LLM trả lời,
+    //     đừng đem cả câu đi tra calo.
+    // Không khớp thì rơi xuống nhánh LLM bên dưới như mọi câu khác — không mất
+    // tính năng nào, chỉ mất đường tắt vốn không dùng được cho câu đó.
+    if (!isMealFollowup && intent === "analyze"
+        && FOOD_DISH_RE.test(finalMessage) && !ADVICE_QUESTION_RE.test(finalMessage)) {
       const quickMeal = { description: finalMessage, amount: "1 phần" };
       try {
         const resolvedQuickMeal = await resolveNutrition({
@@ -2038,6 +2083,10 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
       intent !== "casual" &&
       resultMealData?.description &&
       EATEN_INTENT_RE.test(finalMessage) &&
+      // "tôi bị tiểu đường thì nên ăn gì" có chữ "ăn" nên EATEN_INTENT_RE vẫn
+      // khớp, nhưng đó là câu XIN LỜI KHUYÊN chứ không phải khai báo vừa ăn —
+      // hỏi lại "bạn ăn vào bữa nào?" là lạc đề.
+      !ADVICE_QUESTION_RE.test(finalMessage) &&
       (action === "analyze_only" || (!needsClarification && action === "ask_clarify"));
 
     if (wantsMealLog) {
