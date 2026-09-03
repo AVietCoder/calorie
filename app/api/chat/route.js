@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "../../../lib/supabase.js";
 import { retrieveKnowledge, buildKnowledgeSection } from "../../../lib/knowledge.js";
-import { llm as openai, LLM_MODEL, LLM_VISION_MODEL } from "../../../lib/llm.js";
+import { llm as openai, LLM_MODEL, LLM_VISION_MODEL, chatBody } from "../../../lib/llm.js";
 import { analyzeFoodImage, visionProvider, computeTotalsFromItems } from "../../../lib/vision.js";
 // Pipeline dinh dưỡng DÙNG CHUNG với Plan (Bug #1/#4): resolveNutrition tách định
 // lượng → mốc chuẩn có cache (USDA → OpenFoodFacts → tham chiếu → AI temp 0) →
@@ -1298,12 +1298,12 @@ const _badContent = (c) => {
   return !t || _degenerate(t);
 };
 
-// Gọi LLM an toàn. Hai lớp phòng thủ (một số vLLM build xử lý response_format/
-// extra_body khác nhau):
-//   1) endpoint trả 400 vì không hỗ trợ response_format/extra_body → retry không kèm.
-//   2) endpoint trả 200 nhưng content RỖNG/DEGENERATE (guided-decoding + model yếu
-//      đôi khi ra chuỗi trống hoặc {"!!!!…) → retry (đổi seed + phạt lặp mạnh hơn,
-//      bỏ response_format) để lấy được văn bản thật.
+// Gọi LLM an toàn. Hai lớp phòng thủ (các endpoint xử lý response_format khác nhau):
+//   1) endpoint trả 400 vì không hỗ trợ response_format → retry không kèm.
+//   2) endpoint trả 200 nhưng content RỖNG/DEGENERATE (model yếu đôi khi ra chuỗi
+//      trống hoặc {"!!!!…) → retry (đổi seed + phạt lặp mạnh hơn, bỏ
+//      response_format) để lấy được văn bản thật.
+// Mọi body đi qua chatBody() để bỏ tham số chỉ-vLLM-hiểu trước khi lên mạng.
 // Nhờ vậy chat không còn "im lặng" hay hiện JSON rác.
 async function safeChatCreate(openai, payload, options = {}) {
   const { fallbackJson = null, label = "chat" } = options;
@@ -1330,13 +1330,11 @@ async function safeChatCreate(openai, payload, options = {}) {
     f.top_p = 0.9;
     f.max_tokens = Math.max(Number(f.max_tokens) || 0, 900);
     if (typeof f.seed === "number") f.seed += 7;
-    f.extra_body = {
-      ...(f.extra_body || {}),
-      chat_template_kwargs: { enable_thinking: false },
-      frequency_penalty: 0.8,
-      presence_penalty: 0.45,
-      repetition_penalty: 1.25,
-    };
+    // Phạt lặp đặt THẲNG top-level: cả OpenAI lẫn vLLM đều đọc ở đây.
+    // (repetition_penalty là tham số riêng của vLLM và trước giờ nằm trong
+    //  extra_body nên chưa từng có hiệu lực — bỏ hẳn, xem chatBody().)
+    f.frequency_penalty = 0.8;
+    f.presence_penalty = 0.45;
     variants.push({ name: "warm-json", body: f });
   }
 
@@ -1375,7 +1373,7 @@ async function safeChatCreate(openai, payload, options = {}) {
   let lastErr = null;
   for (const variant of variants) {
     try {
-      const res = await openai.chat.completions.create(variant.body);
+      const res = await openai.chat.completions.create(chatBody(variant.body));
       const content = res?.choices?.[0]?.message?.content || "";
       if (!_badContent(res) && !looksJunkReply(stripThinkBlocks(content))) return res;
       console.warn(`[safeChatCreate] ${label}/${variant.name}: content rỗng/degenerate (finish=${res?.choices?.[0]?.finish_reason || "?"}, chars=${String(content).length}, promptChars=${promptLen})`);
@@ -1384,8 +1382,8 @@ async function safeChatCreate(openai, payload, options = {}) {
       const status = err?.status || err?.response?.status || err?.statusCode;
       console.warn(`[safeChatCreate] ${label}/${variant.name}: LLM lỗi status=${status}, promptChars=${promptLen}, err=${err?.message || err}`);
 
-      // Một số endpoint không hỗ trợ response_format/extra_body. Bỏ chúng và thử tiếp variant sau.
-      if (!(status === 400 && (variant.body.response_format || variant.body.extra_body))) {
+      // Một số endpoint không hỗ trợ response_format. Bỏ nó và thử tiếp variant sau.
+      if (!(status === 400 && variant.body.response_format)) {
         continue;
       }
     }
@@ -1546,9 +1544,6 @@ export async function POST(request) {
 
       // Mặc định / fallback: Qwen (mô tả hội thoại + <data>)
       if (aiReply === undefined) {
-        // max_pixels ~3.2MP (448×448×16) — đồng bộ lib/vision.js để đếm tốt vật thể nhỏ
-        const QWEN_MIN_PIXELS = parseInt(process.env.QWEN_MIN_PIXELS || "200704", 10);
-        const QWEN_MAX_PIXELS = parseInt(process.env.QWEN_MAX_PIXELS || "3211264", 10);
         const completion = await safeChatCreate(openai, {
           model: LLM_VISION_MODEL,
           // Mỗi lượt phân tích ẢNH = context SẠCH (system + ảnh + câu hỏi hiện tại).
@@ -1565,13 +1560,6 @@ export async function POST(request) {
           temperature: 0,
           top_p: 1,
           seed: 42,
-          extra_body: {
-            chat_template_kwargs: { enable_thinking: false },
-            mm_processor_kwargs: {
-              min_pixels: QWEN_MIN_PIXELS,
-              max_pixels: QWEN_MAX_PIXELS,
-            },
-          },
         });
 
         aiReply = stripCJK(stripThinkBlocks(completion.choices[0]?.message?.content || ""));
@@ -1917,8 +1905,8 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
         max_tokens: 300,
         temperature: 0.5,
         // Chống "lặp vô hạn" (444444/!!!!!!/CJK) khiến JSON hỏng → reply rỗng. Đặt
-        // trong extra_body để safeChatCreate tự bỏ nếu server không hỗ trợ (retry 400).
-        extra_body: { chat_template_kwargs: { enable_thinking: false }, frequency_penalty: 0.5, presence_penalty: 0.3, repetition_penalty: 1.15 },
+        // Phạt CỐ ĐỊNH nên vẫn deterministic. Đặt top-level: cả OpenAI lẫn vLLM đều đọc.
+        frequency_penalty: 0.5, presence_penalty: 0.3,
       }, { label: "casual", fallbackJson: { reply: casualFallback } });
 
       const rawContent = casualCompletion.choices[0]?.message?.content || "{}";
@@ -1945,8 +1933,8 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
         temperature: 0,
         top_p: 1,
         seed: 42,
-        // Chống lặp (phạt CỐ ĐỊNH nên vẫn deterministic). Trong extra_body để 400-retry tự bỏ.
-        extra_body: { chat_template_kwargs: { enable_thinking: false }, frequency_penalty: 0.5, presence_penalty: 0.3, repetition_penalty: 1.15 },
+        // Chống lặp (phạt CỐ ĐỊNH nên vẫn deterministic).
+        frequency_penalty: 0.5, presence_penalty: 0.3,
       }, { label: "analyze", fallbackJson: { reply: analyzeFallback, mealData: null } });
 
       const rawContent = analyzeCompletion.choices[0]?.message?.content || "{}";
@@ -1974,8 +1962,8 @@ Nếu không thể update thì trả về analyze_only và newPlan=[].`;
         response_format: { type: "json_object" },
         max_tokens: 2500,
         temperature: 0.2,
-        // Chống lặp vô hạn khiến JSON plan hỏng. extra_body để safeChatCreate tự bỏ khi 400.
-        extra_body: { chat_template_kwargs: { enable_thinking: false }, frequency_penalty: 0.5, presence_penalty: 0.3, repetition_penalty: 1.15 },
+        // Chống lặp vô hạn khiến JSON plan hỏng.
+        frequency_penalty: 0.5, presence_penalty: 0.3,
       }, { label: "coach", fallbackJson: {
         reply: coachFallback,
         action: isMealFollowup ? "analyze_only" : "ask_clarify",

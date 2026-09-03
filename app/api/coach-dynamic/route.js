@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "../../../lib/supabase.js";
 import { retrieveKnowledge, buildKnowledgeSection } from "../../../lib/knowledge.js";
 // Local LLM (vLLM) via OpenAI-compatible client. See lib/llm.js.
-import { llm as openai, LLM_MODEL } from "../../../lib/llm.js";
+import { llm as openai, LLM_MODEL, chatBody } from "../../../lib/llm.js";
 // Pipeline dinh dưỡng nhất quán: chuẩn hóa đơn vị (ml/l/g/kg/muỗng/ly/quả/miếng...),
 // mốc /100g|ml hoặc /1 đơn vị (USDA → OpenFoodFacts → FOODS DB → AI temp 0, có cache)
 // rồi scale TUYẾN TÍNH toàn bộ chất + validation Atwater. Xem lib/nutrition.js.
@@ -214,15 +214,16 @@ const safeParseAIJson = (raw) => {
 };
 
 // Tham số decode CHỐNG "lặp vô hạn": phạt lặp token để model không rơi vào vòng
-// 444444/!!!!!! rồi sinh JSON hỏng. frequency/presence là chuẩn OpenAI; vLLM còn
-// đọc thêm repetition_penalty trong extra_body. boost>0 dùng cho lần retry.
+// 444444/!!!!!! rồi sinh JSON hỏng. frequency/presence là chuẩn OpenAI, đặt
+// top-level nên cả hai nhà cung cấp đều đọc được.
+//
+// repetition_penalty (riêng của vLLM) đã bỏ: nó nằm trong extra_body, mà SDK
+// Node KHÔNG gộp field đó lên top-level như SDK Python — server nhận về một
+// field lạ rồi bỏ qua. Tức nó chưa từng có hiệu lực; xem chatBody() ở lib/llm.js.
+// boost>0 dùng cho lần retry.
 const antiLoopParams = (boost = 0) => ({
   frequency_penalty: 0.5 + boost,
   presence_penalty: 0.3,
-  extra_body: {
-    chat_template_kwargs: { enable_thinking: false },
-    repetition_penalty: 1.15 + boost,
-  },
 });
 
 /** Gọi LLM sinh JSON có CHỐNG LẶP + TỰ RETRY 1 lần khi parse hỏng.
@@ -241,11 +242,10 @@ const completeJsonWithRetry = async ({ messages, temperature = 0.2, max_tokens =
       max_tokens,
       frequency_penalty: al.frequency_penalty,
       presence_penalty: al.presence_penalty,
-      extra_body: al.extra_body,
     };
   };
   const runOnce = async (boost, seedShift, tempBump) => {
-    const c = await openai.chat.completions.create(build(boost, seedShift, tempBump));
+    const c = await openai.chat.completions.create(chatBody(build(boost, seedShift, tempBump)));
     const raw = c.choices?.[0]?.message?.content ?? "";
     if (looksJunkReply(raw)) throw new Error("phản hồi rỗng/degenerate");
     return { parsed: safeParseAIJson(raw), raw };

@@ -166,10 +166,7 @@ export async function POST(request) {
       // Fallback: Qwen hội thoại với <data> tag (cách chat.js xử lý thành công)
       try {
         console.log("[analyze-food] Thử fallback Qwen <data> path...");
-        const { llm, LLM_VISION_MODEL } = await import("../../../lib/llm.js");
-        // max_pixels ~3.2MP (448×448×16) — đồng bộ lib/vision.js để đếm tốt vật thể nhỏ
-        const QWEN_MIN_PIXELS = parseInt(process.env.QWEN_MIN_PIXELS || "200704", 10);
-        const QWEN_MAX_PIXELS = parseInt(process.env.QWEN_MAX_PIXELS || "3211264", 10);
+        const { llm, LLM_VISION_MODEL, chatBody } = await import("../../../lib/llm.js");
         const FALLBACK_PROMPT = `Bạn là chuyên gia dinh dưỡng. Nhìn ảnh, nhận diện món ăn và ước tính dinh dưỡng THEO ĐÚNG KHẨU PHẦN nhìn thấy (vd: 100ml, 1 ly, 1 phần...).
 QUY TẮC BẮT BUỘC:
 - Điền ĐẦY ĐỦ cả 4 chỉ số: calories, protein, fat, carbs. KHÔNG được để trống. Nếu món thực sự có protein/fat/carbs thì KHÔNG được ghi 0.
@@ -191,7 +188,7 @@ Nếu KHÔNG phải món ăn: <data>{"calories":0,"protein":"0g","fat":"0g","car
           return false;
         };
         const runVision = async (seed, temperature) => {
-          const completion = await llm.chat.completions.create({
+          const completion = await llm.chat.completions.create(chatBody({
             model: LLM_VISION_MODEL,
             max_tokens: 600,
             temperature,
@@ -201,11 +198,7 @@ Nếu KHÔNG phải món ăn: <data>{"calories":0,"protein":"0g","fat":"0g","car
               { role: "system", content: FALLBACK_PROMPT },
               { role: "user", content: userContent },
             ],
-            extra_body: {
-              chat_template_kwargs: { enable_thinking: false },
-              mm_processor_kwargs: { min_pixels: QWEN_MIN_PIXELS, max_pixels: QWEN_MAX_PIXELS },
-            },
-          });
+          }));
           const raw = (completion.choices?.[0]?.message?.content || "")
             .replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
           if (looksJunk(raw)) throw new Error("phản hồi rỗng/degenerate");
