@@ -54,6 +54,19 @@ export default function SideNav() {
           <i className="fa-solid fa-shield-halved" /><span>ADMIN</span>
         </div>
       )}
+      {/* Chữ ký tác giả: nằm dọc ở đáy thanh bên như chữ ký góc tranh — luôn
+          thấy nhưng không chiếm chỗ nội dung, không đụng tới khung chat. */}
+      <a
+        className="nav-signature"
+        href="https://www.kaggle.com/noahkun"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Author • trviet"
+        aria-label="Author: trviet"
+      >
+        <span className="nav-signature__by">by</span>
+        <span className="nav-signature__name">trviet</span>
+      </a>
     </aside>
   );
 }

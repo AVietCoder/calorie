@@ -183,6 +183,57 @@ button
     min-width: 0;
 }
 
+/* Chữ ký tác giả ở đáy thanh bên — cùng "ngôn ngữ" với nhãn nav (chữ hoa nhỏ,
+   giãn chữ, màu xám nhạt) nên hoà vào giao diện, chỉ hiện màu khi rê chuột. */
+.nav-signature
+{
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding-top: 12px;
+    color: #B2BEC3;
+    opacity: .7;
+    text-decoration: none;
+    transition: color .25s, opacity .25s;
+}
+.nav-signature::before
+{
+    content: "";
+    width: 1px;
+    height: 22px;
+    margin-bottom: 4px;
+    background: currentColor;
+    opacity: .5;
+}
+.nav-signature__by
+{
+    font-size: 9px;
+    font-style: italic;
+    letter-spacing: .5px;
+}
+.nav-signature__name
+{
+    writing-mode: vertical-rl;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+.nav-signature:hover,
+.nav-signature:focus-visible
+{
+    color: var(--primary);
+    opacity: 1;
+}
+
+/* Màn hình thấp / mobile: thanh bên không đủ chỗ hoặc thành thanh dưới đáy → ẩn chữ ký. */
+@media (max-height: 700px), (max-width: 720px)
+{
+    .nav-signature { display: none; }
+}
+
 .header
 {
     display: flex;

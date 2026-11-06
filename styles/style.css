@@ -225,6 +225,21 @@ footer
     font-size: 0.9rem;
 }
 
+.landing-author
+{
+    margin: 0;
+    font-size: 0.75rem;
+    opacity: .75;
+}
+.landing-author a
+{
+    font-weight: 600;
+    color: inherit;
+    text-decoration: none;
+    transition: color .2s;
+}
+.landing-author a:hover { color: var(--primary-green, #58A677); }
+
 @media (max-width: 992px)
 {
     .hero-container

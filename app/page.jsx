@@ -115,7 +115,12 @@ export default function LandingPage() {
       </main>
 
       <footer>
-        <p>{t('land.footer', '© 2026 Dr.Fit. Phân tích dinh dưỡng thông minh.')}</p>
+        <p className="landing-author">
+          Author •{' '}
+          <a href="https://www.kaggle.com/noahkun" target="_blank" rel="noopener noreferrer">
+            trviet
+          </a>
+        </p>
       </footer>
     </>
   );
